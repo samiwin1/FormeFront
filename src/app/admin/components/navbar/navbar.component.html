@@ -4,28 +4,56 @@
             <a href="index.html" class="b-brand">
                 <!-- ========   change your logo hear   ============ -->
                 <img src="assets/duralux/images/formelogo.jpg"
-     style="width: 200px; " />
-                <img src="assets/duralux/images/formelogo.jpg" alt="" class="logo logo-sm" />
+                     alt="ForMe logo"
+                     width="200"
+                     height="60"
+                     loading="lazy"
+                     decoding="async"
+                     style="width: 200px; height: auto;" />
             </a>
         </div>
         <div class="navbar-content">
             <ul class="nxl-navbar">
-                <li class="nxl-item nxl-caption">
-                    <label>Navigation</label>
+                <!-- Certification (legacy) -->
+                <li class="nxl-item nxl-hasmenu">
+                    <a href="javascript:void(0);" class="nxl-link">
+                        <span class="nxl-micon"><i class="feather-award"></i></span>
+                        <span class="nxl-mtext">Certification</span><span class="nxl-arrow"><i
+                                class="feather-chevron-right"></i></span>
+                    </a>
+                    <ul class="nxl-submenu">
+                        <li class="nxl-item">
+                            <a class="nxl-link" routerLink="/admin/certifications">Certification CRUD</a>
+                        </li>
+                        <li class="nxl-item">
+                            <a class="nxl-link" routerLink="/admin/oral-sessions">Oral Exams</a>
+                        </li>
+                        <li class="nxl-item">
+                            <a class="nxl-link" routerLink="/admin/sessions-calendar">Sessions calendar</a>
+                        </li>
+                        <li class="nxl-item">
+                            <a class="nxl-link" [routerLink]="['/admin/dashboard']" fragment="eligible-written-users">Written Passed Users</a>
+                        </li>
+                        <li class="nxl-item">
+                            <a class="nxl-link" routerLink="/admin/reschedule">Reschedule requests</a>
+                        </li>
+                        <li class="nxl-item">
+                            <a class="nxl-link" routerLink="/admin/issued-certificates">Issued certificates</a>
+                        </li>
+                    </ul>
                 </li>
                 <li class="nxl-item nxl-hasmenu">
                     <a href="javascript:void(0);" class="nxl-link">
-                        <span class="nxl-micon"><i class="feather-airplay"></i></span>
+                        <span class="nxl-micon">📊</span>
                         <span class="nxl-mtext">Dashboards</span><span class="nxl-arrow"><i
                                 class="feather-chevron-right"></i></span>
                     </a>
                 <ul class="nxl-submenu">
                      <li class="nxl-item">
-                         <!-- line 24 in your image — change to absolute /admins -->
-<a class="nxl-link" routerLink="/admins">Manage Admins</a>
+                         <a class="nxl-link" routerLink="/admins">🛡️ Manage Admins</a>
                     </li>
                     <li class="nxl-item">
-                         <a class="nxl-link" routerLink="dashboard">Analytics</a>
+                         <a class="nxl-link" routerLink="/admin/dashboard">📊 Dashboard</a>
                     </li>
                 </ul>
                 </li>

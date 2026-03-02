@@ -1,0 +1,225 @@
+﻿<section class="learner-page-bg">
+  <div class="container front-office-page py-3 py-lg-4">
+    <div class="page-surface p-3 p-md-4">
+      <header class="page-head mb-3 mb-lg-4">
+        <h2 class="mb-1">Learner Dashboard</h2>
+        <p class="mb-0">Track your written exam, oral session status, and certifications.</p>
+      </header>
+
+      <div class="alert alert-success" *ngIf="success">{{ success }}</div>
+      <div class="alert alert-danger" *ngIf="error">{{ error }}</div>
+
+      <div class="stat-grid mb-4">
+        <article class="stat-card">
+          <div class="stat-top">
+            <span class="stat-icon i-green"><i class="feather-book-open"></i></span>
+            <span class="stat-label">Available Certifications</span>
+          </div>
+          <div class="stat-value">{{ availableCertifications.length }}</div>
+        </article>
+
+        <article class="stat-card">
+          <div class="stat-top">
+            <span class="stat-icon i-blue"><i class="feather-check-square"></i></span>
+            <span class="stat-label">My Written Score</span>
+          </div>
+          <div class="stat-chip" *ngIf="writtenScore != null">{{ writtenScore }}</div>
+          <div class="stat-chip pending" *ngIf="writtenScore == null">Pending</div>
+        </article>
+
+        <article class="stat-card">
+          <div class="stat-top">
+            <span class="stat-icon i-amber"><i class="feather-calendar"></i></span>
+            <span class="stat-label">Next Oral Session</span>
+          </div>
+          <div class="stat-chip" *ngIf="nextSession() as next">{{ next.scheduledAt | date:'MMM d, h:mm a' }}</div>
+          <div class="stat-chip pending" *ngIf="!nextSession()">N/A</div>
+        </article>
+
+        <article class="stat-card">
+          <div class="stat-top">
+            <span class="stat-icon i-mint"><i class="feather-award"></i></span>
+            <span class="stat-label">My Certifications</span>
+          </div>
+          <div class="stat-value">{{ certifications.length }}</div>
+        </article>
+      </div>
+
+      <section class="panel-card mb-4">
+        <h5 class="panel-title"><i class="feather-grid me-2"></i>Published Certification Catalogue</h5>
+        <div class="table-responsive">
+          <table class="table table-sm lm-table align-middle mb-0">
+            <thead>
+              <tr>
+                <th>CERTIFICATION</th>
+                <th>DOMAIN</th>
+                <th>ISSUED</th>
+                <th>VALIDITY</th>
+                <th>ATTEMPTS</th>
+                <th class="text-end">ACTIONS</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let cert of availableCertifications">
+                <td>{{ cert.title }}</td>
+                <td>{{ cert.domain || '-' }}</td>
+                <td>—</td>
+                <td>{{ cert.validityMonths }} months</td>
+                <td>1/2</td>
+                <td class="text-end">
+                  <button type="button" class="btn btn-sm btn-soft" disabled>Enroll 0</button>
+                  <button type="button" class="btn btn-sm btn-go ms-1" disabled>Enroll</button>
+                </td>
+              </tr>
+              <tr *ngIf="availableCertifications.length === 0">
+                <td colspan="6" class="text-muted text-center py-3">No published certifications.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <div class="row g-3 mb-3">
+        <div class="col-lg-6">
+          <section class="panel-card h-100" id="my-oral-sessions">
+            <h5 class="panel-title"><i class="feather-clock me-2"></i>My Oral Sessions</h5>
+            <div class="table-responsive">
+              <table class="table table-sm lm-table align-middle mb-0">
+                <thead>
+                  <tr>
+                    <th>CERTIFICATION</th>
+                    <th>ISSUED</th>
+                    <th>STATUS</th>
+                    <th class="text-end">ACTION</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let session of mySessions">
+                    <td>{{ session.certificationTitle || ('Certification #' + session.certificationId) }}</td>
+                    <td>{{ session.scheduledAt | date:'MMM d, y, h:mm a' }}</td>
+                    <td><span [class]="session.status | sessionStatusClass">{{ session.status }}</span></td>
+                    <td class="text-end"><a class="btn btn-sm btn-go" [href]="session.meetingLink" target="_blank" rel="noopener">Open Slot</a></td>
+                  </tr>
+                  <tr *ngIf="mySessions.length === 0">
+                    <td colspan="4" class="text-muted text-center py-3">No oral sessions assigned.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+
+        <div class="col-lg-6">
+          <section class="panel-card h-100">
+            <h5 class="panel-title"><i class="feather-refresh-cw me-2"></i>Request Reschedule</h5>
+            <form [formGroup]="rescheduleForm" (ngSubmit)="requestReschedule()" class="row g-2">
+              <div class="col-12">
+                <select class="form-control" formControlName="assignmentId">
+                  <option [ngValue]="null">Select your assignment</option>
+                  <option *ngFor="let a of assignments" [ngValue]="a.id">
+                    #{{ a.id }} - Session #{{ a.oralSessionId }} ({{ a.status }})
+                  </option>
+                </select>
+                <small class="text-danger" *ngIf="rescheduleForm.controls.assignmentId.touched && rescheduleForm.controls.assignmentId.invalid">
+                  Assignment is required.
+                </small>
+              </div>
+              <div class="col-12">
+                <input type="datetime-local" class="form-control" formControlName="proposedDatetime" />
+                <small class="text-danger" *ngIf="rescheduleForm.controls.proposedDatetime.touched && rescheduleForm.controls.proposedDatetime.invalid">
+                  Please choose a future date/time.
+                </small>
+              </div>
+              <div class="col-12">
+                <textarea class="form-control" rows="3" placeholder="Reschedule reason" formControlName="message"></textarea>
+                <small class="text-danger" *ngIf="rescheduleForm.controls.message.touched && rescheduleForm.controls.message.invalid">
+                  Reason is required.
+                </small>
+              </div>
+              <div class="col-12">
+                <button class="btn btn-go" type="submit" [disabled]="submittingReschedule">
+                  {{ submittingReschedule ? 'Submitting...' : 'Submit Request' }}
+                </button>
+              </div>
+            </form>
+          </section>
+        </div>
+      </div>
+
+      <section class="panel-card mb-3">
+        <h5 class="panel-title"><i class="feather-inbox me-2"></i>My Reschedule Requests</h5>
+        <div class="table-responsive">
+          <table class="table table-sm lm-table align-middle mb-0">
+            <thead>
+              <tr>
+                <th>REQUESTED DATE</th>
+                <th>RESCHEDULE REASON</th>
+                <th>STATUS</th>
+                <th class="text-end">SCORE</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let req of myRescheduleRequests">
+                <td>{{ req.requestedAt | date:'MMM d, y, h:mm a' }}</td>
+                <td>{{ req.message || '-' }}</td>
+                <td>
+                  <span class="badge" [class.bg-warning]="req.status === 'PENDING'" [class.bg-success]="req.status === 'APPROVED'" [class.bg-danger]="req.status === 'REJECTED'">
+                    {{ req.status }}
+                  </span>
+                </td>
+                <td class="text-end"><span class="chip-score" *ngIf="req.status === 'APPROVED'">97.0</span></td>
+              </tr>
+              <tr *ngIf="myRescheduleRequests.length === 0">
+                <td colspan="4" class="text-muted text-center py-3">No reschedule requests.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel-card" id="my-certifications">
+        <h5 class="panel-title"><i class="feather-shield me-2"></i>My Results and Certifications</h5>
+        <div class="table-responsive">
+          <table class="table table-sm lm-table align-middle mb-0">
+            <thead>
+              <tr>
+                <th>CERTIFICATION</th>
+                <th>FINAL</th>
+                <th>ISSUED ON</th>
+                <th>STATUS</th>
+                <th class="text-end">PDF</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let certification of certifications">
+                <td>{{ certification.certificateNumber }}</td>
+                <td>{{ certification.finalScore }}</td>
+                <td>{{ certification.issuedAt | date:'MMM d, y' }}</td>
+                <td>
+                  <span class="badge bg-secondary" *ngIf="certification.status === 'REVOKED'">REVOKED</span>
+                  <span class="badge bg-success" *ngIf="certification.status !== 'REVOKED'">Issued</span>
+                </td>
+                <td class="text-end">
+                  <span *ngIf="certification.status !== 'REVOKED'">
+                    <button class="btn btn-sm btn-soft me-1" (click)="viewPdf(certification.id)">View</button>
+                    <button class="btn btn-sm btn-pdf" (click)="downloadPdf(certification.id)">Download PDF</button>
+                  </span>
+                </td>
+              </tr>
+              <tr *ngIf="certifications.length === 0">
+                <td colspan="5" class="text-muted text-center py-3">No certificates issued yet.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="mt-3" *ngIf="viewingCertId != null">
+          <h6 class="mb-2">Certificate preview</h6>
+          <app-pdf-viewer [certificationId]="viewingCertId" />
+          <button type="button" class="btn btn-sm btn-soft mt-2" (click)="viewingCertId = null">Close preview</button>
+        </div>
+      </section>
+    </div>
+  </div>
+</section>
+

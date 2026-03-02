@@ -2,11 +2,12 @@ import { Component, HostListener, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AsyncPipe, NgIf } from '@angular/common';
 import { AuthService } from '../../core/services/auth.service';
+import { NotificationBellComponent } from '../components/notification-bell/notification-bell.component';
 
 @Component({
   selector: 'app-header',
   standalone: true,
-imports: [RouterLink, RouterLinkActive, NgIf, AsyncPipe],
+imports: [RouterLink, RouterLinkActive, NgIf, AsyncPipe, NotificationBellComponent],
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.css'],
 })
@@ -20,6 +21,22 @@ export class HeaderComponent {
 
   logout() {
     this.auth.logout();
+  }
+
+  isAdmin(): boolean {
+    return this.auth.isAdmin();
+  }
+
+  isEvaluator(): boolean {
+    return this.auth.isEvaluator();
+  }
+
+  isLearner(): boolean {
+    return this.auth.isLearner();
+  }
+
+  isUser(): boolean {
+    return this.auth.isUser();
   }
 
   toggleMenu() {
