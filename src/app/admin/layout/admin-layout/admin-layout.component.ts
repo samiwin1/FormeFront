@@ -24,6 +24,10 @@ export class AdminLayoutComponent {
   private router = inject(Router);
   sidebarCollapsed = false;
 
+  isFormationRoute(): boolean {
+    return this.router.url.includes('/admin/formations');
+  }
+
   logout() {
     this.auth.logout();
     this.router.navigate(['/login']);

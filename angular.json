@@ -27,6 +27,7 @@
               }
             ],
             "styles": [
+              "node_modules/apexcharts/dist/apexcharts.css",
               "src/styles.css",
               "src/assets/mentor/vendor/bootstrap/css/bootstrap.min.css",
               "src/assets/mentor/vendor/bootstrap-icons/bootstrap-icons.css",
@@ -73,6 +74,9 @@
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
+          "options": {
+            "proxyConfig": "proxy.conf.json"
+          },
           "configurations": {
             "production": {
               "buildTarget": "forme-frontend:build:production"

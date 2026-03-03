@@ -5,7 +5,6 @@ import { LoginComponent } from './features/auth/pages/login/login.component';
 import { RegisterComponent } from './features/auth/pages/register/register.component';
 
 import { AdminLayoutComponent } from './admin/layout/admin-layout/admin-layout.component';
-import { DashboardComponent } from './admin/pages/dashboard/dashboard.component';
 import { adminGuard } from './admin/admin.guard';
 
 import { ProfileComponent } from './features/auth/pages/profile/profile.component';
@@ -13,6 +12,8 @@ import { authGuard } from './core/guards/auth.guard';
 
 import { superAdminGuard } from './core/guards/super-admin.guard';
 import { AdminManagementComponent } from './admin/pages/admin-management/admin-management.component';
+import { formationRoutes, adminFormationRoutes } from './features/formation/formation.routes';
+
 export const routes: Routes = [
   {
     path: '',
@@ -22,6 +23,7 @@ export const routes: Routes = [
       { path: 'login', component: LoginComponent },
       { path: 'register', component: RegisterComponent },
       { path: 'profile', component: ProfileComponent, canActivate: [authGuard] },
+      { path: 'formations', children: formationRoutes },
     ],
   },
 
@@ -30,9 +32,9 @@ export const routes: Routes = [
     component: AdminLayoutComponent,
     canActivate: [adminGuard],
     children: [
-      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
-      { path: 'dashboard', component: DashboardComponent },
-      // ❌ removed admin-management from here
+      { path: '', redirectTo: 'formations', pathMatch: 'full' },
+      { path: 'dashboard', redirectTo: 'formations', pathMatch: 'full' },
+      { path: 'formations', children: adminFormationRoutes },
     ],
   },
 
