@@ -9,11 +9,12 @@ import { AuthService } from '../../../../../core/services/auth.service';
 import { Formation, ContenuFormation, Evaluation, Examen } from '../../../models/formation.models';
 import { QuizQuestion, questionsToJson } from '../../../utils/quiz-scoring';
 import { QuestionBuilderComponent } from '../../../components/question-builder/question-builder.component';
+import { AgentThinkingAnimationComponent } from '../../../components/agent-thinking-animation/agent-thinking-animation.component';
 
 @Component({
   selector: 'app-formation-create',
   standalone: true,
-  imports: [CommonModule, FormsModule, QuestionBuilderComponent],
+  imports: [CommonModule, FormsModule, QuestionBuilderComponent, AgentThinkingAnimationComponent],
   templateUrl: './formation-create.component.html',
   styleUrl: './formation-create.component.css'
 })

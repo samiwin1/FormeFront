@@ -189,6 +189,9 @@
         @if (aiGenerateError) {
           <div class="alert alert-danger py-2">{{ aiGenerateError }}</div>
         }
+        <div class="ai-modal-animation mb-3" [style.display]="loading ? 'flex' : 'none'">
+          <app-agent-thinking-animation [active]="loading" />
+        </div>
         <div class="mb-3">
           <label class="form-label">Number of content blocks</label>
           <input type="number" class="form-control" min="1" max="10" [(ngModel)]="aiBlocksCount" [disabled]="loading" placeholder="3" />
@@ -198,9 +201,6 @@
       <div class="ai-modal-footer">
         <button type="button" class="btn btn-outline-secondary btn-sm" (click)="closeAiBlocksModal()" [disabled]="loading">Cancel</button>
         <button type="button" class="btn btn-ai-generate btn-sm" (click)="generateWithAiFromStep1()" [disabled]="loading">
-          @if (loading) {
-            <span class="spinner-border spinner-border-sm me-2"></span>
-          }
           <i class="bi bi-robot me-1"></i>Generate
         </button>
       </div>
