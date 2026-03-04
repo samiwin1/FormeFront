@@ -1,5 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { AfterViewInit, Component, OnDestroy, inject } from '@angular/core';
+
+import { Component, inject } from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { ThemeLoaderService } from '../../../core/services/theme-loader.service'; // adjust path if needed
@@ -71,4 +73,5 @@ export class AdminLayoutComponent implements AfterViewInit  {
     }
   }
 
+}
 }

@@ -1,11 +1,13 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, tap } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../enviroments/environment';
 
 export interface AuthResponse { token: string; }
 
 type JwtPayload = {
   roles?: string[];
+  profession?: string;
   uid?: number;
   sub?: string;
   exp?: number;
@@ -17,7 +19,7 @@ export class AuthService {
   private loggedInSubject = new BehaviorSubject<boolean>(this.hasToken());
   isLoggedIn$ = this.loggedInSubject.asObservable();
 
-  private apiUrl = 'http://localhost:8082/api';
+  private apiUrl = environment.apiUrl;
 
   constructor(private http: HttpClient) {}
 
@@ -58,7 +60,16 @@ export class AuthService {
   }
 
   getToken(): string | null {
-    return localStorage.getItem(this.TOKEN_KEY);
+    const token = localStorage.getItem(this.TOKEN_KEY);
+    if (!token) {
+      return null;
+    }
+    if (this.isTokenExpired(token)) {
+      localStorage.removeItem(this.TOKEN_KEY);
+      this.loggedInSubject.next(false);
+      return null;
+    }
+    return token;
   }
 
   isAdmin(): boolean {
@@ -68,6 +79,23 @@ export class AuthService {
 
   isSuperAdmin(): boolean {
     return this.getRoles().includes('ROLE_SUPER_ADMIN');
+  }
+
+  isUser(): boolean {
+    return this.getRoles().includes('ROLE_USER');
+  }
+
+  getProfession(): string | null {
+    return this.decodeToken()?.profession ?? null;
+  }
+
+  isEvaluator(): boolean {
+    return this.isUser() && this.getProfession() === 'EVALUATOR';
+  }
+
+  isLearner(): boolean {
+    const profession = this.getProfession();
+    return this.isUser() && profession !== 'EVALUATOR';
   }
 
   getPayload(): JwtPayload | null {
@@ -105,6 +133,31 @@ export class AuthService {
   }
 
   private hasToken(): boolean {
-    return !!localStorage.getItem(this.TOKEN_KEY);
+    const token = localStorage.getItem(this.TOKEN_KEY);
+    return !!token && !this.isTokenExpired(token);
+  }
+
+  private isTokenExpired(token: string): boolean {
+    const payload = this.decodeTokenFromRaw(token);
+    if (!payload?.exp) {
+      return false;
+    }
+    const nowSec = Math.floor(Date.now() / 1000);
+    return payload.exp <= nowSec;
+  }
+
+  private decodeTokenFromRaw(token: string): JwtPayload | null {
+    const parts = token.split('.');
+    if (parts.length !== 3) return null;
+
+    try {
+      const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+      const json = decodeURIComponent(
+        atob(base64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join('')
+      );
+      return JSON.parse(json);
+    } catch {
+      return null;
+    }
   }
 }

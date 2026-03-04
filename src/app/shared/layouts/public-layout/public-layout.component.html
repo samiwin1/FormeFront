@@ -7,3 +7,4 @@
 @if (!isFormationRoute) {
   <app-footer></app-footer>
 }
+<app-footer *ngIf="!hideFooterForCurrentRoute()"></app-footer>
