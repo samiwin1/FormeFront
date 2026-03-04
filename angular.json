@@ -27,6 +27,7 @@
               }
             ],
             "styles": [
+              "node_modules/apexcharts/dist/apexcharts.css",
               "src/styles.css",
               "src/assets/mentor/vendor/bootstrap/css/bootstrap.min.css",
               "src/assets/mentor/vendor/bootstrap-icons/bootstrap-icons.css",
@@ -66,7 +67,8 @@
             "development": {
               "optimization": false,
               "extractLicenses": false,
-              "sourceMap": true
+              "sourceMap": true,
+              "outputHashing": "media"
             }
           },
           "defaultConfiguration": "development"

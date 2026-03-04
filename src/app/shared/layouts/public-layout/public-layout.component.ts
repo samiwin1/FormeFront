@@ -1,3 +1,6 @@
+import { Component, OnInit } from '@angular/core';
+import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
+import { filter } from 'rxjs/operators';
 import { Component, inject } from '@angular/core';
 import { NgIf } from '@angular/common';
 import { Router, RouterOutlet } from '@angular/router';
@@ -10,6 +13,20 @@ import { FooterComponent } from '../../footer/footer.component';
   imports: [RouterOutlet, NgIf, HeaderComponent, FooterComponent],
   templateUrl: './public-layout.component.html'
 })
+export class PublicLayoutComponent implements OnInit {
+  isFormationRoute = false;
+
+  constructor(private router: Router) {}
+
+  ngOnInit(): void {
+    this.updateFormationRoute();
+    this.router.events.pipe(
+      filter((e): e is NavigationEnd => e instanceof NavigationEnd)
+    ).subscribe(() => this.updateFormationRoute());
+  }
+
+  private updateFormationRoute(): void {
+    this.isFormationRoute = this.router.url.startsWith('/formations');
 export class PublicLayoutComponent {
   private readonly router = inject(Router);
 
