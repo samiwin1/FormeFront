@@ -46,6 +46,7 @@ export class UserDirectoryService {
   private readonly namesCache = new Map<number, string>();
   private readonly pending = new Map<number, Observable<string>>();
   private adminListLoaded = false;
+  private adminListAttempted = false;
 
   constructor(private readonly http: HttpClient) {}
 
@@ -203,12 +204,16 @@ export class UserDirectoryService {
     if (this.adminListLoaded) {
       return of(this.namesCache.get(userId) ?? `User #${userId}`);
     }
+    if (this.adminListAttempted) {
+      return of(this.namesCache.get(userId) ?? `User #${userId}`);
+    }
+    this.adminListAttempted = true;
 
     const endpoints = [
-      `${this.apiUrl}/admin/list`,
-      `${this.apiUrl}/admin/users`,
       `${this.apiUrl}/users/list`,
       `${this.apiUrl}/users`,
+      `${this.apiUrl}/admin/list`,
+      `${this.apiUrl}/admin/users`,
       `${this.apiUrl}/super-admin/list`,
     ];
 
