@@ -116,6 +116,16 @@
                 Session #{{ session.id }} - {{ session.title }} - {{ session.scheduledAt | date:'short' }}
               </option>
             </select>
+
+            <label class="replacement-label replacement-datetime-label">
+              <i class="bi bi-calendar-event"></i>
+              Or create a new replacement date/time
+            </label>
+            <input
+              type="datetime-local"
+              class="replacement-datetime-input"
+              [ngModel]="replacementDatetimeByRequest[item.id] || ''"
+              (ngModelChange)="replacementDatetimeByRequest[item.id] = $event" />
           </div>
 
           <div class="comment-section">

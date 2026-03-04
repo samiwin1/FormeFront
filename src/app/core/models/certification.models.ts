@@ -252,3 +252,43 @@ export interface SessionFeedbackSummaryDto {
   avgEvaluatorRating: number;
   totalFeedbacks: number;
 }
+
+export interface LinkedInPostRequest {
+  issuedCertificationId: number;
+}
+
+export interface LinkedInPostResponse {
+  issuedCertificationId: number;
+  generatedPost: string;
+  certificationTitle: string;
+  linkedInShareUrl: string;
+}
+
+// Evaluator-specific interfaces
+export interface EvaluatorAssignmentDto {
+  assignmentId: number;
+  learnerId: number;
+  learnerName: string;
+  status: AssignmentStatus;
+  oralScore: number | null;
+  oralComment: string | null;
+  gradedAt: string | null;
+  canGrade: boolean;
+}
+
+export interface EvaluatorSessionDto {
+  sessionId: number;
+  title: string;
+  scheduledAt: string;
+  durationMinutes: number;
+  meetingLink: string;
+  meetingProvider: string;
+  certificationTitle: string;
+  status: OralSessionStatus;
+  assignments: EvaluatorAssignmentDto[];
+}
+
+export interface GradeSubmissionRequest {
+  oralScore: number;
+  oralComment?: string;
+}

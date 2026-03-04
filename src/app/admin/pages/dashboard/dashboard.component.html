@@ -20,12 +20,6 @@
     </div>
   </div>
 
-  <!-- Error Alert -->
-  <div class="alert-error" *ngIf="error">
-    <i class="bi bi-exclamation-triangle"></i>
-    {{ error }}
-  </div>
-
   <div class="stat-grid">
     <app-stat-card
       label="Total Certifications"
@@ -169,6 +163,13 @@
                 <i class="bi bi-person-badge"></i>
                 <span>{{ displayUserName(p.evaluatorId, p.evaluatorName) }}</span>
               </div>
+              @if (evaluatorRatings().get(p.evaluatorId); as rating) {
+                <span class="eval-rating">
+                  ⭐ {{ rating | number:'1.1-1' }}/5
+                </span>
+              } @else {
+                <span class="eval-rating no-rating">No reviews yet</span>
+              }
               <div class="mini-detail-row">
                 <i class="bi bi-award"></i>
                 <span>{{ pendingCertificationTitle(p) }}</span>

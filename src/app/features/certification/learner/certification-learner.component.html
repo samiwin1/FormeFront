@@ -1,225 +1,270 @@
-﻿<section class="learner-page-bg">
+<section class="learner-page-bg">
   <div class="container front-office-page py-3 py-lg-4">
     <div class="page-surface p-3 p-md-4">
       <header class="page-head mb-3 mb-lg-4">
-        <h2 class="mb-1">Learner Dashboard</h2>
-        <p class="mb-0">Track your written exam, oral session status, and certifications.</p>
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+          <div>
+            <h2 class="mb-1">
+              <i class="feather-layout me-2"></i>
+              Learner Dashboard
+            </h2>
+            <p class="mb-0">
+              <i class="feather-info me-1"></i>
+              Track your written exam, oral session status, and certifications.
+            </p>
+          </div>
+          <button class="btn btn-sm btn-refresh" (click)="refresh()" [disabled]="loading">
+            <i class="feather-refresh-cw me-1"></i>
+            {{ loading ? 'Loading...' : 'Refresh' }}
+          </button>
+        </div>
       </header>
 
-      <div class="alert alert-success" *ngIf="success">{{ success }}</div>
-      <div class="alert alert-danger" *ngIf="error">{{ error }}</div>
-
-      <div class="stat-grid mb-4">
-        <article class="stat-card">
-          <div class="stat-top">
-            <span class="stat-icon i-green"><i class="feather-book-open"></i></span>
-            <span class="stat-label">Available Certifications</span>
-          </div>
-          <div class="stat-value">{{ availableCertifications.length }}</div>
-        </article>
-
-        <article class="stat-card">
-          <div class="stat-top">
-            <span class="stat-icon i-blue"><i class="feather-check-square"></i></span>
-            <span class="stat-label">My Written Score</span>
-          </div>
-          <div class="stat-chip" *ngIf="writtenScore != null">{{ writtenScore }}</div>
-          <div class="stat-chip pending" *ngIf="writtenScore == null">Pending</div>
-        </article>
-
-        <article class="stat-card">
-          <div class="stat-top">
-            <span class="stat-icon i-amber"><i class="feather-calendar"></i></span>
-            <span class="stat-label">Next Oral Session</span>
-          </div>
-          <div class="stat-chip" *ngIf="nextSession() as next">{{ next.scheduledAt | date:'MMM d, h:mm a' }}</div>
-          <div class="stat-chip pending" *ngIf="!nextSession()">N/A</div>
-        </article>
-
-        <article class="stat-card">
-          <div class="stat-top">
-            <span class="stat-icon i-mint"><i class="feather-award"></i></span>
-            <span class="stat-label">My Certifications</span>
-          </div>
-          <div class="stat-value">{{ certifications.length }}</div>
-        </article>
+      <div class="alert alert-success" *ngIf="success">
+        <i class="feather-check-circle me-2"></i>{{ success }}
+      </div>
+      <div class="alert alert-danger" *ngIf="error">
+        <i class="feather-alert-circle me-2"></i>{{ error }}
       </div>
 
-      <section class="panel-card mb-4">
-        <h5 class="panel-title"><i class="feather-grid me-2"></i>Published Certification Catalogue</h5>
-        <div class="table-responsive">
-          <table class="table table-sm lm-table align-middle mb-0">
-            <thead>
-              <tr>
-                <th>CERTIFICATION</th>
-                <th>DOMAIN</th>
-                <th>ISSUED</th>
-                <th>VALIDITY</th>
-                <th>ATTEMPTS</th>
-                <th class="text-end">ACTIONS</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let cert of availableCertifications">
-                <td>{{ cert.title }}</td>
-                <td>{{ cert.domain || '-' }}</td>
-                <td>—</td>
-                <td>{{ cert.validityMonths }} months</td>
-                <td>1/2</td>
-                <td class="text-end">
-                  <button type="button" class="btn btn-sm btn-soft" disabled>Enroll 0</button>
-                  <button type="button" class="btn btn-sm btn-go ms-1" disabled>Enroll</button>
-                </td>
-              </tr>
-              <tr *ngIf="availableCertifications.length === 0">
-                <td colspan="6" class="text-muted text-center py-3">No published certifications.</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <div class="row g-3 mb-3">
-        <div class="col-lg-6">
-          <section class="panel-card h-100" id="my-oral-sessions">
-            <h5 class="panel-title"><i class="feather-clock me-2"></i>My Oral Sessions</h5>
-            <div class="table-responsive">
-              <table class="table table-sm lm-table align-middle mb-0">
-                <thead>
-                  <tr>
-                    <th>CERTIFICATION</th>
-                    <th>ISSUED</th>
-                    <th>STATUS</th>
-                    <th class="text-end">ACTION</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr *ngFor="let session of mySessions">
-                    <td>{{ session.certificationTitle || ('Certification #' + session.certificationId) }}</td>
-                    <td>{{ session.scheduledAt | date:'MMM d, y, h:mm a' }}</td>
-                    <td><span [class]="session.status | sessionStatusClass">{{ session.status }}</span></td>
-                    <td class="text-end"><a class="btn btn-sm btn-go" [href]="session.meetingLink" target="_blank" rel="noopener">Open Slot</a></td>
-                  </tr>
-                  <tr *ngIf="mySessions.length === 0">
-                    <td colspan="4" class="text-muted text-center py-3">No oral sessions assigned.</td>
-                  </tr>
-                </tbody>
-              </table>
+      <!-- Journey Stats -->
+      <div class="row g-3 mb-4">
+        <div class="col-md-3">
+          <div class="journey-card">
+            <div class="journey-icon">
+              <i class="feather-book-open"></i>
             </div>
-          </section>
+            <div class="journey-content">
+              <div class="journey-label">My Journey</div>
+              <div class="journey-value">{{ certifications.length }}/{{ availableCertifications.length }}</div>
+            </div>
+          </div>
         </div>
-
-        <div class="col-lg-6">
-          <section class="panel-card h-100">
-            <h5 class="panel-title"><i class="feather-refresh-cw me-2"></i>Request Reschedule</h5>
-            <form [formGroup]="rescheduleForm" (ngSubmit)="requestReschedule()" class="row g-2">
-              <div class="col-12">
-                <select class="form-control" formControlName="assignmentId">
-                  <option [ngValue]="null">Select your assignment</option>
-                  <option *ngFor="let a of assignments" [ngValue]="a.id">
-                    #{{ a.id }} - Session #{{ a.oralSessionId }} ({{ a.status }})
-                  </option>
-                </select>
-                <small class="text-danger" *ngIf="rescheduleForm.controls.assignmentId.touched && rescheduleForm.controls.assignmentId.invalid">
-                  Assignment is required.
-                </small>
-              </div>
-              <div class="col-12">
-                <input type="datetime-local" class="form-control" formControlName="proposedDatetime" />
-                <small class="text-danger" *ngIf="rescheduleForm.controls.proposedDatetime.touched && rescheduleForm.controls.proposedDatetime.invalid">
-                  Please choose a future date/time.
-                </small>
-              </div>
-              <div class="col-12">
-                <textarea class="form-control" rows="3" placeholder="Reschedule reason" formControlName="message"></textarea>
-                <small class="text-danger" *ngIf="rescheduleForm.controls.message.touched && rescheduleForm.controls.message.invalid">
-                  Reason is required.
-                </small>
-              </div>
-              <div class="col-12">
-                <button class="btn btn-go" type="submit" [disabled]="submittingReschedule">
-                  {{ submittingReschedule ? 'Submitting...' : 'Submit Request' }}
-                </button>
-              </div>
-            </form>
-          </section>
+        <div class="col-md-3">
+          <div class="journey-card">
+            <div class="journey-icon bg-warning">
+              <i class="feather-award"></i>
+            </div>
+            <div class="journey-content">
+              <div class="journey-label">Certifications</div>
+              <div class="journey-value">{{ availableCertifications.length }} available, {{ certifications.length }} earned</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="journey-card">
+            <div class="journey-icon bg-info">
+              <i class="feather-edit"></i>
+            </div>
+            <div class="journey-content">
+              <div class="journey-label">My Written</div>
+              <div class="journey-value" *ngIf="writtenScore != null">Score: {{ writtenScore }}</div>
+              <div class="journey-value text-warning" *ngIf="writtenScore == null">Score: Pending</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="journey-card">
+            <div class="journey-icon bg-primary">
+              <i class="feather-video"></i>
+            </div>
+            <div class="journey-content">
+              <div class="journey-label">Next Oral</div>
+              <div class="journey-value" *ngIf="nextSession() as next">{{ next.scheduledAt | date:'MMM d, h:mm a' }}</div>
+              <div class="journey-value text-muted" *ngIf="!nextSession()">Not scheduled</div>
+            </div>
+          </div>
         </div>
       </div>
 
-      <section class="panel-card mb-3">
-        <h5 class="panel-title"><i class="feather-inbox me-2"></i>My Reschedule Requests</h5>
-        <div class="table-responsive">
-          <table class="table table-sm lm-table align-middle mb-0">
-            <thead>
-              <tr>
-                <th>REQUESTED DATE</th>
-                <th>RESCHEDULE REASON</th>
-                <th>STATUS</th>
-                <th class="text-end">SCORE</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let req of myRescheduleRequests">
-                <td>{{ req.requestedAt | date:'MMM d, y, h:mm a' }}</td>
-                <td>{{ req.message || '-' }}</td>
-                <td>
-                  <span class="badge" [class.bg-warning]="req.status === 'PENDING'" [class.bg-success]="req.status === 'APPROVED'" [class.bg-danger]="req.status === 'REJECTED'">
-                    {{ req.status }}
-                  </span>
-                </td>
-                <td class="text-end"><span class="chip-score" *ngIf="req.status === 'APPROVED'">97.0</span></td>
-              </tr>
-              <tr *ngIf="myRescheduleRequests.length === 0">
-                <td colspan="4" class="text-muted text-center py-3">No reschedule requests.</td>
-              </tr>
-            </tbody>
-          </table>
+      <!-- My Oral Sessions -->
+      <section class="panel-card mb-4" id="my-oral-sessions">
+        <h5 class="panel-title">
+          <i class="feather-clock me-2"></i>My Oral Sessions
+        </h5>
+        <div class="session-cards-grid" *ngIf="mySessions.length > 0; else noSessionsTpl">
+          <article class="session-card" *ngFor="let session of mySessions">
+            <div class="session-card-head">
+              <div class="session-card-title">
+                <i class="feather-award"></i>
+                <strong>{{ session.certificationTitle || ('Certification #' + session.certificationId) }}</strong>
+              </div>
+              <span class="badge"
+                [class.bg-danger]="session.status === 'CANCELED'"
+                [class.bg-primary]="session.status === 'PLANNED'"
+                [class.bg-success]="session.status === 'DONE'">
+                {{ session.status }}
+              </span>
+            </div>
+
+            <div class="session-card-time">
+              <i class="feather-calendar"></i>
+              {{ session.scheduledAt | date:'MMM d, y, h:mm a' }}
+            </div>
+
+            <div class="session-card-actions">
+              <button class="btn btn-sm btn-outline-secondary" [disabled]="session.status === 'CANCELED' || session.status === 'DONE'">
+                <i class="feather-external-link me-1"></i>OPEN SLOT
+              </button>
+              <button class="btn btn-sm btn-outline-primary" *ngIf="session.status === 'CANCELED'" disabled>
+                <i class="feather-users me-1"></i>JOIN SESSION
+              </button>
+              <button class="btn btn-sm btn-outline-warning" *ngIf="session.status === 'CANCELED'" disabled>
+                <i class="feather-refresh-cw me-1"></i>RESCHEDULE
+              </button>
+              <a class="btn btn-sm btn-primary"
+                *ngIf="session.status === 'DONE'"
+                [href]="'https://linkedin.com'"
+                target="_blank">
+                <i class="feather-linkedin me-1"></i>
+              </a>
+            </div>
+          </article>
         </div>
+        <ng-template #noSessionsTpl>
+          <div class="text-muted text-center py-4">
+            <i class="feather-inbox d-block mb-2" style="font-size: 2rem; opacity: 0.5;"></i>
+            No oral sessions assigned.
+          </div>
+        </ng-template>
       </section>
 
+      <!-- My Results and Certifications -->
       <section class="panel-card" id="my-certifications">
-        <h5 class="panel-title"><i class="feather-shield me-2"></i>My Results and Certifications</h5>
-        <div class="table-responsive">
-          <table class="table table-sm lm-table align-middle mb-0">
-            <thead>
-              <tr>
-                <th>CERTIFICATION</th>
-                <th>FINAL</th>
-                <th>ISSUED ON</th>
-                <th>STATUS</th>
-                <th class="text-end">PDF</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let certification of certifications">
-                <td>{{ certification.certificateNumber }}</td>
-                <td>{{ certification.finalScore }}</td>
-                <td>{{ certification.issuedAt | date:'MMM d, y' }}</td>
-                <td>
-                  <span class="badge bg-secondary" *ngIf="certification.status === 'REVOKED'">REVOKED</span>
-                  <span class="badge bg-success" *ngIf="certification.status !== 'REVOKED'">Issued</span>
-                </td>
-                <td class="text-end">
-                  <span *ngIf="certification.status !== 'REVOKED'">
-                    <button class="btn btn-sm btn-soft me-1" (click)="viewPdf(certification.id)">View</button>
-                    <button class="btn btn-sm btn-pdf" (click)="downloadPdf(certification.id)">Download PDF</button>
-                  </span>
-                </td>
-              </tr>
-              <tr *ngIf="certifications.length === 0">
-                <td colspan="5" class="text-muted text-center py-3">No certificates issued yet.</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        <h5 class="panel-title">
+          <i class="feather-shield me-2"></i>My Results and Certifications
+        </h5>
+        
+        <div class="row g-3">
+          <div class="col-md-6 col-lg-3" *ngFor="let certification of certifications">
+            <div class="cert-card">
+              <div class="cert-header">
+                <div class="cert-icon">
+                  <i class="feather-award"></i>
+                </div>
+                <div class="cert-title">
+                  <div class="cert-name">Certification Name</div>
+                  <div class="cert-number">{{ certification.certificateNumber }}</div>
+                </div>
+              </div>
+              
+              <div class="cert-body">
+                <div class="cert-score-section">
+                  <div class="cert-score-label">Final Score</div>
+                  <div class="cert-score-value">
+                    <div class="score-circle" 
+                      [class.score-high]="certification.finalScore >= 80"
+                      [class.score-mid]="certification.finalScore >= 60 && certification.finalScore < 80"
+                      [class.score-low]="certification.finalScore < 60">
+                      {{ certification.finalScore }}
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="cert-issued-section">
+                  <div class="cert-issued-label">Issued On</div>
+                  <div class="cert-issued-date">{{ certification.issuedAt | date:'MMM d, y' }}</div>
+                </div>
+              </div>
+              
+              <div class="cert-status-bar">
+                <div class="status-step" 
+                  [class.active]="certification.status === 'REVOKED'"
+                  [class.completed]="certification.status !== 'REVOKED'">
+                  <div class="status-dot"></div>
+                  <div class="status-label">{{ certification.status === 'REVOKED' ? 'REVOKED' : 'ISSUED' }}</div>
+                </div>
+                <div class="status-line" [class.completed]="certification.status !== 'REVOKED'"></div>
+                <div class="status-step" [class.completed]="certification.status !== 'REVOKED'">
+                  <div class="status-dot"></div>
+                  <div class="status-label">ISSUED</div>
+                </div>
+                <div class="status-line" [class.completed]="certification.status !== 'REVOKED'"></div>
+                <div class="status-step" [class.completed]="certification.status !== 'REVOKED'">
+                  <div class="status-dot"></div>
+                  <div class="status-label">ISSUED</div>
+                </div>
+              </div>
+              
+              <div class="cert-actions">
+                <button class="btn btn-feedback w-100 mb-2"
+                  *ngIf="certification.status === 'ISSUED'"
+                  (click)="openFeedbackForCertification(certification.id)">
+                  <i class="feather-message-square me-2"></i>Give Feedback
+                </button>
 
-        <div class="mt-3" *ngIf="viewingCertId != null">
-          <h6 class="mb-2">Certificate preview</h6>
-          <app-pdf-viewer [certificationId]="viewingCertId" />
-          <button type="button" class="btn btn-sm btn-soft mt-2" (click)="viewingCertId = null">Close preview</button>
+                <button class="btn btn-linkedin w-100 mb-2" 
+                  *ngIf="certification.status === 'ISSUED'"
+                  (click)="openLinkedInModal(certification.id, certification.certificateNumber)">
+                  <i class="feather-linkedin me-2"></i>Generate Post with AI
+                </button>
+                <div class="d-flex gap-2">
+                  <button class="btn btn-sm btn-outline-secondary flex-fill" 
+                    (click)="downloadPdf(certification.id)"
+                    [disabled]="certification.status === 'REVOKED'">
+                    <i class="feather-download me-1"></i>DOWNLOAD PDF
+                  </button>
+                  <button class="btn btn-sm btn-outline-primary flex-fill" 
+                    (click)="openPdfModal(certification.id)"
+                    [disabled]="certification.status === 'REVOKED'">
+                    <i class="feather-eye me-1"></i>VIEW
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="col-12" *ngIf="certifications.length === 0">
+            <div class="text-muted text-center py-5">
+              <i class="feather-inbox d-block mb-3" style="font-size: 3rem; opacity: 0.3;"></i>
+              <p class="mb-0">No certificates issued yet.</p>
+            </div>
+          </div>
         </div>
       </section>
     </div>
   </div>
 </section>
 
+<!-- PDF Certificate Modal -->
+<div class="pdf-modal-overlay" *ngIf="showPdfModal" (click)="closePdfModal()">
+  <div class="pdf-modal-content" (click)="$event.stopPropagation()">
+    <div class="pdf-modal-header">
+      <h5 class="pdf-modal-title">
+        <i class="feather-eye me-2"></i>Certificate Preview
+      </h5>
+      <button class="modal-close-btn" (click)="closePdfModal()">
+        <i class="feather-x"></i>
+      </button>
+    </div>
+    <div class="pdf-modal-body">
+      <app-pdf-viewer *ngIf="viewingCertId" [certificationId]="viewingCertId" />
+    </div>
+  </div>
+</div>
+
+<!-- LinkedIn Post Modal -->
+<div class="linkedin-modal-overlay" *ngIf="showLinkedInModal" (click)="closeLinkedInModal()">
+  <div class="linkedin-modal-content" (click)="$event.stopPropagation()">
+    <button class="modal-close-btn" (click)="closeLinkedInModal()">
+      <i class="feather-x"></i>
+    </button>
+    <app-linkedin-post-card
+      *ngIf="selectedCertId && selectedCertTitle"
+      [issuedCertificationId]="selectedCertId"
+      [certificationTitle]="selectedCertTitle">
+    </app-linkedin-post-card>
+  </div>
+</div>
+
+<app-feedback-modal
+  *ngIf="
+    showFeedbackModal() &&
+    feedbackModalIssuedCertificationId() != null &&
+    feedbackModalSessionId() != null
+  "
+  [issuedCertificationId]="feedbackModalIssuedCertificationId()!"
+  [sessionId]="feedbackModalSessionId()!"
+  (submitted)="onFeedbackSubmitted()"
+  (dismissed)="onFeedbackDismissed()"
+></app-feedback-modal>

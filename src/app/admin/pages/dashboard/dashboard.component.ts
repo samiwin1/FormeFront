@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, OnInit, effect, inject } from '@angular/core';
+import { Component, OnInit, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { StatCardComponent } from '../../../shared/components/stat-card/stat-card.component';
@@ -18,6 +18,8 @@ import { CertificationDashboardStore } from '../../../core/state/certification-d
 import { DashboardService } from '../../../core/services/dashboard.service';
 import { FormationDirectoryService, FormationOption } from '../../../core/services/formation-directory.service';
 import { forkJoin, map } from 'rxjs';
+import { FeedbackService } from '../../../core/services/feedback.service';
+import { ToastService } from '../../../core/services/toast.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -31,6 +33,8 @@ export class DashboardComponent implements OnInit {
   private readonly dashboardStore = inject(CertificationDashboardStore);
   private readonly dashboardService = inject(DashboardService);
   private readonly formationDirectory = inject(FormationDirectoryService);
+  private readonly feedbackService = inject(FeedbackService);
+  private readonly toastService = inject(ToastService);
 
   certifications: Certification[] = [];
   sessions: OralSession[] = [];
@@ -45,7 +49,6 @@ export class DashboardComponent implements OnInit {
   totalLearnersAssigned = 0;
   issuedCertifications = 0;
   pendingReschedules = 0;
-  error: string | null = null;
   userNames: Record<number, string> = {};
   formationOptions: FormationOption[] = [];
   selectedFormationId: number | 'ALL' = 'ALL';
@@ -53,6 +56,8 @@ export class DashboardComponent implements OnInit {
   eligibleStatusFilter: 'ALL' | 'PASSED' = 'ALL';
   eligiblePage = 1;
   readonly eligiblePageSize = 6;
+  readonly evaluatorRatings = signal<Map<number, number>>(new Map());
+  error: string | null = null;
 
   constructor() {
     effect(() => {
@@ -83,6 +88,31 @@ export class DashboardComponent implements OnInit {
         ...passed.map((item) => item.learnerId),
         ...this.dashboardStore.failedAfterTwoAttempts().map((item) => item.learnerId),
       ]);
+
+      const uniqueEvaluatorIds = Array.from(
+        new Set(pending.map((item) => item.evaluatorId).filter((id) => !!id))
+      );
+      for (const evaluatorId of uniqueEvaluatorIds) {
+        if (this.evaluatorRatings().has(evaluatorId)) continue;
+        this.feedbackService.getEvaluatorAvgRating(evaluatorId).subscribe({
+          next: (res) => {
+            this.evaluatorRatings.update((map) => {
+              const next = new Map(map);
+              next.set(evaluatorId, res.avgRating ?? 0);
+              return next;
+            });
+          },
+          error: () => {
+            this.evaluatorRatings.update((map) => {
+              const next = new Map(map);
+              if (!next.has(evaluatorId)) {
+                next.set(evaluatorId, 0);
+              }
+              return next;
+            });
+          },
+        });
+      }
     });
   }
 
@@ -106,11 +136,13 @@ export class DashboardComponent implements OnInit {
   }
 
   issueCertificate(assignmentId: number): void {
-    this.error = null;
     this.assignmentService.issueCertificate(assignmentId).subscribe({
-      next: () => this.loadOverview(),
+      next: () => {
+        this.toastService.success('Certificate issued successfully!');
+        this.loadOverview();
+      },
       error: (err: unknown) => {
-        this.error = this.errorMessage(err, 'Failed to issue certificate');
+        this.toastService.error(this.errorMessage(err, 'Failed to issue certificate'));
       },
     });
   }

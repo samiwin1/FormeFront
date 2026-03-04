@@ -1,194 +1,147 @@
 import { CommonModule } from '@angular/common';
-import { HttpErrorResponse } from '@angular/common/http';
-import { Component, OnInit, inject } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { EvaluatorOverview, OralAssignment, OralSession } from '../../../core/models/certification.models';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { AssignmentService } from '../../../core/services/assignment.service';
-import { AuthService } from '../../../core/services/auth.service';
-import { DashboardService } from '../../../core/services/dashboard.service';
-import { OralSessionService } from '../../../core/services/oral-session.service';
-import { UserDirectoryService } from '../../../core/services/user-directory.service';
+import { EvaluatorSessionDto } from '../../../core/models/certification.models';
 
 @Component({
   standalone: true,
   selector: 'app-certification-evaluator',
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule],
   templateUrl: './certification-evaluator.component.html',
   styleUrls: ['./certification-evaluator.component.css'],
 })
 export class CertificationEvaluatorComponent implements OnInit {
-  private readonly fb = inject(FormBuilder);
   private readonly assignmentService = inject(AssignmentService);
-  private readonly oralSessionService = inject(OralSessionService);
-  private readonly dashboardService = inject(DashboardService);
-  private readonly authService = inject(AuthService);
-  private readonly userDirectory = inject(UserDirectoryService);
 
-  result: OralAssignment | null = null;
-  assignedSessions: OralSession[] = [];
-  evaluatorAssignments: OralAssignment[] = [];
-  overview: EvaluatorOverview | null = null;
-  todayAssignedCount = 0;
-  success: string | null = null;
-  error: string | null = null;
-  userNames: Record<number, string> = {};
+  // State signals
+  sessions = signal<EvaluatorSessionDto[]>([]);
+  loading = signal(false);
+  error = signal<string | null>(null);
 
-  form = this.fb.group({
-    assignmentId: [null as number | null, Validators.required],
-    oralScore: [null as number | null, [Validators.required, Validators.min(0), Validators.max(20)]],
-    formationId: [null as number | null, Validators.required],
-    evaluatorComment: [''],
+  // Grading form state
+  gradingAssignmentId = signal<number | null>(null);
+  gradeScore = signal<number | null>(null);
+  gradeComment = signal('');
+  submittingGrade = signal(false);
+  gradeError = signal<string | null>(null);
+  activeGradeContext = computed(() => {
+    const assignmentId = this.gradingAssignmentId();
+    if (!assignmentId) {
+      return null;
+    }
+    for (const session of this.sessions()) {
+      const assignment = session.assignments.find((a) => a.assignmentId === assignmentId);
+      if (assignment) {
+        return {
+          sessionTitle: session.title,
+          certificationTitle: session.certificationTitle,
+          assignment,
+        };
+      }
+    }
+    return null;
   });
 
+  // Computed signals
+  plannedSessions = computed(() =>
+    this.sessions()
+      .filter((s) => s.status === 'PLANNED')
+      .sort((a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime())
+  );
+
+  doneSessions = computed(() =>
+    this.sessions()
+      .filter((s) => s.status === 'DONE')
+      .sort((a, b) => new Date(b.scheduledAt).getTime() - new Date(a.scheduledAt).getTime())
+  );
+
+  totalToGrade = computed(() =>
+    this.sessions().reduce(
+      (acc, s) => acc + s.assignments.filter((a) => a.canGrade).length,
+      0
+    )
+  );
+
+  totalGraded = computed(() =>
+    this.sessions().reduce(
+      (acc, s) => acc + s.assignments.filter((a) => a.oralScore !== null).length,
+      0
+    )
+  );
+
   ngOnInit(): void {
-    this.loadEvaluatorOverview();
-    this.loadAssignedSessions();
-    this.loadEvaluatorQueue();
+    this.loadSessions();
   }
 
-  loadEvaluatorOverview(): void {
-    this.dashboardService.getEvaluatorOverview().subscribe({
+  loadSessions(): void {
+    this.loading.set(true);
+    this.error.set(null);
+
+    this.assignmentService.getMyEvaluatorSessions().subscribe({
       next: (data) => {
-        this.overview = data;
+        this.sessions.set(data);
+        this.loading.set(false);
       },
       error: () => {
-        this.overview = null;
+        this.error.set('Failed to load sessions.');
+        this.loading.set(false);
       },
     });
   }
 
-  loadAssignedSessions(): void {
-    const userId = this.authService.getUserId();
-    if (!userId) {
-      this.assignedSessions = [];
-      this.todayAssignedCount = 0;
-      return;
-    }
-
-    this.oralSessionService.list().subscribe({
-      next: (sessions: OralSession[]) => {
-        this.assignedSessions = sessions.filter((s) => s.evaluatorId === userId);
-        const today = new Date();
-        this.todayAssignedCount = this.assignedSessions.filter((s) => {
-          const d = new Date(s.scheduledAt);
-          return d.getFullYear() === today.getFullYear()
-            && d.getMonth() === today.getMonth()
-            && d.getDate() === today.getDate();
-        }).length;
-      },
-      error: (err: unknown) => {
-        this.error = this.errorMessage(err);
-      },
-    });
+  openGradeForm(assignmentId: number): void {
+    this.gradingAssignmentId.set(assignmentId);
+    this.gradeScore.set(null);
+    this.gradeComment.set('');
+    this.gradeError.set(null);
   }
 
-  get sessionsTodayCount(): number {
-    return this.overview?.sessionsTodayCount ?? this.todayAssignedCount;
-  }
-
-  get learnersToEvaluateCount(): number {
-    return this.overview?.learnersToEvaluateCount ?? this.evaluatorAssignments.length;
+  cancelGradeForm(): void {
+    this.gradingAssignmentId.set(null);
+    this.gradeError.set(null);
   }
 
   submitGrade(): void {
-    this.error = null;
-    this.success = null;
-
-    if (this.form.invalid) {
-      this.form.markAllAsTouched();
+    const score = this.gradeScore();
+    if (score === null || score < 0 || score > 20) {
+      this.gradeError.set('Score must be between 0 and 20');
       return;
     }
 
+    const assignmentId = this.gradingAssignmentId();
+    if (!assignmentId) return;
+
+    this.submittingGrade.set(true);
+    this.gradeError.set(null);
+
     this.assignmentService
-      .grade(this.form.value.assignmentId!, {
-        oralScore: this.form.value.oralScore!,
-        formationId: this.form.value.formationId!,
-        evaluatorComment: this.form.value.evaluatorComment || undefined,
+      .gradeAssignment(assignmentId, {
+        oralScore: score,
+        oralComment: this.gradeComment(),
       })
       .subscribe({
-        next: (response: OralAssignment) => {
-          this.result = response;
-          this.success = 'Oral grade submitted successfully';
-          this.loadAssignedSessions();
-          this.loadEvaluatorQueue();
+        next: () => {
+          this.gradingAssignmentId.set(null);
+          this.submittingGrade.set(false);
+          this.loadSessions(); // refresh
         },
-        error: (err: unknown) => {
-          this.error = this.errorMessage(err);
+        error: (e) => {
+          this.gradeError.set(e.error?.message || 'Failed to submit grade');
+          this.submittingGrade.set(false);
         },
       });
   }
 
-  loadEvaluatorQueue(): void {
-    this.assignmentService.evaluatorAssignments().subscribe({
-      next: (assignments: OralAssignment[]) => {
-        this.evaluatorAssignments = assignments;
-        this.resolveUserNames(assignments.map((a) => a.learnerId));
-      },
-      error: () => {
-        this.evaluatorAssignments = [];
-      },
+  markNoShow(assignmentId: number): void {
+    if (!confirm('Mark this learner as NO SHOW?')) return;
+
+    this.assignmentService.markNoShowEvaluator(assignmentId).subscribe({
+      next: () => this.loadSessions(),
+      error: () => alert('Failed to mark as no-show'),
     });
   }
 
-  displayUserName(userId: number): string {
-    if (!Number.isFinite(userId) || userId <= 0) {
-      return '-';
-    }
-    return this.userNames[userId] || `User #${userId}`;
-  }
-
-  sessionFor(assignment: OralAssignment): OralSession | undefined {
-    return this.assignedSessions.find((s) => s.id === assignment.oralSessionId);
-  }
-
-  fillGradeFromQueue(assignment: OralAssignment): void {
-    this.form.patchValue({
-      assignmentId: assignment.id,
-      formationId: assignment.formationId ?? null,
-    });
-  }
-
-  canEvaluate(assignment: OralAssignment): boolean {
-    return !['COMPLETED', 'NO_SHOW', 'FAILED'].includes(assignment.status);
-  }
-
-  statusBadgeClass(status: string): string {
-    switch (status) {
-      case 'FAILED':
-        return 'status-failed';
-      case 'COMPLETED':
-        return 'status-completed';
-      case 'NO_SHOW':
-        return 'status-no-show';
-      default:
-        return 'status-open';
-    }
-  }
-
-  markNoShow(assignment: OralAssignment): void {
-    this.error = null;
-    this.success = null;
-    this.assignmentService.markNoShow(assignment.id).subscribe({
-      next: () => {
-        this.success = 'Learner marked as no-show';
-        this.loadEvaluatorQueue();
-      },
-      error: (err: unknown) => {
-        this.error = this.errorMessage(err);
-      },
-    });
-  }
-
-  private resolveUserNames(userIds: number[]): void {
-    this.userDirectory.getNames(userIds).subscribe((names) => {
-      this.userNames = { ...this.userNames, ...names };
-    });
-  }
-
-  private errorMessage(err: unknown): string {
-    if (err instanceof HttpErrorResponse) {
-      return (err.error?.message as string) || err.message || 'Failed to submit grade';
-    }
-    return 'Failed to submit grade';
+  joinMeeting(link: string): void {
+    window.open(link, '_blank');
   }
 }

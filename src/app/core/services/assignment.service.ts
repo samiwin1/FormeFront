@@ -8,6 +8,8 @@ import {
   IssuedCertification,
   OralAssignment,
   RescheduleResponse,
+  EvaluatorSessionDto,
+  GradeSubmissionRequest,
 } from '../models/certification.models';
 
 @Injectable({ providedIn: 'root' })
@@ -69,5 +71,26 @@ export class AssignmentService {
 
   downloadCertificatePdf(id: number) {
     return this.http.get(`${this.baseApi}/me/certifications/${id}/pdf`, { responseType: 'blob' });
+  }
+
+  // Evaluator-specific methods
+  getMyEvaluatorSessions() {
+    return this.http.get<EvaluatorSessionDto[]>(
+      `${this.baseApi}/evaluator/my-sessions`
+    );
+  }
+
+  gradeAssignment(assignmentId: number, request: GradeSubmissionRequest) {
+    return this.http.post<void>(
+      `${this.baseApi}/evaluator/assignments/${assignmentId}/grade`,
+      request
+    );
+  }
+
+  markNoShowEvaluator(assignmentId: number) {
+    return this.http.patch<void>(
+      `${this.baseApi}/evaluator/assignments/${assignmentId}/no-show`,
+      {}
+    );
   }
 }

@@ -5,6 +5,7 @@ import { environment } from '../../../enviroments/environment';
 import {
   FeedbackResponse,
   PendingFeedbackDto,
+  SessionFeedbackSummaryDto,
   SubmitFeedbackRequest,
 } from '../models/certification.models';
 
@@ -19,6 +20,18 @@ export class FeedbackService {
 
   checkPendingFeedback(): Observable<PendingFeedbackDto> {
     return this.http.get<PendingFeedbackDto>(`${this.api}/me/feedback/pending`);
+  }
+
+  getSessionFeedbackSummary(sessionId: number): Observable<SessionFeedbackSummaryDto> {
+    return this.http.get<SessionFeedbackSummaryDto>(
+      `${this.api}/admin/feedback/session/${sessionId}/summary`
+    );
+  }
+
+  getEvaluatorAvgRating(evaluatorId: number): Observable<{ avgRating: number }> {
+    return this.http.get<{ avgRating: number }>(
+      `${this.api}/admin/feedback/evaluator/${evaluatorId}/avg-rating`
+    );
   }
 }
 

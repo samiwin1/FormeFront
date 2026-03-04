@@ -3,8 +3,9 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Component, DestroyRef, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { futureDateValidator } from '../../../core/validators/date-validators';
-import { interval } from 'rxjs';
+import { forkJoin, of } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { catchError } from 'rxjs/operators';
 import { Certification, IssuedCertification, OralAssignment, OralSession, PendingFeedbackDto, RescheduleResponse } from '../../../core/models/certification.models';
 import { AssignmentService } from '../../../core/services/assignment.service';
 import { CertificateEventsService } from '../../../core/services/certificate-events.service';
@@ -12,15 +13,15 @@ import { CertificationService } from '../../../core/services/certification.servi
 import { DashboardService } from '../../../core/services/dashboard.service';
 import { OralSessionService } from '../../../core/services/oral-session.service';
 import { ToastService } from '../../../core/services/toast.service';
-import { SessionStatusPipe } from '../../../core/pipes/session-status.pipe';
 import { PdfViewerComponent } from '../../../shared/components/pdf-viewer/pdf-viewer.component';
 import { FeedbackService } from '../../../core/services/feedback.service';
 import { FeedbackModalComponent } from '../../../shared/components/feedback-modal/feedback-modal.component';
+import { LinkedInPostCardComponent } from '../../../shared/components/linkedin-post-card/linkedin-post-card.component';
 
 @Component({
   standalone: true,
   selector: 'app-certification-learner',
-  imports: [CommonModule, ReactiveFormsModule, SessionStatusPipe, PdfViewerComponent, FeedbackModalComponent],
+  imports: [CommonModule, ReactiveFormsModule, PdfViewerComponent, FeedbackModalComponent, LinkedInPostCardComponent],
   templateUrl: './certification-learner.component.html',
   styleUrls: ['./certification-learner.component.css'],
 })
@@ -47,8 +48,18 @@ export class CertificationLearnerComponent implements OnInit, OnDestroy {
   success: string | null = null;
   error: string | null = null;
 
+  // LinkedIn Modal
+  showLinkedInModal = false;
+  selectedCertId: number | null = null;
+  selectedCertTitle: string | null = null;
+
+  // PDF Modal
+  showPdfModal = false;
+
   readonly pendingFeedback = signal<PendingFeedbackDto | null>(null);
   readonly showFeedbackModal = signal<boolean>(false);
+  readonly manualFeedbackIssuedCertId = signal<number | null>(null);
+  readonly manualFeedbackSessionId = signal<number | null>(null);
 
   rescheduleForm = this.fb.group({
     assignmentId: [null as number | null, Validators.required],
@@ -58,90 +69,98 @@ export class CertificationLearnerComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.refresh();
+    
+    // SSE connection for real-time certificate updates
     this.certificateEvents.connect();
     this.certificateEvents.certificateReady
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => {
         this.toast.success('Your certificate is ready. You can download it below.');
+        // Refresh only certificates when SSE event received
         this.assignmentService.myIssuedCertifications().subscribe({
-          next: (issued) => { this.certifications = issued; },
+          next: (issued) => { 
+            this.certifications = issued; 
+          },
+          error: (err) => {
+            console.error('Failed to refresh certificates after SSE event:', err);
+          }
         });
       });
-    interval(20000)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(() => this.pollCertificates());
 
-    this.feedbackService.checkPendingFeedback().subscribe({
-      next: (pending) => {
-        this.pendingFeedback.set(pending);
-        if (pending.hasPending) {
-          setTimeout(() => this.showFeedbackModal.set(true), 1500);
+    // Check for pending feedback
+    this.feedbackService.checkPendingFeedback()
+      .pipe(catchError(() => of(null)))
+      .subscribe((pending) => {
+        if (pending) {
+          this.pendingFeedback.set(pending);
+          if (pending.hasPending) {
+            setTimeout(() => this.showFeedbackModal.set(true), 1500);
+          }
         }
-      },
-      error: () => {
-        // silently ignore feedback errors on init
-      }
-    });
+      });
   }
 
   refresh(): void {
     this.loading = true;
     this.error = null;
 
-    this.certificationService.list().subscribe({
-      next: (certifications: Certification[]) => {
+    // Load all data in parallel using forkJoin
+    forkJoin({
+      certifications: this.certificationService.list().pipe(
+        catchError((err) => {
+          console.error('Failed to load certifications:', err);
+          return of([]);
+        })
+      ),
+      assignments: this.assignmentService.myAssignments().pipe(
+        catchError((err) => {
+          console.error('Failed to load assignments:', err);
+          return of([]);
+        })
+      ),
+      sessions: this.oralSessionService.list().pipe(
+        catchError((err) => {
+          console.error('Failed to load sessions:', err);
+          return of([]);
+        })
+      ),
+      issued: this.assignmentService.myIssuedCertifications().pipe(
+        catchError((err) => {
+          console.error('Failed to load issued certifications:', err);
+          return of([]);
+        })
+      ),
+      reschedules: this.dashboardService.getMyRescheduleRequests().pipe(
+        catchError((err) => {
+          console.error('Failed to load reschedule requests:', err);
+          return of([]);
+        })
+      ),
+      examStatus: this.dashboardService.getMyExamStatus().pipe(
+        catchError((err) => {
+          console.error('Failed to load exam status:', err);
+          return of(null);
+        })
+      )
+    }).subscribe({
+      next: ({ certifications, assignments, sessions, issued, reschedules, examStatus }) => {
         this.availableCertifications = certifications.filter((c) => c.status === 'PUBLISHED');
-        this.assignmentService.myAssignments().subscribe({
-          next: (assignments: OralAssignment[]) => {
-            this.assignments = assignments;
-            this.oralSessionService.list().subscribe({
-              next: (sessions: OralSession[]) => {
-                const ids = new Set(assignments.map((a) => a.oralSessionId));
-                this.mySessions = sessions.filter((s) => ids.has(s.id));
-                this.assignmentService.myIssuedCertifications().subscribe({
-                  next: (issued: IssuedCertification[]) => {
-                    this.certifications = issued;
-                    this.dashboardService.getMyRescheduleRequests().subscribe({
-                      next: (reschedules: RescheduleResponse[]) => {
-                        this.myRescheduleRequests = reschedules;
-                      },
-                      error: () => {
-                        this.myRescheduleRequests = [];
-                      },
-                    });
-                    this.dashboardService.getMyExamStatus().subscribe({
-                      next: (status) => {
-                        this.writtenScore = status.writtenScore;
-                        this.loading = false;
-                      },
-                      error: () => {
-                        this.writtenScore = null;
-                        this.loading = false;
-                      },
-                    });
-                  },
-                  error: (err: unknown) => {
-                    this.loading = false;
-                    this.error = this.errorMessage(err, 'Failed to load certifications');
-                  },
-                });
-              },
-              error: (err: unknown) => {
-                this.loading = false;
-                this.error = this.errorMessage(err, 'Failed to load oral sessions');
-              },
-            });
-          },
-          error: (err: unknown) => {
-            this.loading = false;
-            this.error = this.errorMessage(err, 'Failed to load oral assignments');
-          },
-        });
+        this.assignments = assignments;
+        
+        // Filter sessions to only those assigned to this learner
+        const assignmentSessionIds = new Set(assignments.map((a) => a.oralSessionId));
+        this.mySessions = sessions.filter((s) => assignmentSessionIds.has(s.id));
+        
+        this.certifications = issued;
+        this.myRescheduleRequests = reschedules;
+        this.writtenScore = examStatus?.writtenScore ?? null;
+        this.loading = false;
       },
       error: (err: unknown) => {
         this.loading = false;
-        this.error = this.errorMessage(err, 'Failed to load available certifications');
-      },
+        this.error = this.errorMessage(err, 'Failed to load data. Please try again.');
+        this.toast.error(this.error);
+      }
     });
   }
 
@@ -233,11 +252,74 @@ export class CertificationLearnerComponent implements OnInit, OnDestroy {
   onFeedbackSubmitted(): void {
     this.showFeedbackModal.set(false);
     this.pendingFeedback.set(null);
+    this.manualFeedbackIssuedCertId.set(null);
+    this.manualFeedbackSessionId.set(null);
   }
 
   onFeedbackDismissed(): void {
     this.showFeedbackModal.set(false);
+    this.manualFeedbackIssuedCertId.set(null);
+    this.manualFeedbackSessionId.set(null);
   }
+
+  openFeedbackForCertification(issuedCertificationId: number): void {
+    this.error = null;
+
+    const cert = this.certifications.find((c) => c.id === issuedCertificationId);
+    if (!cert) {
+      this.error = 'Certificate not found.';
+      return;
+    }
+
+    const resolvedSessionId = this.resolveSessionIdForCertificate(cert.certificationId);
+    if (resolvedSessionId == null) {
+      this.error = 'No oral session found for this certificate.';
+      return;
+    }
+
+    this.manualFeedbackIssuedCertId.set(issuedCertificationId);
+    this.manualFeedbackSessionId.set(resolvedSessionId);
+    this.showFeedbackModal.set(true);
+  }
+
+  feedbackModalIssuedCertificationId(): number | null {
+    return this.manualFeedbackIssuedCertId() ?? this.pendingFeedback()?.issuedCertificationId ?? null;
+  }
+
+  feedbackModalSessionId(): number | null {
+    return this.manualFeedbackSessionId() ?? this.pendingFeedback()?.sessionId ?? null;
+  }
+
+  openLinkedInModal(certId: number, certTitle: string): void {
+    this.selectedCertId = certId;
+    this.selectedCertTitle = certTitle;
+    this.showLinkedInModal = true;
+    // Prevent body scroll when modal is open
+    document.body.classList.add('modal-open');
+  }
+
+  closeLinkedInModal(): void {
+    this.showLinkedInModal = false;
+    this.selectedCertId = null;
+    this.selectedCertTitle = null;
+    // Re-enable body scroll
+    document.body.classList.remove('modal-open');
+  }
+
+  openPdfModal(certificateId: number): void {
+    this.viewingCertId = certificateId;
+    this.showPdfModal = true;
+    // Prevent body scroll when modal is open
+    document.body.classList.add('modal-open');
+  }
+
+  closePdfModal(): void {
+    this.showPdfModal = false;
+    this.viewingCertId = null;
+    // Re-enable body scroll
+    document.body.classList.remove('modal-open');
+  }
+
 
   private errorMessage(err: unknown, fallback: string): string {
     if (err instanceof HttpErrorResponse) {
@@ -248,18 +330,6 @@ export class CertificationLearnerComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.certificateEvents.disconnect();
-  }
-
-  private pollCertificates(): void {
-    this.assignmentService.myIssuedCertifications().subscribe({
-      next: (issued) => {
-        if (issued.length > this.certifications.length) {
-          this.toast.success('Your certificate is ready. You can download it below.');
-        }
-        this.certifications = issued;
-      },
-      error: () => {},
-    });
   }
 
   private toLocalDateTimeString(value: string): string | null {
@@ -274,5 +344,16 @@ export class CertificationLearnerComponent implements OnInit, OnDestroy {
       return value;
     }
     return null;
+  }
+
+  private resolveSessionIdForCertificate(certificationId: number): number | null {
+    const candidateAssignments = this.assignments
+      .filter((a) => {
+        const session = this.mySessions.find((s) => s.id === a.oralSessionId);
+        return session?.certificationId === certificationId;
+      })
+      .sort((a, b) => b.oralSessionId - a.oralSessionId);
+
+    return candidateAssignments.length ? candidateAssignments[0].oralSessionId : null;
   }
 }

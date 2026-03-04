@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { switchMap } from 'rxjs';
 import { OralSession, RescheduleAdminItem } from '../../../core/models/certification.models';
 import { AssignmentService } from '../../../core/services/assignment.service';
 import { DashboardService } from '../../../core/services/dashboard.service';
@@ -28,6 +29,7 @@ export class RescheduleAdminComponent implements OnInit {
   adminComment = '';
   commentByRequest: Record<number, string> = {};
   replacementSessionByRequest: Record<number, number | null> = {};
+  replacementDatetimeByRequest: Record<number, string> = {};
   statusFilter: 'ALL' | 'PENDING' | 'APPROVED' | 'REJECTED' = 'ALL';
 
   ngOnInit(): void {
@@ -87,11 +89,51 @@ export class RescheduleAdminComponent implements OnInit {
     this.success = null;
     const comment = this.commentByRequest[item.id] || this.adminComment || undefined;
     const replacementSessionId = this.replacementSessionByRequest[item.id] ?? undefined;
+    const replacementDatetime = (this.replacementDatetimeByRequest[item.id] || '').trim();
+
+    if (replacementSessionId == null && replacementDatetime) {
+      const currentSession = this.sessions.find((session) => session.id === item.sessionId);
+      if (!currentSession) {
+        this.error = 'Current session details not loaded. Please refresh and try again.';
+        this.processingId = null;
+        return;
+      }
+
+      this.oralSessionService
+        .create({
+          certificationId: currentSession.certificationId,
+          title: `Replacement - ${currentSession.title}`,
+          scheduledAt: replacementDatetime,
+          durationMinutes: currentSession.durationMinutes,
+          meetingProvider: currentSession.meetingProvider,
+          meetingLink: currentSession.meetingLink,
+          evaluatorId: currentSession.evaluatorId,
+        })
+        .pipe(switchMap((created) => this.assignmentService.rejectReschedule(item.id, comment, created.id)))
+        .subscribe({
+          next: () => {
+            this.success = 'Reschedule rejected with a new replacement session.';
+            delete this.commentByRequest[item.id];
+            delete this.replacementSessionByRequest[item.id];
+            delete this.replacementDatetimeByRequest[item.id];
+            this.processingId = null;
+            this.loadSessions();
+            this.loadRequests();
+          },
+          error: (err: unknown) => {
+            this.error = this.errMessage(err);
+            this.processingId = null;
+          },
+        });
+      return;
+    }
+
     this.assignmentService.rejectReschedule(item.id, comment, replacementSessionId).subscribe({
       next: () => {
         this.success = 'Reschedule rejected.';
         delete this.commentByRequest[item.id];
         delete this.replacementSessionByRequest[item.id];
+        delete this.replacementDatetimeByRequest[item.id];
         this.processingId = null;
         this.loadRequests();
       },

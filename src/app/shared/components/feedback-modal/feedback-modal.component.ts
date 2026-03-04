@@ -82,5 +82,24 @@ export class FeedbackModalComponent {
       },
     });
   }
+
+  ratingLabel(value: number): string {
+    if (value <= 0) {
+      return 'Select a rating';
+    }
+    if (value === 1) {
+      return 'Poor';
+    }
+    if (value === 2) {
+      return 'Fair';
+    }
+    if (value === 3) {
+      return 'Good';
+    }
+    if (value === 4) {
+      return 'Very good';
+    }
+    return 'Excellent';
+  }
 }
 

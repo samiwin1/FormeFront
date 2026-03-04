@@ -611,6 +611,16 @@
   flex: 1;
 }
 
+.eval-rating {
+  font-size: 12px;
+  color: #f59e0b;
+  font-weight: 600;
+}
+
+.eval-rating.no-rating {
+  color: #a0aec0;
+}
+
 .attempt-badge {
   background: #eef2ff;
   color: #3730a3;

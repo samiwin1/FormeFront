@@ -1,99 +1,312 @@
-<section class="learner-page-bg">
-  <div class="container py-4 front-office-page">
-    <div class="page-surface p-3 p-md-4">
-      <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2 class="mb-0">Evaluator Dashboard</h2>
-        <button class="btn btn-outline-primary btn-sm" (click)="loadAssignedSessions()">Refresh</button>
-      </div>
-
-      <div class="alert alert-success" *ngIf="success">{{ success }}</div>
-      <div class="alert alert-danger" *ngIf="error">{{ error }}</div>
-
-      <div class="row g-3 mb-4">
-        <div class="col-md-6">
-          <div class="card stat-card p-3">
-            <div class="stat-title with-icon"><i class="feather-calendar"></i><span>My Sessions Today</span></div>
-            <div class="stat-value">{{ sessionsTodayCount }}</div>
+<!-- Evaluator Page Container -->
+<div class="evaluator-page">
+  <div class="evaluator-container">
+    <!-- Header -->
+    <div class="evaluator-header">
+      <div class="header-content">
+        <div class="header-left">
+          <div class="header-icon">
+            <i class="bi bi-clipboard-check"></i>
+          </div>
+          <div class="header-text">
+            <h1>My Oral Sessions</h1>
+            <p>Manage and grade your assigned evaluation sessions</p>
           </div>
         </div>
-        <div class="col-md-6">
-          <div class="card stat-card p-3">
-            <div class="stat-title with-icon"><i class="feather-users"></i><span>Learners to Evaluate</span></div>
-            <div class="stat-value">{{ learnersToEvaluateCount }}</div>
+        <button class="btn-refresh" (click)="loadSessions()" [disabled]="loading()">
+          <i class="bi bi-arrow-clockwise"></i>
+          <span>Refresh</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading -->
+    @if (loading()) {
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <span>Loading your sessions...</span>
+      </div>
+    }
+
+    <!-- Error -->
+    @if (error()) {
+      <div class="error-state">
+        <i class="bi bi-exclamation-triangle"></i>
+        <span>{{ error() }}</span>
+      </div>
+    }
+
+    <!-- Stats bar -->
+    @if (!loading()) {
+      <div class="stats-bar">
+        <div class="stat-card stat-upcoming">
+          <div class="stat-icon">
+            <i class="bi bi-calendar-event"></i>
+          </div>
+          <div class="stat-content">
+            <div class="stat-number">{{ plannedSessions().length }}</div>
+            <div class="stat-label">Upcoming Sessions</div>
+          </div>
+        </div>
+        <div class="stat-card stat-pending">
+          <div class="stat-icon">
+            <i class="bi bi-hourglass-split"></i>
+          </div>
+          <div class="stat-content">
+            <div class="stat-number">{{ totalToGrade() }}</div>
+            <div class="stat-label">Learners to Grade</div>
+          </div>
+        </div>
+        <div class="stat-card stat-completed">
+          <div class="stat-icon">
+            <i class="bi bi-check-circle"></i>
+          </div>
+          <div class="stat-content">
+            <div class="stat-number">{{ totalGraded() }}</div>
+            <div class="stat-label">Already Graded</div>
           </div>
         </div>
       </div>
+    }
 
-      <div class="card panel p-3 mb-4">
-        <h5><i class="feather-users me-2"></i>My Assigned Sessions</h5>
-        <div class="table-responsive">
-          <table class="table table-sm">
-            <thead>
-              <tr><th>ID</th><th>Date</th><th>Status</th><th>Meeting</th></tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let session of assignedSessions">
-                <td>#{{ session.id }}</td>
-                <td>{{ session.scheduledAt | date:'short' }}</td>
-                <td>{{ session.status }}</td>
-                <td><a [href]="session.meetingLink" target="_blank" rel="noopener">Open</a></td>
-              </tr>
-            </tbody>
-          </table>
+    <!-- SECTION 1: Upcoming Sessions (PLANNED) -->
+    @if (!loading() && plannedSessions().length > 0) {
+      <section class="sessions-section">
+        <div class="section-header">
+          <div class="section-title">
+            <i class="bi bi-calendar-check"></i>
+            <h2>Upcoming Sessions</h2>
+          </div>
+          <span class="section-badge">{{ plannedSessions().length }}</span>
         </div>
-      </div>
 
-      <div class="card panel p-3 mb-4">
-        <h5><i class="feather-list me-2"></i>Learner Evaluation Queue</h5>
-        <div class="table-responsive">
-          <table class="table table-sm">
-            <thead>
-              <tr><th>Learner</th><th>Session</th><th>Attempt</th><th>Status</th><th>Actions</th></tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let assignment of evaluatorAssignments">
-                <td>{{ displayUserName(assignment.learnerId) }}</td>
-                <td>{{ sessionFor(assignment)?.scheduledAt | date:'short' }}</td>
-                <td><span class="attempt-chip">#{{ assignment.attemptNumber || 1 }}</span></td>
-                <td><span class="status-chip" [ngClass]="statusBadgeClass(assignment.status)">{{ assignment.status }}</span></td>
-                <td>
-                  <button type="button" class="btn btn-outline-primary btn-sm me-1" (click)="fillGradeFromQueue(assignment)" *ngIf="canEvaluate(assignment)">
-                    Grade
-                  </button>
-                  <button type="button" class="btn btn-outline-warning btn-sm" (click)="markNoShow(assignment)" *ngIf="canEvaluate(assignment)">
-                    No-show
-                  </button>
-                </td>
-              </tr>
-              <tr *ngIf="evaluatorAssignments.length === 0">
-                <td colspan="5" class="text-muted">No learners assigned for evaluation.</td>
-              </tr>
-            </tbody>
-          </table>
+        <div class="sessions-grid">
+          @for (session of plannedSessions(); track session.sessionId) {
+            <div class="session-card planned">
+              <div class="session-card-header">
+                <div class="session-title-row">
+                  <h3 class="session-title">{{ session.title }}</h3>
+                  <span class="badge badge-planned">PLANNED</span>
+                </div>
+                <p class="session-cert">{{ session.certificationTitle }}</p>
+              </div>
+
+              <div class="session-card-body">
+                <div class="session-info-grid">
+                  <div class="info-item">
+                    <i class="bi bi-calendar3"></i>
+                    <span>{{ session.scheduledAt | date:'EEE, MMM d, y' }}</span>
+                  </div>
+                  <div class="info-item">
+                    <i class="bi bi-clock"></i>
+                    <span>{{ session.scheduledAt | date:'HH:mm' }} ({{ session.durationMinutes }} min)</span>
+                  </div>
+                  <div class="info-item">
+                    <i class="bi bi-camera-video"></i>
+                    <span>{{ session.meetingProvider }}</span>
+                  </div>
+                  <div class="info-item">
+                    <i class="bi bi-people"></i>
+                    <span>{{ session.assignments.length }} learner(s)</span>
+                  </div>
+                </div>
+
+                <button class="btn-join" (click)="joinMeeting(session.meetingLink)">
+                  <i class="bi bi-box-arrow-up-right"></i>
+                  <span>Join Meeting</span>
+                </button>
+              </div>
+
+              @if (session.assignments.length > 0) {
+                <div class="learners-section">
+                  <div class="learners-header">
+                    <span>Registered Learners</span>
+                  </div>
+                  <div class="learners-list">
+                    @for (a of session.assignments; track a.assignmentId) {
+                      <div class="learner-item">
+                        <div class="learner-avatar">
+                          <i class="bi bi-person"></i>
+                        </div>
+                        <span class="learner-name">{{ a.learnerName }}</span>
+                        <span class="learner-status" [class]="'status-' + a.status.toLowerCase()">
+                          {{ a.status }}
+                        </span>
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          }
         </div>
-      </div>
+      </section>
+    }
 
-      <div class="card panel p-3 mb-3">
-    <h5><i class="feather-edit-3 me-2"></i>Grading Page</h5>
-    <form [formGroup]="form" (ngSubmit)="submitGrade()" class="row g-2">
-      <div class="col-md-3"><input type="number" class="form-control" placeholder="Assignment ID" formControlName="assignmentId" /></div>
-      <div class="col-md-3">
-        <input type="number" class="form-control" placeholder="Oral score (0–20)" formControlName="oralScore" min="0" max="20" />
-        <small class="text-muted" *ngIf="form.get('oralScore')?.invalid && form.get('oralScore')?.touched">Score must be between 0 and 20.</small>
+    <!-- SECTION 2: Sessions to Grade (DONE) -->
+    @if (!loading() && doneSessions().length > 0) {
+      <section class="sessions-section">
+        <div class="section-header">
+          <div class="section-title">
+            <i class="bi bi-pencil-square"></i>
+            <h2>Sessions to Grade</h2>
+          </div>
+          <span class="section-badge">{{ doneSessions().length }}</span>
+        </div>
+
+        <div class="sessions-grid">
+          @for (session of doneSessions(); track session.sessionId) {
+            <div class="session-card done">
+              <div class="session-card-header">
+                <div class="session-title-row">
+                  <h3 class="session-title">{{ session.title }}</h3>
+                  <span class="badge badge-done">DONE</span>
+                </div>
+                <p class="session-cert">{{ session.certificationTitle }}</p>
+                <p class="session-date">
+                  <i class="bi bi-calendar3"></i>
+                  {{ session.scheduledAt | date:'EEE, MMM d, y - HH:mm' }}
+                </p>
+              </div>
+
+              <div class="grading-section">
+                @for (a of session.assignments; track a.assignmentId) {
+                  <div class="learner-grade-card">
+                    <div class="learner-grade-header">
+                      <div class="learner-info-row">
+                        <div class="learner-avatar">
+                          <i class="bi bi-person-circle"></i>
+                        </div>
+                        <div class="learner-details">
+                          <span class="learner-name">{{ a.learnerName }}</span>
+                          <span class="learner-status" [class]="'status-' + a.status.toLowerCase()">
+                            {{ a.status }}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    @if (a.oralScore !== null) {
+                      <div class="grade-display">
+                        <div class="grade-score-badge">
+                          <i class="bi bi-star-fill"></i>
+                          <span>{{ a.oralScore }}/20</span>
+                        </div>
+                        @if (a.oralComment) {
+                          <div class="grade-comment">
+                            <i class="bi bi-chat-left-text"></i>
+                            <p>{{ a.oralComment }}</p>
+                          </div>
+                        }
+                        <div class="grade-timestamp">
+                          <i class="bi bi-clock-history"></i>
+                          <span>Graded on {{ a.gradedAt | date:'MMM d, y HH:mm' }}</span>
+                        </div>
+                      </div>
+                    }
+
+                    @if (a.status === 'NO_SHOW') {
+                      <div class="no-show-display">
+                        <i class="bi bi-x-circle"></i>
+                        <span>Learner did not attend the session</span>
+                      </div>
+                    }
+
+                    @if (a.canGrade) {
+                      <div class="grade-actions">
+                        <button class="btn-grade" (click)="openGradeForm(a.assignmentId)">
+                          <i class="bi bi-pencil-square"></i>
+                          <span>Grade Learner</span>
+                        </button>
+                        <button class="btn-no-show" (click)="markNoShow(a.assignmentId)">
+                          <i class="bi bi-x-circle"></i>
+                          <span>Mark No Show</span>
+                        </button>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      </section>
+    }
+
+    @if (!loading() && plannedSessions().length === 0 && doneSessions().length === 0) {
+      <div class="empty-state">
+        <div class="empty-icon">
+          <i class="bi bi-inbox"></i>
+        </div>
+        <h3 class="empty-title">No sessions assigned yet</h3>
+        <p class="empty-text">Sessions will appear here once an admin assigns them to you.</p>
       </div>
-      <div class="col-md-3"><input type="number" class="form-control" placeholder="Formation ID" formControlName="formationId" /></div>
-      <div class="col-md-3"><input class="form-control" placeholder="Evaluator comment" formControlName="evaluatorComment" /></div>
-      <div class="col-12"><button class="btn btn-primary" type="submit">Submit Grade</button></div>
-    </form>
+    }
   </div>
+</div>
 
-  <div class="card panel p-3" *ngIf="result">
-    <h5><i class="feather-check-circle me-2"></i>Submission Result</h5>
-    <p class="mb-1"><strong>Assignment:</strong> {{ result.id }}</p>
-    <p class="mb-1"><strong>Attempt:</strong> <span class="attempt-chip">#{{ result.attemptNumber || 1 }}</span></p>
-    <p class="mb-1"><strong>Status:</strong> <span class="status-chip" [ngClass]="statusBadgeClass(result.status)">{{ result.status }}</span></p>
-    <p class="mb-0"><strong>Oral score:</strong> {{ result.oralScore }}</p>
+@if (gradingAssignmentId() !== null && activeGradeContext(); as ctx) {
+  <div class="modal-overlay" (click)="cancelGradeForm()"></div>
+  <div class="grade-modal" role="dialog" aria-modal="true" aria-label="Grade learner">
+    <div class="grade-modal-header">
+      <div>
+        <h3>Grade {{ ctx.assignment.learnerName }}</h3>
+        <p>{{ ctx.sessionTitle }} - {{ ctx.certificationTitle }}</p>
+      </div>
+      <button class="modal-close" (click)="cancelGradeForm()" aria-label="Close">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+
+    <div class="grade-form">
+      <div class="form-group">
+        <label>
+          <i class="bi bi-star"></i>
+          Score (0-20)
+        </label>
+        <input
+          type="number"
+          min="0"
+          max="20"
+          step="0.5"
+          [value]="gradeScore() ?? ''"
+          (input)="gradeScore.set(+$any($event.target).value)"
+          class="form-input"
+          placeholder="Enter score (e.g., 14.5)"
+        />
+      </div>
+
+      <div class="form-group">
+        <label>
+          <i class="bi bi-chat-left-text"></i>
+          Comment (optional)
+        </label>
+        <textarea
+          rows="4"
+          [value]="gradeComment()"
+          (input)="gradeComment.set($any($event.target).value)"
+          class="form-textarea"
+          placeholder="Add evaluation notes..."
+        ></textarea>
+      </div>
+
+      @if (gradeError()) {
+        <div class="form-error">
+          <i class="bi bi-exclamation-circle"></i>
+          <span>{{ gradeError() }}</span>
+        </div>
+      }
+
+      <div class="form-actions">
+        <button class="btn-secondary" (click)="cancelGradeForm()">
+          <i class="bi bi-x"></i>
+          <span>Cancel</span>
+        </button>
+        <button class="btn-primary" (click)="submitGrade()" [disabled]="submittingGrade()">
+          <i class="bi bi-check-lg"></i>
+          <span>{{ submittingGrade() ? 'Submitting...' : 'Submit Grade' }}</span>
+        </button>
       </div>
     </div>
   </div>
-</section>
+}

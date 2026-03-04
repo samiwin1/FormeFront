@@ -1,15 +1,19 @@
-<div class="fm-backdrop" role="dialog" aria-modal="true" aria-label="Rate your oral exam experience">
-  <div class="fm-modal">
+<div class="fm-backdrop" role="dialog" aria-modal="true" aria-label="Rate your oral exam experience" (click)="onSkip()">
+  <div class="fm-modal" (click)="$event.stopPropagation()">
     <header class="fm-header">
-      <h2>⭐ Rate your experience</h2>
+      <div class="fm-chip">Feedback</div>
+      <h2>Rate your experience</h2>
       <p class="fm-subtitle">
-        Help us improve oral sessions and evaluator quality. This takes less than a minute.
+        Help us improve oral sessions and evaluator quality in less than a minute.
       </p>
     </header>
 
-    <section class="fm-section">
-      <h3>Session quality</h3>
-      <div class="fm-stars">
+    <section class="fm-section fm-rating-card">
+      <div class="fm-rating-head">
+        <h3>Session quality</h3>
+        <span class="fm-rating-badge">{{ ratingLabel(sessionRating()) }}</span>
+      </div>
+      <div class="fm-stars" aria-label="Session quality rating">
         @for (star of [1,2,3,4,5]; track star) {
           <span
             class="star"
@@ -21,15 +25,18 @@
             role="button"
             tabindex="0"
           >
-            ★
+            &#9733;
           </span>
         }
       </div>
     </section>
 
-    <section class="fm-section">
-      <h3>Evaluator quality</h3>
-      <div class="fm-stars">
+    <section class="fm-section fm-rating-card">
+      <div class="fm-rating-head">
+        <h3>Evaluator quality</h3>
+        <span class="fm-rating-badge">{{ ratingLabel(evaluatorRating()) }}</span>
+      </div>
+      <div class="fm-stars" aria-label="Evaluator quality rating">
         @for (star of [1,2,3,4,5]; track star) {
           <span
             class="star"
@@ -41,7 +48,7 @@
             role="button"
             tabindex="0"
           >
-            ★
+            &#9733;
           </span>
         }
       </div>
@@ -50,9 +57,10 @@
     <section class="fm-section">
       <h3>Comments (optional)</h3>
       <textarea
+        #commentInput
         class="fm-textarea"
         [value]="comment()"
-        (input)="updateComment(($event.target as HTMLTextAreaElement).value)"
+        (input)="updateComment(commentInput.value)"
         maxlength="500"
         rows="4"
         placeholder="Tell us what went well or what could be improved..."
@@ -81,10 +89,9 @@
 
     <ng-template #thankYouTpl>
       <div class="fm-thanks">
-        <div class="fm-check">✓</div>
+        <div class="fm-check">&#10003;</div>
         <p>Thank you for your feedback!</p>
       </div>
     </ng-template>
   </div>
 </div>
-
