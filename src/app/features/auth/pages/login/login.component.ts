@@ -48,6 +48,12 @@ export class LoginComponent {
         if (this.auth.isAdmin()) {
           console.log('Navigating to admin dashboard');
           this.router.navigate(['/admin/dashboard']);
+        } else if (this.auth.isEvaluator()) {
+          console.log('Navigating to evaluator oral assignments');
+          this.router.navigate(['/evaluator/oral-assignments']);
+        } else if (this.auth.isUser()) {
+          console.log('Navigating to learner certification space');
+          this.router.navigate(['/me/certification-space']);
         } else {
           console.log('Navigating to home');
           this.router.navigate(['/']);

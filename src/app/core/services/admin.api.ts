@@ -1,5 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../enviroments/environment';
 
 export type Profession = 'STUDENT' | 'DEVELOPER' | 'OTHER' | 'EVALUATOR' | 'UNKNOWN';
 export interface AdminUser {
@@ -23,7 +24,7 @@ export interface CreateAdminPayload {
 @Injectable({ providedIn: 'root' })
 export class AdminApi {
   private http = inject(HttpClient);
-  private apiUrl = 'http://localhost:8082/api';
+  private apiUrl = environment.apiUrl;
   private base = `${this.apiUrl}/admin`;
 
   create(payload: CreateAdminPayload) {

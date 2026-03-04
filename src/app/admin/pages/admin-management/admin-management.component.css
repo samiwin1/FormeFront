@@ -8,7 +8,7 @@
   display: flex;
   flex-direction: column;
   min-width: 0; /* prevents content overflow */
-  overflow: hidden;
+  overflow: visible;
 }
 
 .page{
@@ -22,7 +22,7 @@
   padding: 18px;
   box-shadow: 0 24px 80px rgba(2,6,23,.08);
   position: relative;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .cardx::before{
@@ -37,6 +37,7 @@
 }
 
 .top{
+  flex-wrap:wrap;
   display:flex;
   justify-content:space-between;
   align-items:flex-start;
@@ -63,7 +64,7 @@
 h2{ margin:0; font-size: 22px; font-weight: 950; letter-spacing: -.2px; }
 p{ margin:6px 0 0; color: rgba(2,6,23,.62); font-weight: 650; }
 
-.topActions{ display:flex; gap:10px; align-items:center; }
+.topActions{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:12px; }
 
 .dot{
   width:10px; height:10px; border-radius:999px;
@@ -508,3 +509,16 @@ p{ margin:6px 0 0; color: rgba(2,6,23,.62); font-weight: 650; }
 }
 
 .w-100{ width:100%; }
+/* ✅ Export PDF button */
+.btnx.pdf {
+  border-color: rgba(220,38,38,.30);
+  background: linear-gradient(135deg, rgba(220,38,38,.12), rgba(220,38,38,.04));
+  color: rgba(153,27,27,.95);
+  gap: 6px;
+  white-space: nowrap;
+}
+.btnx.pdf:hover {
+  box-shadow: 0 10px 24px rgba(220,38,38,.15);
+  border-color: rgba(220,38,38,.50);
+}
+.btnx.pdf svg { flex-shrink: 0; }
