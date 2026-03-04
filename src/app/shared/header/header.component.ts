@@ -6,7 +6,7 @@ import { AuthService } from '../../core/services/auth.service';
 @Component({
   selector: 'app-header',
   standalone: true,
-imports: [RouterLink, RouterLinkActive, NgIf, AsyncPipe],
+  imports: [RouterLink, RouterLinkActive, NgIf, AsyncPipe],
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.css'],
 })
@@ -17,6 +17,11 @@ export class HeaderComponent {
 
   mobileOpen = false;
   menuOpen = false;
+
+  // ✅ show admin button only for admin/super-admin
+  isAdminOrSuperAdmin(): boolean {
+    return this.auth.isAdmin() || this.auth.isSuperAdmin();
+  }
 
   logout() {
     this.auth.logout();

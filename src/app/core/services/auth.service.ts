@@ -21,14 +21,16 @@ export class AuthService {
 
   constructor(private http: HttpClient) {}
 
+  // ✅ captchaToken added to payload
   register(payload: {
     firstName: string;
     lastName: string;
     email: string;
     password: string;
     profession?: string;
-    partnerId?: number | null;
+    partnerID?: number | null;
     partnerCode?: string | null;
+    captchaToken: string;
   }) {
     return this.http.post<void>(`${this.apiUrl}/auth/register`, payload);
   }

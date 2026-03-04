@@ -13,6 +13,10 @@ import { authGuard } from './core/guards/auth.guard';
 
 import { superAdminGuard } from './core/guards/super-admin.guard';
 import { AdminManagementComponent } from './admin/pages/admin-management/admin-management.component';
+
+
+import { UserManagementComponent } from './admin/pages/user-management/user-management.component';
+
 export const routes: Routes = [
   {
     path: '',
@@ -25,22 +29,25 @@ export const routes: Routes = [
     ],
   },
 
-  {
-    path: 'admin',
-    component: AdminLayoutComponent,
-    canActivate: [adminGuard],
-    children: [
-      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
-      { path: 'dashboard', component: DashboardComponent },
-      // ❌ removed admin-management from here
-    ],
-  },
+{
+  path: 'admin',
+  component: AdminLayoutComponent,
+  canActivate: [adminGuard],
+  children: [
+    { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+    { path: 'dashboard',    component: DashboardComponent },
+  
+
+    // ✅ NEW: Manage normal users page (inside admin layout)
+    { path: 'users', component: UserManagementComponent },
+  ],
+},
 
   // ✅ Standalone — no layout wrapper
   {
     path: 'admins',
     component: AdminManagementComponent,
-    canActivate: [adminGuard, superAdminGuard],  // keep both guards
+    canActivate: [adminGuard, superAdminGuard],
   },
 
   { path: '**', redirectTo: '' },

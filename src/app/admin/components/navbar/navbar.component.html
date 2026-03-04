@@ -2,7 +2,6 @@
     <div class="navbar-wrapper">
         <div class="m-header">
             <a href="index.html" class="b-brand">
-                <!-- ========   change your logo hear   ============ -->
                 <img src="assets/duralux/images/formelogo.jpg"
      style="width: 200px; " />
                 <img src="assets/duralux/images/formelogo.jpg" alt="" class="logo logo-sm" />
@@ -14,36 +13,48 @@
                     <label>Navigation</label>
                 </li>
                 <li class="nxl-item nxl-hasmenu">
-                    <a href="javascript:void(0);" class="nxl-link">
-                        <span class="nxl-micon"><i class="feather-airplay"></i></span>
-                        <span class="nxl-mtext">Dashboards</span><span class="nxl-arrow"><i
-                                class="feather-chevron-right"></i></span>
-                    </a>
+                    <a routerLink="/admin/dashboard" class="nxl-link">
+  <span class="nxl-micon">
+    <i class="feather-airplay"></i>
+  </span>
+
+  <span class="nxl-mtext">Dashboards</span>
+
+  <span class="nxl-arrow">
+    <i class="feather-chevron-right"></i>
+  </span>
+</a>
                 <ul class="nxl-submenu">
                      <li class="nxl-item">
-                         <!-- line 24 in your image — change to absolute /admins -->
-<a class="nxl-link" routerLink="/admins">Manage Admins</a>
+                        <a class="nxl-link" routerLink="/admins">Manage Admins</a>
                     </li>
+                    <!-- ✅ Renamed from Analytics → Manage Users -->
                     <li class="nxl-item">
-                         <a class="nxl-link" routerLink="dashboard">Analytics</a>
-                    </li>
+  <a class="nxl-link" routerLink="/admin/users">Manage Users</a>
+</li>
                 </ul>
                 </li>
-                <li class="nxl-item nxl-hasmenu">
-                    <a href="javascript:void(0);" class="nxl-link">
-                        
-                        <span class="nxl-micon"><i class="feather-cast"></i></span>
-                        <span class="nxl-mtext">Reports</span><span class="nxl-arrow"><i
-                                class="feather-chevron-right"></i></span>
-                    </a>
-                    <ul class="nxl-submenu">
-                        <li class="nxl-item"><a class="nxl-link" href="reports-sales.html">Sales Report</a></li>
-                        <li class="nxl-item"><a class="nxl-link" href="reports-leads.html">Leads Report</a></li>
-                        <li class="nxl-item"><a class="nxl-link" href="reports-project.html">Project Report</a></li>
-                        <li class="nxl-item"><a class="nxl-link" href="reports-timesheets.html">Timesheets Report</a>
-                        </li>
-                    </ul>
-                </li>
+              <li class="nxl-item nxl-hasmenu">
+  <a href="javascript:void(0);" class="nxl-link">
+    <span class="nxl-micon"><i class="feather-cast"></i></span>
+    <span class="nxl-mtext">Business</span>
+    <span class="nxl-arrow"><i class="feather-chevron-right"></i></span>
+  </a>
+  <ul class="nxl-submenu">
+    <li class="nxl-item">
+      <a class="nxl-link" routerLink="/admin/partners">Partners</a>
+    </li>
+    <li class="nxl-item">
+      <a class="nxl-link" routerLink="/admin/deals">Deals</a>
+    </li>
+    <li class="nxl-item">
+      <a class="nxl-link" routerLink="/admin/packs">Packs</a>
+    </li>
+    <li class="nxl-item">
+      <a class="nxl-link" routerLink="/admin/access-codes">Access Codes</a>
+    </li>
+  </ul>
+</li>
                 <li class="nxl-item nxl-hasmenu">
                     <a href="javascript:void(0);" class="nxl-link">
                         <span class="nxl-micon"><i class="feather-send"></i></span>
@@ -172,10 +183,8 @@
                             </a>
                             <ul class="nxl-submenu">
                                 <li class="nxl-item"><a class="nxl-link" href="./auth-login-cover.html">Cover</a></li>
-                                <li class="nxl-item"><a class="nxl-link" href="./auth-login-minimal.html">Minimal</a>
-                                </li>
-                                <li class="nxl-item"><a class="nxl-link" href="./auth-login-creative.html">Creative</a>
-                                </li>
+                                <li class="nxl-item"><a class="nxl-link" href="./auth-login-minimal.html">Minimal</a></li>
+                                <li class="nxl-item"><a class="nxl-link" href="./auth-login-creative.html">Creative</a></li>
                             </ul>
                         </li>
                         <li class="nxl-item nxl-hasmenu">
@@ -184,12 +193,9 @@
                                         class="feather-chevron-right"></i></span>
                             </a>
                             <ul class="nxl-submenu">
-                                <li class="nxl-item"><a class="nxl-link" href="./auth-register-cover.html">Cover</a>
-                                </li>
-                                <li class="nxl-item"><a class="nxl-link" href="./auth-register-minimal.html">Minimal</a>
-                                </li>
-                                <li class="nxl-item"><a class="nxl-link"
-                                        href="./auth-register-creative.html">Creative</a></li>
+                                <li class="nxl-item"><a class="nxl-link" href="./auth-register-cover.html">Cover</a></li>
+                                <li class="nxl-item"><a class="nxl-link" href="./auth-register-minimal.html">Minimal</a></li>
+                                <li class="nxl-item"><a class="nxl-link" href="./auth-register-creative.html">Creative</a></li>
                             </ul>
                         </li>
                         <li class="nxl-item nxl-hasmenu">
@@ -200,8 +206,7 @@
                             <ul class="nxl-submenu">
                                 <li class="nxl-item"><a class="nxl-link" href="./auth-404-cover.html">Cover</a></li>
                                 <li class="nxl-item"><a class="nxl-link" href="./auth-404-minimal.html">Minimal</a></li>
-                                <li class="nxl-item"><a class="nxl-link" href="./auth-404-creative.html">Creative</a>
-                                </li>
+                                <li class="nxl-item"><a class="nxl-link" href="./auth-404-creative.html">Creative</a></li>
                             </ul>
                         </li>
                         <li class="nxl-item nxl-hasmenu">
@@ -211,10 +216,8 @@
                             </a>
                             <ul class="nxl-submenu">
                                 <li class="nxl-item"><a class="nxl-link" href="./auth-reset-cover.html">Cover</a></li>
-                                <li class="nxl-item"><a class="nxl-link" href="./auth-reset-minimal.html">Minimal</a>
-                                </li>
-                                <li class="nxl-item"><a class="nxl-link" href="./auth-reset-creative.html">Creative</a>
-                                </li>
+                                <li class="nxl-item"><a class="nxl-link" href="./auth-reset-minimal.html">Minimal</a></li>
+                                <li class="nxl-item"><a class="nxl-link" href="./auth-reset-creative.html">Creative</a></li>
                             </ul>
                         </li>
                         <li class="nxl-item nxl-hasmenu">
@@ -224,10 +227,8 @@
                             </a>
                             <ul class="nxl-submenu">
                                 <li class="nxl-item"><a class="nxl-link" href="./auth-verify-cover.html">Cover</a></li>
-                                <li class="nxl-item"><a class="nxl-link" href="./auth-verify-minimal.html">Minimal</a>
-                                </li>
-                                <li class="nxl-item"><a class="nxl-link" href="./auth-verify-creative.html">Creative</a>
-                                </li>
+                                <li class="nxl-item"><a class="nxl-link" href="./auth-verify-minimal.html">Minimal</a></li>
+                                <li class="nxl-item"><a class="nxl-link" href="./auth-verify-creative.html">Creative</a></li>
                             </ul>
                         </li>
                         <li class="nxl-item nxl-hasmenu">
@@ -236,12 +237,9 @@
                                         class="feather-chevron-right"></i></span>
                             </a>
                             <ul class="nxl-submenu">
-                                <li class="nxl-item"><a class="nxl-link" href="./auth-maintenance-cover.html">Cover</a>
-                                </li>
-                                <li class="nxl-item"><a class="nxl-link"
-                                        href="./auth-maintenance-minimal.html">Minimal</a></li>
-                                <li class="nxl-item"><a class="nxl-link"
-                                        href="./auth-maintenance-creative.html">Creative</a></li>
+                                <li class="nxl-item"><a class="nxl-link" href="./auth-maintenance-cover.html">Cover</a></li>
+                                <li class="nxl-item"><a class="nxl-link" href="./auth-maintenance-minimal.html">Minimal</a></li>
+                                <li class="nxl-item"><a class="nxl-link" href="./auth-maintenance-creative.html">Creative</a></li>
                             </ul>
                         </li>
                     </ul>
