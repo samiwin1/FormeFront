@@ -52,6 +52,9 @@ export class AdminLayoutComponent implements AfterViewInit  {
     'assets/duralux/js/common-init.min.js',
     'assets/duralux/js/dashboard-init.min.js',
   ];
+  isFormationRoute(): boolean {
+    return this.router.url.includes('/admin/formations');
+  }
 
   logout() {
     this.auth.logout();

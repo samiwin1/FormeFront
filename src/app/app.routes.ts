@@ -5,7 +5,6 @@ import { LoginComponent } from './features/auth/pages/login/login.component';
 import { RegisterComponent } from './features/auth/pages/register/register.component';
 
 import { AdminLayoutComponent } from './admin/layout/admin-layout/admin-layout.component';
-import { DashboardComponent } from './admin/pages/dashboard/dashboard.component';
 import { adminGuard } from './admin/admin.guard';
 
 import { ProfileComponent } from './features/auth/pages/profile/profile.component';
@@ -16,6 +15,7 @@ import { AdminManagementComponent } from './admin/pages/admin-management/admin-m
 
 
 import { UserManagementComponent } from './admin/pages/user-management/user-management.component';
+import { formationRoutes, adminFormationRoutes } from './features/formation/formation.routes';
 
 export const routes: Routes = [
   {
@@ -26,6 +26,7 @@ export const routes: Routes = [
       { path: 'login', component: LoginComponent },
       { path: 'register', component: RegisterComponent },
       { path: 'profile', component: ProfileComponent, canActivate: [authGuard] },
+      { path: 'formations', children: formationRoutes },
     ],
   },
 
@@ -42,6 +43,16 @@ export const routes: Routes = [
     { path: 'users', component: UserManagementComponent },
   ],
 },
+  {
+    path: 'admin',
+    component: AdminLayoutComponent,
+    canActivate: [adminGuard],
+    children: [
+      { path: '', redirectTo: 'formations', pathMatch: 'full' },
+      { path: 'dashboard', redirectTo: 'formations', pathMatch: 'full' },
+      { path: 'formations', children: adminFormationRoutes },
+    ],
+  },
 
   // ✅ Standalone — no layout wrapper
   {

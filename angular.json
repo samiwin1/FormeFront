@@ -26,13 +26,27 @@
                 "output": "assets"
               }
             ],
-"styles": [
-  "src/styles.css"
-
-],
-"scripts": [
- 
-]
+            "styles": [
+              "node_modules/apexcharts/dist/apexcharts.css",
+              "src/styles.css",
+              "src/assets/mentor/vendor/bootstrap/css/bootstrap.min.css",
+              "src/assets/mentor/vendor/bootstrap-icons/bootstrap-icons.css",
+              "src/assets/mentor/vendor/aos/aos.css",
+              "src/assets/mentor/vendor/swiper/swiper-bundle.min.css",
+              "src/assets/mentor/vendor/glightbox/css/glightbox.min.css",
+              "src/assets/mentor/css/main.css",
+              "src/assets/duralux/css/bootstrap.min.css",
+              "src/assets/duralux/css/theme.min.css"
+            ],
+            "scripts": [
+              "src/assets/mentor/vendor/bootstrap/js/bootstrap.bundle.min.js",
+              "src/assets/mentor/vendor/aos/aos.js",
+              "src/assets/mentor/vendor/purecounter/purecounter_vanilla.js",
+              "src/assets/mentor/vendor/swiper/swiper-bundle.min.js",
+              "src/assets/mentor/vendor/glightbox/js/glightbox.min.js",
+              "src/assets/mentor/js/main.js",
+              "src/assets/duralux/js/common-init.min.js"
+            ]
           },
           "configurations": {
             "production": {
@@ -61,6 +75,9 @@
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
+          "options": {
+            "proxyConfig": "proxy.conf.json"
+          },
           "configurations": {
             "production": {
               "buildTarget": "forme-frontend:build:production"
