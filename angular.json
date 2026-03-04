@@ -28,6 +28,7 @@
             ],
             "styles": [
               "src/styles.css",
+              "node_modules/ngx-toastr/toastr.css",
               "src/assets/mentor/vendor/bootstrap/css/bootstrap.min.css",
               "src/assets/mentor/vendor/bootstrap-icons/bootstrap-icons.css",
               "src/assets/mentor/vendor/aos/aos.css",

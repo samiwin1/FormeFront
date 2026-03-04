@@ -1,0 +1,168 @@
+.checkout-header {
+  background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+  color: white;
+  padding: 2rem 0;
+  margin-bottom: 2rem;
+  border-radius: 0 0 20px 20px;
+  box-shadow: 0 4px 20px rgba(76, 175, 80, 0.2);
+}
+
+.checkout-title {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.checkout-card {
+  border: none;
+  border-radius: 15px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  overflow: hidden;
+}
+
+.checkout-body {
+  padding: 2.5rem;
+}
+
+#payment-element {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: #f8f9fa;
+  border-radius: 12px;
+}
+
+.loading-payment {
+  text-align: center;
+  padding: 3rem 2rem;
+}
+
+.loading-icon {
+  width: 4rem;
+  height: 4rem;
+  border-width: 0.4em;
+  margin-bottom: 1.5rem;
+}
+
+.loading-text {
+  color: #6c757d;
+  font-size: 1.1rem;
+}
+
+.security-badge {
+  background: linear-gradient(135deg, #e3f2fd 0%, #e8f5e9 100%);
+  border-left: 4px solid #4CAF50;
+  padding: 1rem 1.5rem;
+  border-radius: 10px;
+  margin-bottom: 2rem;
+}
+
+.security-badge i {
+  color: #4CAF50;
+  font-size: 1.2rem;
+}
+
+.security-text {
+  color: #2c3e50;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.btn-pay {
+  background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+  color: white;
+  border: none;
+  width: 100%;
+  padding: 1rem 2rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+}
+
+.btn-pay:hover:not(:disabled) {
+  background: linear-gradient(135deg, #45a049 0%, #3d8b40 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+}
+
+.btn-pay:disabled {
+  background: #e9ecef;
+  color: #6c757d;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.btn-pay i {
+  font-size: 1.2rem;
+}
+
+.spinner-border-sm {
+  width: 1.2rem;
+  height: 1.2rem;
+  border-width: 0.2em;
+}
+
+.back-link {
+  text-align: center;
+  margin-top: 1.5rem;
+}
+
+.back-link a {
+  color: #6c757d;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.back-link a:hover {
+  color: #4CAF50;
+}
+
+.back-link i {
+  transition: transform 0.3s ease;
+}
+
+.back-link a:hover i {
+  transform: translateX(-4px);
+}
+
+/* Stripe element styling */
+.StripeElement {
+  padding: 1rem;
+  background: white;
+  border-radius: 8px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .checkout-title {
+    font-size: 1.5rem;
+  }
+  
+  .checkout-body {
+    padding: 1.5rem;
+  }
+  
+  .btn-pay {
+    font-size: 1rem;
+    padding: 0.8rem 1.5rem;
+  }
+}
+
+/* Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.checkout-card {
+  animation: fadeIn 0.5s ease-out;
+}
+

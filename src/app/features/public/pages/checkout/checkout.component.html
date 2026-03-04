@@ -1,0 +1,58 @@
+<div class="checkout-header">
+  <div class="container">
+    <h1 class="checkout-title text-center">
+      <i class="bi bi-credit-card me-3"></i>Secure Checkout
+    </h1>
+  </div>
+</div>
+
+<div class="container mb-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-7">
+      <div class="card checkout-card">
+        <div class="checkout-body">
+          <!-- Loading State -->
+          <div *ngIf="!stripeReady" class="loading-payment">
+            <div class="spinner-border loading-icon text-success" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="loading-text">Preparing secure payment form...</p>
+          </div>
+
+          <!-- Payment Form Container - Always in DOM -->
+          <div [style.display]="stripeReady ? 'block' : 'none'">
+            <div id="payment-element"></div>
+
+            <div class="security-badge">
+              <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-shield-check"></i>
+                <small class="security-text">
+                  Your payment is secured by Stripe. All transactions are encrypted and protected.
+                </small>
+              </div>
+            </div>
+
+            <button 
+              class="btn btn-pay" 
+              (click)="handlePayment()"
+              [disabled]="!stripeReady || isProcessing">
+              <span *ngIf="!isProcessing">
+                <i class="bi bi-lock-fill me-2"></i>Complete Payment
+              </span>
+              <span *ngIf="isProcessing">
+                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                Processing Payment...
+              </span>
+            </button>
+
+            <div class="back-link">
+              <a routerLink="/cart">
+                <i class="bi bi-arrow-left me-1"></i>Back to Cart
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

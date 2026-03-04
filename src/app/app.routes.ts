@@ -13,6 +13,15 @@ import { authGuard } from './core/guards/auth.guard';
 
 import { superAdminGuard } from './core/guards/super-admin.guard';
 import { AdminManagementComponent } from './admin/pages/admin-management/admin-management.component';
+
+import { ProductCreateComponent } from './admin/pages/products/product-create/product-create.component';
+import { ProductListComponent } from './admin/pages/products/product-list/product-list.component';
+import { OrderListComponent } from './admin/pages/orders/order-list/order-list.component';
+import { CoursesComponent } from './features/public/pages/courses/courses.component';
+import { CartComponent } from './features/public/pages/cart/cart.component';
+import { CheckoutComponent } from './features/public/pages/checkout/checkout.component';
+import { OrderConfirmationComponent } from './features/public/pages/order-confirmation/order-confirmation.component';
+
 export const routes: Routes = [
   {
     path: '',
@@ -22,6 +31,10 @@ export const routes: Routes = [
       { path: 'login', component: LoginComponent },
       { path: 'register', component: RegisterComponent },
       { path: 'profile', component: ProfileComponent, canActivate: [authGuard] },
+      { path: 'courses', component: CoursesComponent },
+      { path: 'cart', component: CartComponent, canActivate: [authGuard] },
+      { path: 'checkout', component: CheckoutComponent, canActivate: [authGuard] },
+      { path: 'order/confirmation/:orderId', component: OrderConfirmationComponent, canActivate: [authGuard] },
     ],
   },
 
@@ -32,15 +45,17 @@ export const routes: Routes = [
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', component: DashboardComponent },
-      // ❌ removed admin-management from here
+      { path: 'products/create', component: ProductCreateComponent },
+      { path: 'products/edit/:id', component: ProductCreateComponent },
+      { path: 'products/list', component: ProductListComponent },
+      { path: 'orders', component: OrderListComponent },
     ],
   },
 
-  // ✅ Standalone — no layout wrapper
   {
     path: 'admins',
     component: AdminManagementComponent,
-    canActivate: [adminGuard, superAdminGuard],  // keep both guards
+    canActivate: [adminGuard, superAdminGuard],
   },
 
   { path: '**', redirectTo: '' },

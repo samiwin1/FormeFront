@@ -1,0 +1,161 @@
+.stats-card {
+  border-left: 4px solid #4CAF50;
+}
+
+.order-status-badge {
+  font-size: 0.875rem;
+  padding: 0.25rem 0.75rem;
+}
+
+.table-actions button {
+  margin-right: 0.5rem;
+}
+
+/* --- Top Products Statistics --- */
+.top-products-card {
+  border: none;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.top-products-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  background: linear-gradient(135deg, #f8faf8 0%, #e8f5e9 100%);
+  border-bottom: 1px solid rgba(76, 175, 80, 0.15);
+}
+
+.top-products-header .card-title {
+  font-weight: 600;
+  color: #1b5e20;
+}
+
+.top-products-header .badge {
+  font-weight: 500;
+  padding: 0.35rem 0.65rem;
+}
+
+.top-products-empty {
+  text-align: center;
+  padding: 2.5rem 1.5rem;
+  color: #6c757d;
+}
+
+.top-products-empty i {
+  font-size: 2.5rem;
+  display: block;
+  margin-bottom: 0.75rem;
+  opacity: 0.6;
+}
+
+.top-products-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.top-product-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  background: #fff;
+  border: 1px solid #e9ecef;
+  border-radius: 10px;
+  transition: box-shadow 0.2s, border-color 0.2s;
+}
+
+.top-product-row:hover {
+  border-color: rgba(76, 175, 80, 0.35);
+  box-shadow: 0 2px 8px rgba(76, 175, 80, 0.08);
+}
+
+.top-product-rank {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.1rem;
+  border-radius: 10px;
+  color: #fff;
+  background: #6c757d;
+}
+
+.top-product-rank.rank-1 {
+  background: linear-gradient(145deg, #ffc107 0%, #ff9800 100%);
+  color: #fff;
+  font-size: 1.25rem;
+}
+
+.top-product-rank.rank-2 {
+  background: linear-gradient(145deg, #9e9e9e 0%, #757575 100%);
+  color: #fff;
+  font-size: 1.25rem;
+}
+
+.top-product-rank.rank-3 {
+  background: linear-gradient(145deg, #cd7f32 0%, #8b4513 100%);
+  color: #fff;
+  font-size: 1.25rem;
+}
+
+.top-product-info {
+  min-width: 0;
+}
+
+.top-product-title {
+  font-weight: 600;
+  color: #212529;
+  margin: 0 0 0.2rem 0;
+  font-size: 1rem;
+}
+
+.top-product-id {
+  font-size: 0.8rem;
+  color: #6c757d;
+}
+
+.top-product-metrics {
+  display: flex;
+  gap: 1.25rem;
+  align-items: baseline;
+}
+
+.top-product-metrics .metric {
+  text-align: center;
+}
+
+.top-product-metrics .metric-value {
+  display: block;
+  font-weight: 700;
+  color: #2e7d32;
+  font-size: 1.05rem;
+}
+
+.top-product-metrics .metric-label {
+  font-size: 0.7rem;
+  color: #6c757d;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.top-product-bar-wrap {
+  grid-column: 1 / -1;
+  height: 6px;
+  background: #e9ecef;
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 0.25rem;
+}
+
+.top-product-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #4CAF50 0%, #81c784 100%);
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}

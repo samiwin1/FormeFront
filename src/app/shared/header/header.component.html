@@ -36,6 +36,13 @@
 
       <!-- Logged IN -->
       <ng-container *ngIf="(isLoggedIn$ | async)">
+        <a routerLink="/cart" class="fm-btn fm-btn-ghost position-relative me-2">
+          <i class="bi bi-cart3"></i>
+          <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" 
+                *ngIf="(cartCount$ | async) as count">
+            {{ count }}
+          </span>
+        </a>
         <div class="fm-dropdown" [class.open]="menuOpen">
           <button class="fm-user" type="button" (click)="toggleMenu()">
             <span class="fm-avatar">U</span>

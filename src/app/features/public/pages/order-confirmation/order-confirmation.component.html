@@ -1,0 +1,93 @@
+<div class="confirmation-header">
+  <div class="container">
+    <div class="success-animation">
+      <div class="success-icon">
+        <i class="bi bi-check-lg"></i>
+      </div>
+      <h1 class="success-title">Payment Successful!</h1>
+      <p class="success-subtitle">Thank you for your purchase. Your order has been confirmed.</p>
+    </div>
+  </div>
+</div>
+
+<div class="container mb-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <!-- Order Summary Card -->
+      <div class="order-card" *ngIf="order">
+        <div class="order-summary">
+          <div class="summary-row">
+            <span class="summary-label">
+              <i class="bi bi-receipt"></i>
+              Order ID
+            </span>
+            <span class="summary-value">#{{ order.idOrder }}</span>
+          </div>
+          <div class="summary-row">
+            <span class="summary-label">
+              <i class="bi bi-calendar-check"></i>
+              Order Date
+            </span>
+            <span class="summary-value">{{ order.createdAt | date:'medium' }}</span>
+          </div>
+          <div class="summary-row">
+            <span class="summary-label">
+              <i class="bi bi-check-circle"></i>
+              Status
+            </span>
+            <span class="summary-value">{{ displayStatus }}</span>
+          </div>
+          <div class="summary-row" style="border-top: 2px solid #4CAF50; padding-top: 1rem; margin-top: 0.5rem;">
+            <span class="summary-label" style="font-size: 1.2rem;">
+              <i class="bi bi-currency-dollar"></i>
+              Total Amount
+            </span>
+            <span class="summary-value" style="font-size: 1.5rem;">
+              {{ order.totalAmount }} {{ order.currency }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Order Items -->
+        <div class="order-items-section" *ngIf="orderItems.length > 0">
+          <h5 class="section-title">
+            <i class="bi bi-box-seam"></i>
+            Order Items
+          </h5>
+          
+          <div class="order-item" *ngFor="let item of orderItems">
+            <div class="row align-items-center g-3">
+              <div class="col-auto">
+                <div class="item-icon">
+                  <i class="bi bi-book-fill"></i>
+                </div>
+              </div>
+              
+              <div class="col">
+                <div class="item-info">
+                  <h6 class="item-name">{{ item.formationTitleSnapshot }}</h6>
+                  <p class="item-quantity mb-0">
+                    <i class="bi bi-box me-1"></i>Quantity: {{ item.quantity }}
+                  </p>
+                </div>
+              </div>
+              
+              <div class="col-auto">
+                <div class="item-price">
+                  {{ item.unitPriceSnapshot }} TND
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+          <a routerLink="/courses" class="btn btn-back-courses">
+            <i class="bi bi-arrow-left me-2"></i>Back to Courses
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,7 +1,10 @@
-import { Component, HostListener, inject } from '@angular/core';
+import { Component, HostListener, inject, OnInit } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AsyncPipe, NgIf } from '@angular/common';
 import { AuthService } from '../../core/services/auth.service';
+import { CartService } from '../../core/services/cart.service';
+import { Observable } from 'rxjs';
+import { jwtDecode } from 'jwt-decode';
 
 @Component({
   selector: 'app-header',
@@ -10,13 +13,36 @@ imports: [RouterLink, RouterLinkActive, NgIf, AsyncPipe],
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.css'],
 })
-export class HeaderComponent {
+export class HeaderComponent implements OnInit {
   private auth = inject(AuthService);
+  private cartService = inject(CartService);
 
   isLoggedIn$ = this.auth.isLoggedIn$;
+  cartCount$: Observable<number>;
 
   mobileOpen = false;
   menuOpen = false;
+
+  constructor() {
+    this.cartCount$ = this.cartService.cartCount$;
+  }
+
+  ngOnInit(): void {
+    this.auth.isLoggedIn$.subscribe(isLoggedIn => {
+      if (isLoggedIn) {
+        const token = localStorage.getItem('forme_token');
+        if (token) {
+          try {
+            const decoded: any = jwtDecode(token);
+            const userId = decoded.uid;
+            this.cartService.refreshCartCount(userId);
+          } catch (error) {
+            console.error('Error decoding token:', error);
+          }
+        }
+      }
+    });
+  }
 
   logout() {
     this.auth.logout();

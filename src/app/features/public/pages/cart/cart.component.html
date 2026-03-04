@@ -1,0 +1,75 @@
+<div class="cart-header">
+  <div class="container">
+    <h1 class="cart-title text-center">
+      <i class="bi bi-cart3 me-3"></i>Shopping Cart
+    </h1>
+  </div>
+</div>
+
+<div class="container cart-container mb-5">
+  <div class="cart-card">
+    <!-- Empty Cart State -->
+    <div *ngIf="cartItems.length === 0" class="empty-cart">
+      <div class="empty-icon">
+        <i class="bi bi-cart-x"></i>
+      </div>
+      <h3 class="empty-title">Your cart is empty</h3>
+      <p class="empty-text">Discover amazing courses and start learning today!</p>
+      <a routerLink="/courses" class="btn btn-shop">
+        <i class="bi bi-arrow-left me-2"></i>Browse Courses
+      </a>
+    </div>
+
+    <!-- Cart Items -->
+    <div *ngIf="cartItems.length > 0">
+      <div class="cart-item" *ngFor="let item of cartItems">
+        <div class="row align-items-center g-3">
+          <div class="col-auto">
+            <div class="item-image">
+              <i class="bi bi-book-fill"></i>
+            </div>
+          </div>
+          
+          <div class="col">
+            <div class="item-details">
+              <h5 class="item-title">{{ item.formationTitleSnapshot }}</h5>
+              <div class="item-meta">
+                <span><i class="bi bi-box me-1"></i>Quantity: {{ item.quantity }}</span>
+                <span><i class="bi bi-tag me-1"></i>Unit Price: {{ item.unitPriceSnapshot }} TND</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="col-auto">
+            <div class="item-price">
+              {{ item.unitPriceSnapshot * item.quantity }} TND
+            </div>
+          </div>
+          
+          <div class="col-auto">
+            <button class="btn btn-remove" (click)="removeItem(item.idCartItem)">
+              <i class="bi bi-trash me-1"></i>Remove
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cart Summary -->
+      <div class="cart-summary">
+        <div class="summary-row">
+          <span class="summary-label">Total Amount:</span>
+          <span class="summary-value">{{ total }} TND</span>
+        </div>
+        
+        <div class="d-grid gap-3">
+          <button class="btn btn-checkout" (click)="proceedToCheckout()">
+            <i class="bi bi-credit-card me-2"></i>Proceed to Checkout
+          </button>
+          <a routerLink="/courses" class="btn btn-continue">
+            <i class="bi bi-arrow-left me-2"></i>Continue Shopping
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

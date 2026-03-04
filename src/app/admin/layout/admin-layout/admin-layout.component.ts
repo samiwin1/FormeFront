@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
-import { Router, RouterLink, RouterOutlet } from '@angular/router';
+import { Router, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { HeaderComponent } from '../../components/header/header.component';
 import { NavbarComponent } from '../../components/navbar/navbar.component';
@@ -10,7 +10,6 @@ import { FooterComponent } from '../../components/footer/footer.component';
   standalone: true,
   imports: [
     CommonModule,
-    RouterLink,
     RouterOutlet,
     HeaderComponent,
     NavbarComponent,
