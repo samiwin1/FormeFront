@@ -9,11 +9,14 @@
     </ul>
   </div>
   <div class="page-header-right ms-auto d-flex gap-2">
-    <!-- ✅ Bouton génération automatique -->
+    <!-- ✅ Export PDF liste complète -->
+    <button class="btn btn-danger" (click)="exportPDF()" [disabled]="loading">
+      <i class="feather-file-text me-2"></i>
+      Export PDF {{ searchTerm ? '(' + filteredCodes.length + ')' : '' }}
+    </button>
     <button class="btn btn-success" (click)="openGenerateModal()">
       <i class="feather-zap me-2"></i> Auto Generate
     </button>
-    <!-- Bouton création manuelle -->
     <button class="btn btn-primary" (click)="openCreate()">
       <i class="feather-plus me-2"></i> Add Manually
     </button>
@@ -22,7 +25,7 @@
 
 <div class="main-content">
 
-  <!-- ── STAT CARDS ───────────────────────────────────────────────────────── -->
+  <!-- STAT CARDS -->
   <div class="row g-3 mb-4">
     <div class="col-md-4">
       <div class="card border-0 shadow-sm border-start border-success border-3">
@@ -59,7 +62,7 @@
     </div>
   </div>
 
-  <!-- ── TABLE ────────────────────────────────────────────────────────────── -->
+  <!-- TABLE -->
   <div class="card stretch stretch-full">
     <div class="card-header d-flex align-items-center justify-content-between">
       <h5 class="card-title">All Access Codes</h5>
@@ -109,6 +112,11 @@
                 </span>
               </td>
               <td class="text-end">
+                <!-- ✅ Bouton PDF individuel -->
+                <button class="btn btn-sm btn-outline-danger me-1"
+                  (click)="exportSinglePDF(c)" title="Download PDF card">
+                  <i class="feather-download"></i>
+                </button>
                 <button class="btn btn-sm btn-light-brand me-1" (click)="openEdit(c)">
                   <i class="feather-edit-2"></i>
                 </button>
@@ -135,26 +143,17 @@
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════════════════════════════════
-     ✅ MODAL : AUTO GENERATE
-═══════════════════════════════════════════════════════════════════════════ -->
+<!-- ═══ MODAL : AUTO GENERATE ═══════════════════════════════════════════════ -->
 <div class="modal fade show d-block" *ngIf="showGenerateModal" style="background:rgba(0,0,0,0.5)">
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content">
-
       <div class="modal-header bg-success text-white">
-        <h5 class="modal-title">
-          <i class="feather-zap me-2"></i> Auto Generate Access Codes
-        </h5>
+        <h5 class="modal-title"><i class="feather-zap me-2"></i> Auto Generate Access Codes</h5>
         <button class="btn-close btn-close-white" (click)="showGenerateModal = false"></button>
       </div>
-
       <div class="modal-body">
         <div *ngIf="generateError" class="alert alert-danger">{{ generateError }}</div>
-
         <div class="row g-3">
-
-          <!-- Partner -->
           <div class="col-md-6">
             <label class="form-label fw-semibold">Partner <span class="text-danger">*</span></label>
             <select class="form-select" [(ngModel)]="generateForm.partnerId" (ngModelChange)="onPartnerChange()">
@@ -162,78 +161,50 @@
               <option *ngFor="let p of partners" [value]="p.id">{{ p.name }}</option>
             </select>
           </div>
-
-          <!-- Deal (filtré selon partner) -->
           <div class="col-md-6">
             <label class="form-label fw-semibold">Deal <span class="text-danger">*</span></label>
-            <select class="form-select" [(ngModel)]="generateForm.dealId"
-              [disabled]="!generateForm.partnerId">
-              <option [value]="0" disabled>
-                {{ generateForm.partnerId ? 'Select a deal...' : 'Select a partner first' }}
-              </option>
+            <select class="form-select" [(ngModel)]="generateForm.dealId" [disabled]="!generateForm.partnerId">
+              <option [value]="0" disabled>{{ generateForm.partnerId ? 'Select a deal...' : 'Select a partner first' }}</option>
               <option *ngFor="let d of filteredDeals" [value]="d.id">{{ d.title }}</option>
             </select>
-            <div class="form-text text-muted" *ngIf="generateForm.partnerId && filteredDeals.length === 0">
+            <div class="form-text text-warning" *ngIf="generateForm.partnerId && filteredDeals.length === 0">
               No deals found for this partner.
             </div>
           </div>
-
-          <!-- Expiration -->
           <div class="col-md-4">
             <label class="form-label fw-semibold">Expiration Date</label>
             <input type="date" class="form-control" [(ngModel)]="generateForm.expirationDate" />
           </div>
-
-          <!-- Prefix -->
           <div class="col-md-4">
             <label class="form-label fw-semibold">Code Prefix</label>
             <input type="text" class="form-control font-monospace text-uppercase"
-              [(ngModel)]="generateForm.prefix"
-              placeholder="e.g. PROMO"
-              maxlength="8" />
+              [(ngModel)]="generateForm.prefix" placeholder="e.g. PROMO" maxlength="8" />
             <div class="form-text">Preview: <code>{{ generateForm.prefix.toUpperCase() }}-XXXX-XXXX</code></div>
           </div>
-
-          <!-- Quantité -->
           <div class="col-md-4">
             <label class="form-label fw-semibold">Quantity</label>
-            <input type="number" class="form-control" [(ngModel)]="generateForm.quantity"
-              min="1" max="20" />
+            <input type="number" class="form-control" [(ngModel)]="generateForm.quantity" min="1" max="20" />
             <div class="form-text">Max 20 codes at once.</div>
           </div>
-
         </div>
-
-        <!-- ✅ Bouton preview -->
         <div class="mt-4 d-flex justify-content-center">
           <button class="btn btn-outline-success px-4" (click)="generatePreview()">
             <i class="feather-refresh-cw me-2"></i> Generate Preview
           </button>
         </div>
-
-        <!-- ✅ Preview des codes avec bouton régénérer individuel -->
         <div *ngIf="previewCodes.length > 0" class="mt-4">
-          <h6 class="text-muted mb-3">
-            <i class="feather-eye me-1"></i> Preview — {{ previewCodes.length }} code(s)
-          </h6>
+          <h6 class="text-muted mb-3"><i class="feather-eye me-1"></i> Preview — {{ previewCodes.length }} code(s)</h6>
           <div class="d-flex flex-wrap gap-2">
             <div *ngFor="let code of previewCodes; let i = index"
               class="d-flex align-items-center gap-2 bg-light rounded px-3 py-2 border">
               <code class="fw-bold text-success fs-6">{{ code }}</code>
-              <button class="btn btn-sm btn-outline-secondary p-1" (click)="regenerateOne(i)"
-                title="Regenerate this code">
+              <button class="btn btn-sm btn-outline-secondary p-1" (click)="regenerateOne(i)">
                 <i class="feather-refresh-cw" style="font-size:12px"></i>
               </button>
             </div>
           </div>
-          <div class="text-muted small mt-2">
-            <i class="feather-info me-1"></i>
-            Click <i class="feather-refresh-cw"></i> on any code to regenerate it individually.
-          </div>
         </div>
-
       </div>
-
       <div class="modal-footer">
         <button class="btn btn-light" (click)="showGenerateModal = false">Cancel</button>
         <button class="btn btn-success" (click)="confirmGenerate()"
@@ -243,12 +214,11 @@
           {{ generating ? 'Saving...' : 'Save ' + previewCodes.length + ' Code(s)' }}
         </button>
       </div>
-
     </div>
   </div>
 </div>
 
-<!-- ═══════════════════ MODAL : MANUAL CREATE / EDIT ═══════════════════════ -->
+<!-- ═══ MODAL : MANUAL CREATE / EDIT ════════════════════════════════════════ -->
 <div class="modal fade show d-block" *ngIf="showModal" style="background:rgba(0,0,0,0.5)">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
@@ -293,7 +263,7 @@
   </div>
 </div>
 
-<!-- ═══════════════════ MODAL : DELETE CONFIRM ════════════════════════════ -->
+<!-- ═══ MODAL : DELETE ═══════════════════════════════════════════════════════ -->
 <div class="modal fade show d-block" *ngIf="showDeleteModal" style="background:rgba(0,0,0,0.5)">
   <div class="modal-dialog modal-dialog-centered modal-sm">
     <div class="modal-content">

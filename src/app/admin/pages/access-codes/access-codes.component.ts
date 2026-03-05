@@ -2,6 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { BusinessService } from '../../../core/services/business.service';
+import { PdfService } from '../../../core/services/Pdf.sevice';
 import { AccessCode, Partner, Deal } from '../../../core/models/business.models';
 
 @Component({
@@ -13,12 +14,12 @@ import { AccessCode, Partner, Deal } from '../../../core/models/business.models'
 export class AccessCodesComponent implements OnInit {
 
   private businessService = inject(BusinessService);
+  private pdfService      = inject(PdfService);   // ✅ injection PDF service
 
   accessCodes: AccessCode[] = [];
   filteredCodes: AccessCode[] = [];
   searchTerm = '';
 
-  // ── Dropdowns ────────────────────────────────────────────────────────
   partners: Partner[] = [];
   deals: Deal[] = [];
   filteredDeals: Deal[] = [];
@@ -35,13 +36,9 @@ export class AccessCodesComponent implements OnInit {
 
   form: AccessCode = { code: '', partnerId: 0, dealId: 0, expirationDate: '', used: false };
 
-  // ✅ Formulaire de génération
   generateForm = {
-    partnerId: 0,
-    dealId: 0,
-    expirationDate: '',
-    prefix: 'CODE',
-    quantity: 1,
+    partnerId: 0, dealId: 0, expirationDate: '',
+    prefix: 'CODE', quantity: 1,
   };
 
   previewCodes: string[] = [];
@@ -69,10 +66,54 @@ export class AccessCodesComponent implements OnInit {
     this.businessService.getDeals().subscribe({ next: (data) => { this.deals = data; } });
   }
 
-  // ✅ Filtre les deals selon le partner choisi
+  // ── PDF EXPORT ───────────────────────────────────────────────────────────
+
+  // ✅ Export toute la liste (ou la liste filtrée)
+  exportPDF(): void {
+    this.pdfService.exportAccessCodes(this.filteredCodes, this.partners, this.deals);
+  }
+
+  // ✅ Export un seul code en carte individuelle
+  exportSinglePDF(code: AccessCode): void {
+    const partner = this.partners.find(p => p.id === code.partnerId)?.name || `#${code.partnerId}`;
+    const deal    = this.deals.find(d => d.id === code.dealId)?.title    || `#${code.dealId}`;
+    this.pdfService.exportSingleCode(code, partner, deal);
+  }
+
+  // ── Badge helpers ─────────────────────────────────────────────────────────
+  getStatus(code: AccessCode): 'used' | 'expired' | 'active' {
+    if (code.used) return 'used';
+    if (new Date(code.expirationDate) < new Date()) return 'expired';
+    return 'active';
+  }
+
+  getBadgeClass(code: AccessCode): string {
+    return { used: 'bg-secondary', expired: 'bg-danger', active: 'bg-success' }[this.getStatus(code)];
+  }
+
+  getBadgeLabel(code: AccessCode): string {
+    return { used: 'Used', expired: 'Expired', active: 'Active' }[this.getStatus(code)];
+  }
+
+  getCountByStatus(status: 'active' | 'expired' | 'used'): number {
+    return this.accessCodes.filter(c => this.getStatus(c) === status).length;
+  }
+
+  // ── Filtre ────────────────────────────────────────────────────────────────
+  applyFilter(): void {
+    const term = this.searchTerm.toLowerCase().trim();
+    if (!term) { this.filteredCodes = this.accessCodes; return; }
+    this.filteredCodes = this.accessCodes.filter(c =>
+      c.code.toLowerCase().includes(term) ||
+      String(c.partnerId).includes(term) ||
+      String(c.dealId).includes(term) ||
+      this.getBadgeLabel(c).toLowerCase().includes(term)
+    );
+  }
+
+  // ── Génération automatique ────────────────────────────────────────────────
   onPartnerChange(): void {
     this.generateForm.dealId = 0;
-    // ✅ forcer la conversion en Number car le select retourne une string
     const selectedId = Number(this.generateForm.partnerId);
     this.filteredDeals = this.deals.filter(d => Number(d.partnerId) === selectedId);
     this.previewCodes = [];
@@ -82,11 +123,9 @@ export class AccessCodesComponent implements OnInit {
     this.generateError = null;
     this.previewCodes = [];
     this.generateForm = {
-      partnerId: 0,
-      dealId: 0,
+      partnerId: 0, dealId: 0,
       expirationDate: this.defaultExpiration(),
-      prefix: 'CODE',
-      quantity: 1,
+      prefix: 'CODE', quantity: 1,
     };
     this.filteredDeals = [];
     this.showGenerateModal = true;
@@ -98,7 +137,6 @@ export class AccessCodesComponent implements OnInit {
     return d.toISOString().split('T')[0];
   }
 
-  // ✅ Format : PREFIX-XXXX-XXXX
   generateCode(prefix: string): string {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     const seg = (n: number) => Array.from({ length: n }, () =>
@@ -107,7 +145,6 @@ export class AccessCodesComponent implements OnInit {
     return `${prefix.toUpperCase()}-${seg(4)}-${seg(4)}`;
   }
 
-  // ✅ Génère la preview sans sauvegarder
   generatePreview(): void {
     if (!this.generateForm.partnerId || !this.generateForm.dealId) {
       this.generateError = 'Please select a partner and a deal first.';
@@ -119,26 +156,19 @@ export class AccessCodesComponent implements OnInit {
     );
   }
 
-  // ✅ Régénère un seul code dans la liste
   regenerateOne(index: number): void {
     this.previewCodes[index] = this.generateCode(this.generateForm.prefix);
   }
 
-  // ✅ Sauvegarde tous les codes générés
   confirmGenerate(): void {
-    if (!this.previewCodes.length) {
-      this.generateError = 'Generate a preview first.';
-      return;
-    }
+    if (!this.previewCodes.length) { this.generateError = 'Generate a preview first.'; return; }
     this.generating = true;
     this.generateError = null;
     let saved = 0;
-
     this.previewCodes.forEach(code => {
       const payload: AccessCode = {
-        code,
-        partnerId:      this.generateForm.partnerId,
-        dealId:         this.generateForm.dealId,
+        code, partnerId: this.generateForm.partnerId,
+        dealId: this.generateForm.dealId,
         expirationDate: this.generateForm.expirationDate,
         used: false,
       };
@@ -159,50 +189,16 @@ export class AccessCodesComponent implements OnInit {
     });
   }
 
-  // ── Badge helpers ─────────────────────────────────────────────────────
-  getStatus(code: AccessCode): 'used' | 'expired' | 'active' {
-    if (code.used) return 'used';
-    if (new Date(code.expirationDate) < new Date()) return 'expired';
-    return 'active';
-  }
-
-  getBadgeClass(code: AccessCode): string {
-    return { used: 'bg-secondary', expired: 'bg-danger', active: 'bg-success' }[this.getStatus(code)];
-  }
-
-  getBadgeLabel(code: AccessCode): string {
-    return { used: 'Used', expired: 'Expired', active: 'Active' }[this.getStatus(code)];
-  }
-
-  getCountByStatus(status: 'active' | 'expired' | 'used'): number {
-    return this.accessCodes.filter(c => this.getStatus(c) === status).length;
-  }
-
-  // ── Filtre ────────────────────────────────────────────────────────────
-  applyFilter(): void {
-    const term = this.searchTerm.toLowerCase().trim();
-    if (!term) { this.filteredCodes = this.accessCodes; return; }
-    this.filteredCodes = this.accessCodes.filter(c =>
-      c.code.toLowerCase().includes(term) ||
-      String(c.partnerId).includes(term) ||
-      String(c.dealId).includes(term) ||
-      this.getBadgeLabel(c).toLowerCase().includes(term)
-    );
-  }
-
-  // ── CRUD ──────────────────────────────────────────────────────────────
+  // ── CRUD ──────────────────────────────────────────────────────────────────
   openCreate(): void {
-    this.isEdit = false;
-    this.errorMessage = null;
+    this.isEdit = false; this.errorMessage = null;
     this.form = { code: '', partnerId: 0, dealId: 0, expirationDate: '', used: false };
     this.showModal = true;
   }
 
   openEdit(c: AccessCode): void {
-    this.isEdit = true;
-    this.errorMessage = null;
-    this.form = { ...c };
-    this.showModal = true;
+    this.isEdit = true; this.errorMessage = null;
+    this.form = { ...c }; this.showModal = true;
   }
 
   save(): void {
@@ -231,11 +227,6 @@ export class AccessCodesComponent implements OnInit {
     }
   }
 
-  getPartnerName(id: number): string {
-    return this.partners.find(p => p.id === id)?.name || `#${id}`;
-  }
-
-  getDealTitle(id: number): string {
-    return this.deals.find(d => d.id === id)?.title || `#${id}`;
-  }
+  getPartnerName(id: number): string { return this.partners.find(p => p.id === id)?.name || `#${id}`; }
+  getDealTitle(id: number): string   { return this.deals.find(d => d.id === id)?.title   || `#${id}`; }
 }
