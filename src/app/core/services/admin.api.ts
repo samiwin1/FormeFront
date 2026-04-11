@@ -23,7 +23,7 @@ export interface CreateAdminPayload {
 @Injectable({ providedIn: 'root' })
 export class AdminApi {
   private http = inject(HttpClient);
-  private apiUrl = 'http://localhost:8082/api';
+  private apiUrl = 'http://localhost:8081/api';
   private base = `${this.apiUrl}/admin`;
 
   create(payload: CreateAdminPayload) {

@@ -1,0 +1,139 @@
+<div class="container py-4" style="max-width:860px">
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h4 class="mb-1"><i class="feather-message-circle me-2 text-primary"></i>My Feedbacks</h4>
+      <p class="text-muted small mb-0">Share your experience and track admin responses</p>
+    </div>
+    <button class="btn btn-primary" *ngIf="activeView === 'list'" (click)="openForm()">
+      <i class="feather-plus me-1"></i> New Feedback
+    </button>
+  </div>
+
+  <div class="alert alert-success d-flex align-items-center gap-2" *ngIf="successMessage">
+    <i class="feather-check-circle"></i> {{ successMessage }}
+  </div>
+
+  <!-- LISTE -->
+  <ng-container *ngIf="activeView === 'list'">
+    <div *ngIf="loading" class="text-center py-5">
+      <div class="spinner-border text-primary"></div>
+    </div>
+    <div *ngIf="!loading && feedbacks.length === 0" class="card stretch stretch-full">
+      <div class="card-body text-center py-5">
+        <i class="feather-inbox text-muted" style="font-size:3rem"></i>
+        <h6 class="mt-3 text-muted">No feedbacks yet</h6>
+        <button class="btn btn-primary btn-sm mt-2" (click)="openForm()">
+          <i class="feather-plus me-1"></i>Submit a feedback
+        </button>
+      </div>
+    </div>
+    <div class="d-flex flex-column gap-3" *ngIf="!loading && feedbacks.length > 0">
+      <div class="card stretch stretch-full" *ngFor="let f of feedbacks">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+            <div class="flex-grow-1">
+              <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+                <strong>{{ f.title || 'Untitled' }}</strong>
+                <span class="badge bg-light text-secondary border small">{{ f.category }}</span>
+                <span [class]="statusBadge(f.status)" class="small">{{ f.status }}</span>
+              </div>
+              <div class="text-warning mb-2">{{ stars(f.rating) }}</div>
+              <p class="text-muted small mb-2">{{ f.comment }}</p>
+              <div class="d-flex align-items-center gap-1 small">
+                <i [class]="sentimentIcon(f.sentiment) + ' ' + sentimentClass(f.sentiment)"></i>
+                <span [class]="sentimentClass(f.sentiment)">{{ f.sentiment }}</span>
+                <span class="text-muted ms-2">· {{ f.createdAt | date:'dd/MM/yyyy' }}</span>
+              </div>
+            </div>
+            <button class="btn btn-sm btn-outline-primary" (click)="viewResponse(f)">
+              <i class="feather-message-square me-1"></i>View response
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- FORMULAIRE -->
+  <ng-container *ngIf="activeView === 'form'">
+    <div class="card stretch stretch-full">
+      <div class="card-header">
+        <h5 class="card-title mb-0"><i class="feather-edit-3 me-2"></i>Submit a new feedback</h5>
+      </div>
+      <div class="card-body">
+        <div *ngIf="errorMessage" class="alert alert-danger py-2 small">{{ errorMessage }}</div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Title <span class="text-danger">*</span></label>
+          <input type="text" class="form-control" [(ngModel)]="form.title" placeholder="e.g. Excellent training content">
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Rating <span class="text-danger">*</span></label>
+          <div class="d-flex align-items-center gap-1">
+            <button *ngFor="let star of [1,2,3,4,5]" type="button"
+              class="btn p-0 border-0 fs-3 lh-1"
+              [style.color]="(form.rating || 0) >= star ? '#ffc107' : '#dee2e6'"
+              (click)="setRating(star)">★</button>
+            <span class="ms-2 text-muted">{{ form.rating }} / 5</span>
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Category</label>
+          <select class="form-select" [(ngModel)]="form.category">
+            <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Pack ID <span class="text-muted">(optional)</span></label>
+          <input type="number" class="form-control" [(ngModel)]="form.packId" placeholder="If related to a specific pack">
+        </div>
+        <div class="mb-4">
+          <label class="form-label fw-semibold">Comment <span class="text-danger">*</span></label>
+          <textarea class="form-control" rows="5" [(ngModel)]="form.comment" placeholder="Describe your experience..."></textarea>
+          <div class="form-text text-muted"><i class="feather-zap me-1"></i>Sentiment analysis applied automatically.</div>
+        </div>
+        <div class="d-flex gap-2">
+          <button class="btn btn-primary" (click)="submit()" [disabled]="submitting">
+            <span *ngIf="submitting" class="spinner-border spinner-border-sm me-1"></span>
+            <i class="feather-send me-1" *ngIf="!submitting"></i>Submit feedback
+          </button>
+          <button class="btn btn-outline-secondary" (click)="cancelForm()" [disabled]="submitting">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</div>
+
+<!-- Modal réponse admin -->
+<div class="modal fade show d-block" *ngIf="showResponseModal" style="background:rgba(0,0,0,0.5)">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="feather-message-square me-2 text-primary"></i>Admin Response — #{{ selectedFeedback?.id }}</h5>
+        <button class="btn-close" (click)="showResponseModal = false"></button>
+      </div>
+      <div class="modal-body">
+        <div class="bg-light rounded p-3 mb-4">
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <strong>{{ selectedFeedback?.title }}</strong>
+            <span [class]="statusBadge(selectedFeedback?.status)" class="small">{{ selectedFeedback?.status }}</span>
+          </div>
+          <div class="text-warning small mb-1">{{ stars(selectedFeedback?.rating) }}</div>
+          <div class="text-muted small">{{ selectedFeedback?.comment }}</div>
+        </div>
+        <div *ngIf="feedbackResponse?.response">
+          <h6 class="text-muted text-uppercase small mb-2">Response from admin</h6>
+          <div class="border rounded p-3 small">{{ feedbackResponse!.response }}</div>
+          <div class="text-muted small mt-2"><i class="feather-clock me-1"></i>{{ feedbackResponse!.respondedAt | date:'dd/MM/yyyy HH:mm' }}</div>
+        </div>
+        <div *ngIf="!feedbackResponse?.response" class="text-center py-3">
+          <i class="feather-clock text-muted" style="font-size:2.5rem"></i>
+          <p class="text-muted mt-2 mb-0">No response yet. The admin will reply soon.</p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-light" (click)="showResponseModal = false">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
