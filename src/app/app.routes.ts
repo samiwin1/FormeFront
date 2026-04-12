@@ -18,6 +18,7 @@ export const routes: Routes = [
       { path: 'register', loadComponent: () => import('./features/auth/pages/register/register.component').then(m => m.RegisterComponent) },
       { path: 'profile', loadComponent: () => import('./features/auth/pages/profile/profile.component').then(m => m.ProfileComponent), canActivate: [authGuard] },
       { path: 'formations', children: formationRoutes },
+      { path: 'articles', loadComponent: () => import('./features/articles/pages/article-page/article-page.component').then(m => m.ArticlePageComponent) },
       { path: 'me/certification-list', redirectTo: 'me/certification-space', pathMatch: 'full' },
       {
         path: 'evaluator/oral-assignments',
@@ -29,6 +30,10 @@ export const routes: Routes = [
         loadComponent: () => import('./features/certification/learner/certification-learner.component').then(m => m.CertificationLearnerComponent),
         canActivate: [learnerGuard],
       },
+      { path: 'courses', loadComponent: () => import('./features/shop/pages/courses-list/courses-list.component').then(m => m.CoursesListComponent) },
+      { path: 'cart', loadComponent: () => import('./features/shop/pages/cart/cart.component').then(m => m.CartComponent), canActivate: [authGuard] },
+      { path: 'checkout', loadComponent: () => import('./features/shop/pages/checkout/checkout.component').then(m => m.CheckoutComponent), canActivate: [authGuard] },
+      { path: 'order/confirmation/:orderId', loadComponent: () => import('./features/shop/pages/order-confirmation/order-confirmation.component').then(m => m.OrderConfirmationComponent), canActivate: [authGuard] },
     ],
   },
   {
@@ -46,6 +51,13 @@ export const routes: Routes = [
       { path: 'reschedule', loadComponent: () => import('./admin/pages/reschedule-admin/reschedule-admin.component').then(m => m.RescheduleAdminComponent) },
       { path: 'issued-certificates', loadComponent: () => import('./admin/pages/issued-certificates-admin/issued-certificates-admin.component').then(m => m.IssuedCertificatesAdminComponent) },
       { path: 'sessions-calendar', loadComponent: () => import('./admin/pages/sessions-calendar/sessions-calendar.component').then(m => m.SessionsCalendarComponent) },
+      { path: 'products/create', loadComponent: () => import('./features/shop/pages/admin/product-create/product-create.component').then(m => m.ProductCreateComponent) },
+      { path: 'products/edit/:id', loadComponent: () => import('./features/shop/pages/admin/product-edit/product-edit.component').then(m => m.ProductEditComponent) },
+      { path: 'products/list', loadComponent: () => import('./features/shop/pages/admin/product-list/product-list.component').then(m => m.ProductListComponent) },
+      { path: 'documents/add', loadComponent: () => import('./features/documents/pages/admin/document-add/document-add.component').then(m => m.DocumentAddComponent) },
+      { path: 'documents/edit/:id', loadComponent: () => import('./features/documents/pages/admin/document-edit/document-edit.component').then(m => m.DocumentEditComponent) },
+      { path: 'documents/list', loadComponent: () => import('./features/documents/pages/admin/document-list/document-list.component').then(m => m.DocumentListComponent) },
+      { path: 'orders', loadComponent: () => import('./features/shop/pages/admin/order-list/order-list.component').then(m => m.OrderListComponent) },
     ],
   },
   {

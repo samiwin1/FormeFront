@@ -2,6 +2,7 @@ import { AsyncPipe, NgIf } from '@angular/common';
 import { Component, HostListener, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
+import { CartService } from '../../features/shop/services/cart.service';
 import { NotificationBellComponent } from '../components/notification-bell/notification-bell.component';
 
 @Component({
@@ -13,8 +14,10 @@ import { NotificationBellComponent } from '../components/notification-bell/notif
 })
 export class HeaderComponent {
   private auth = inject(AuthService);
+  cartService = inject(CartService);
 
   isLoggedIn$ = this.auth.isLoggedIn$;
+  cartCount$ = this.cartService.cartCount$;
 
   mobileOpen = false;
   menuOpen = false;

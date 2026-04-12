@@ -22,5 +22,41 @@
     "pathRewrite": {
       "^/formation-api": "/api"
     }
+  },
+  "/shop-api": {
+    "target": "http://localhost:8082",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug",
+    "pathRewrite": {
+      "^/shop-api": "/api/shop"
+    }
+  },
+  "/payments-api": {
+    "target": "http://localhost:8082",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug",
+    "pathRewrite": {
+      "^/payments-api": "/api/payments"
+    }
+  },
+  "/document-api": {
+    "target": "http://localhost:8085",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug",
+    "pathRewrite": {
+      "^/document-api": "/api"
+    }
+  },
+  "/article-api": {
+    "target": "http://localhost:8087",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug",
+    "pathRewrite": {
+      "^/article-api": "/api"
+    }
   }
 }
