@@ -20,6 +20,7 @@ import { FormationDirectoryService, FormationOption } from '../../../core/servic
 import { forkJoin, map } from 'rxjs';
 import { FeedbackService } from '../../../core/services/feedback.service';
 import { ToastService } from '../../../core/services/toast.service';
+import { BusinessService, PartnerStats, PartnerWithStats } from '../../../core/services/business.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -35,6 +36,7 @@ export class DashboardComponent implements OnInit {
   private readonly formationDirectory = inject(FormationDirectoryService);
   private readonly feedbackService = inject(FeedbackService);
   private readonly toastService = inject(ToastService);
+  private readonly businessService = inject(BusinessService);
 
   certifications: Certification[] = [];
   sessions: OralSession[] = [];
@@ -58,6 +60,17 @@ export class DashboardComponent implements OnInit {
   readonly eligiblePageSize = 6;
   readonly evaluatorRatings = signal<Map<number, number>>(new Map());
   error: string | null = null;
+
+  totalPartners = 0;
+  totalDeals = 0;
+  totalPacks = 0;
+  totalCodes = 0;
+  activeCodesCount = 0;
+  expiredCodesCount = 0;
+  usedCodesCount = 0;
+  loadingBusiness = true;
+  partners: PartnerWithStats[] = [];
+  loadingPartners = true;
 
   constructor() {
     effect(() => {
@@ -118,6 +131,8 @@ export class DashboardComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadFormationOptions();
+    this.loadBusinessOverview();
+    this.loadPartnerStats();
   }
 
   loadOverview(): void {
@@ -178,6 +193,77 @@ export class DashboardComponent implements OnInit {
 
   nextEligiblePage(): void {
     this.eligiblePage = Math.min(this.eligibleTotalPages, this.eligiblePage + 1);
+  }
+
+  getActivityLevel(stats?: PartnerStats): 'high' | 'medium' | 'low' {
+    if (!stats) return 'low';
+    const total = stats.totalDeals + stats.usedCodes;
+    if (total >= 10) return 'high';
+    if (total >= 3) return 'medium';
+    return 'low';
+  }
+
+  getActivityBadge(stats?: PartnerStats): string {
+    const level = this.getActivityLevel(stats);
+    return { high: 'bg-success', medium: 'bg-warning', low: 'bg-secondary' }[level];
+  }
+
+  getActivityLabel(stats?: PartnerStats): string {
+    const level = this.getActivityLevel(stats);
+    return { high: 'High', medium: 'Medium', low: 'Low' }[level];
+  }
+
+  private loadBusinessOverview(): void {
+    this.loadingBusiness = true;
+    forkJoin({
+      partners: this.businessService.getPartners(),
+      deals: this.businessService.getDeals(),
+      packs: this.businessService.getPacks(),
+      codes: this.businessService.getAccessCodes(),
+    }).subscribe({
+      next: ({ partners, deals, packs, codes }) => {
+        this.totalPartners = partners.length;
+        this.totalDeals = deals.length;
+        this.totalPacks = packs.length;
+        this.totalCodes = codes.length;
+
+        const today = new Date();
+        this.activeCodesCount = codes.filter(c => !c.used && new Date(c.expirationDate) >= today).length;
+        this.expiredCodesCount = codes.filter(c => !c.used && new Date(c.expirationDate) < today).length;
+        this.usedCodesCount = codes.filter(c => c.used).length;
+        this.loadingBusiness = false;
+      },
+      error: () => {
+        this.loadingBusiness = false;
+      },
+    });
+  }
+
+  private loadPartnerStats(): void {
+    this.loadingPartners = true;
+    this.businessService.getPartners().subscribe({
+      next: (partners) => {
+        this.partners = partners.map(p => ({ ...p, loadingStats: true }));
+        this.loadingPartners = false;
+        this.partners.forEach((partner, index) => {
+          this.businessService.getPartnerStats(partner.id!).subscribe({
+            next: (stats) => {
+              this.partners[index] = { ...this.partners[index], stats, loadingStats: false };
+            },
+            error: () => {
+              this.partners[index] = {
+                ...this.partners[index],
+                stats: { totalDeals: 0, usedCodes: 0 },
+                loadingStats: false,
+              };
+            },
+          });
+        });
+      },
+      error: () => {
+        this.loadingPartners = false;
+      },
+    });
   }
 
   private errorMessage(err: unknown, fallback: string): string {
@@ -256,7 +342,6 @@ export class DashboardComponent implements OnInit {
     const configuredIds = Array.from(new Set(this.formationOptions.map((f) => f.id).filter((id) => Number.isFinite(id) && id > 0)));
 
     if (!configuredIds.length) {
-      // Keep overview data loaded from backend when formation directory is unavailable.
       return;
     }
 

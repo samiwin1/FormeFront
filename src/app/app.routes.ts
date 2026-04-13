@@ -58,6 +58,10 @@ export const routes: Routes = [
       { path: 'documents/edit/:id', loadComponent: () => import('./features/documents/pages/admin/document-edit/document-edit.component').then(m => m.DocumentEditComponent) },
       { path: 'documents/list', loadComponent: () => import('./features/documents/pages/admin/document-list/document-list.component').then(m => m.DocumentListComponent) },
       { path: 'orders', loadComponent: () => import('./features/shop/pages/admin/order-list/order-list.component').then(m => m.OrderListComponent) },
+      { path: 'partners', loadComponent: () => import('./admin/pages/partners/partners.component').then(m => m.PartnersComponent) },
+      { path: 'deals', loadComponent: () => import('./admin/pages/deals/deals.component').then(m => m.DealsComponent) },
+      { path: 'packs', loadComponent: () => import('./admin/pages/packs/packs.component').then(m => m.PacksComponent) },
+      { path: 'access-codes', loadComponent: () => import('./admin/pages/access-codes/access-codes.component').then(m => m.AccessCodesComponent) },
     ],
   },
   {
