@@ -1,0 +1,20 @@
+<div class="container py-5" *ngIf="!success">
+  <h2>Partner Feedback</h2>
+  <form [formGroup]="feedbackForm" (ngSubmit)="submit()">
+    <input formControlName="partnerEmail" placeholder="Your email" class="form-control mb-2"/>
+    <input formControlName="title" placeholder="Title" class="form-control mb-2"/>
+    <select formControlName="category" class="form-control mb-2">
+      <option value="OVERALL">Overall</option>
+      <option value="SUPPORT">Support</option>
+      <option value="CONTENT">Content</option>
+      <option value="PRICE">Price</option>
+      <option value="DELIVERY">Delivery</option>
+    </select>
+    <input type="number" formControlName="rating" placeholder="Rating (1-5)" class="form-control mb-2"/>
+    <textarea formControlName="comment" placeholder="Your feedback..." class="form-control mb-2" rows="4"></textarea>
+    <button type="submit" class="btn btn-primary">Submit Feedback</button>
+  </form>
+</div>
+<div class="container py-5" *ngIf="success">
+  <div class="alert alert-success">Thank you! Your feedback has been submitted.</div>
+</div>

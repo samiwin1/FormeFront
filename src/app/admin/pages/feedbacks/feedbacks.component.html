@@ -1,0 +1,356 @@
+<div class="page-header">
+  <div class="page-header-left d-flex align-items-center">
+    <div class="page-header-title">
+      <div class="d-flex justify-content-between align-items-center w-100">
+  <h5 class="card-title mb-0">All Feedbacks</h5>
+
+  <button class="btn btn-sm btn-primary" (click)="openAdd()">
+    ➕ Add Feedback
+  </button>
+</div>
+    </div>
+    <ul class="breadcrumb">
+      <li class="breadcrumb-item"><a routerLink="/admin/dashboard">Home</a></li>
+      <li class="breadcrumb-item">Feedbacks</li>
+    </ul>
+  </div>
+</div>
+
+<div class="main-content">
+
+  <div class="row g-3 mb-4" *ngIf="stats">
+    <div class="col-6 col-xl-3">
+      <div class="card stretch stretch-full">
+        <div class="card-body d-flex align-items-center gap-3">
+          <div class="avatar-text avatar-md bg-primary-subtle text-primary rounded-circle">
+            <i class="feather-message-square fs-5"></i>
+          </div>
+          <div>
+            <h4 class="mb-0">{{ stats.totalFeedbacks }}</h4>
+            <small class="text-muted">Total</small>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-xl-3">
+      <div class="card stretch stretch-full">
+        <div class="card-body d-flex align-items-center gap-3">
+          <div class="avatar-text avatar-md bg-warning-subtle text-warning rounded-circle">
+            <i class="feather-clock fs-5"></i>
+          </div>
+          <div>
+            <h4 class="mb-0">{{ stats.pendingFeedbacks }}</h4>
+            <small class="text-muted">Pending</small>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-xl-3">
+      <div class="card stretch stretch-full">
+        <div class="card-body d-flex align-items-center gap-3">
+          <div class="avatar-text avatar-md bg-success-subtle text-success rounded-circle">
+            <i class="feather-check-circle fs-5"></i>
+          </div>
+          <div>
+            <h4 class="mb-0">{{ stats.approvedFeedbacks }}</h4>
+            <small class="text-muted">Approved</small>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-xl-3">
+      <div class="card stretch stretch-full">
+        <div class="card-body d-flex align-items-center gap-3">
+          <div class="avatar-text avatar-md bg-info-subtle text-info rounded-circle">
+            <i class="feather-star fs-5"></i>
+          </div>
+          <div>
+            <h4 class="mb-0">{{ stats.globalAverageRating | number:'1.1-1' }} / 5</h4>
+            <small class="text-muted">Avg. Rating</small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-4" *ngIf="stats">
+    <div class="col-12">
+      <div class="card stretch stretch-full">
+        <div class="card-body d-flex align-items-center gap-4 flex-wrap">
+          <span class="text-muted fw-semibold me-2">Sentiments :</span>
+          <span class="badge bg-success-subtle text-success px-3 py-2 fs-6">
+            <i class="feather-smile me-1"></i>{{ stats.positiveFeedbacks }} Positive
+          </span>
+          <span class="badge bg-secondary-subtle text-secondary px-3 py-2 fs-6">
+            <i class="feather-meh me-1"></i>{{ stats.neutralFeedbacks }} Neutral
+          </span>
+          <span class="badge bg-danger-subtle text-danger px-3 py-2 fs-6">
+            <i class="feather-frown me-1"></i>{{ stats.negativeFeedbacks }} Negative
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card stretch stretch-full">
+    <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+      <h5 class="card-title mb-0">All Feedbacks</h5>
+      <div class="d-flex gap-2 flex-wrap">
+        <select class="form-select form-select-sm" style="width:auto"
+          [(ngModel)]="filterStatus" (change)="applyFilter()">
+          <option value="">All statuses</option>
+          <option value="PENDING">Pending</option>
+          <option value="APPROVED">Approved</option>
+          <option value="REJECTED">Rejected</option>
+        </select>
+        <div class="input-group" style="max-width:260px">
+          <span class="input-group-text bg-transparent border-end-0">
+            <i class="feather-search text-muted"></i>
+          </span>
+          <input type="text" class="form-control border-start-0 ps-0"
+            placeholder="Search..."
+            [(ngModel)]="searchTerm" (ngModelChange)="applyFilter()" />
+          <button *ngIf="searchTerm" class="btn btn-outline-secondary border-start-0"
+            (click)="searchTerm=''; applyFilter()">
+            <i class="feather-x"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-body p-0">
+      <div *ngIf="loading" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status"></div>
+      </div>
+
+      <div *ngIf="showForm" class="p-3 border-bottom bg-light">
+  <div class="row g-2">
+
+    <div class="col-md-3">
+      <input class="form-control form-control-sm"
+             placeholder="Title"
+             [(ngModel)]="form.title">
+    </div>
+
+    <div class="col-md-3">
+      <input class="form-control form-control-sm"
+             placeholder="Comment"
+             [(ngModel)]="form.comment">
+    </div>
+
+    <div class="col-md-2">
+      <input type="number"
+             class="form-control form-control-sm"
+             placeholder="Rating"
+             [(ngModel)]="form.rating">
+    </div>
+
+    <div class="col-md-2">
+      <input class="form-control form-control-sm"
+             placeholder="Category"
+             [(ngModel)]="form.category">
+    </div>
+
+    <div class="col-md-2 d-flex gap-1">
+      <button class="btn btn-success btn-sm w-100"
+              (click)="save()">
+        {{ isEdit ? 'Update' : 'Save' }}
+      </button>
+
+      <button class="btn btn-light btn-sm"
+              (click)="showForm = false">
+        ✖
+      </button>
+    </div>
+
+  </div>
+</div>
+      <div class="table-responsive" *ngIf="!loading">
+        <table class="table table-hover align-middle mb-0">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Title</th>
+              <th>Category</th>
+              <th>Rating</th>
+              <th>Sentiment</th>
+              <th>Status</th>
+              <th>Date</th>
+              <th class="text-end">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let f of filtered">
+              <td class="text-muted">{{ f.id }}</td>
+              <td>
+                <strong>{{ f.title || '—' }}</strong>
+                <div class="text-muted small text-truncate" style="max-width:180px">{{ f.comment }}</div>
+              </td>
+              <td><span class="badge bg-light text-secondary border">{{ f.category || '—' }}</span></td>
+              <td class="text-warning fw-semibold">{{ stars(f.rating) }}</td>
+              <td>
+                <span [class]="sentimentBadge(f.sentiment)">
+                  <i [class]="'me-1 ' + sentimentIcon(f.sentiment)"></i>{{ f.sentiment }}
+                </span>
+              </td>
+              <td><span [class]="statusBadge(f.status)">{{ f.status }}</span></td>
+              <td class="text-muted small">{{ f.createdAt | date:'dd/MM/yy HH:mm' }}</td>
+              <td class="text-end">
+                <div class="d-flex gap-1 justify-content-end flex-wrap">
+                  <button class="btn btn-sm btn-light-brand" title="View details"
+                    (click)="openDetail(f)">
+                    <i class="feather-eye"></i>
+                  </button>
+                  <button class="btn btn-sm btn-primary" title="AI suggestion"
+                    (click)="suggest(f.id!)">
+                    🤖
+                  </button>
+                  <button class="btn btn-sm btn-success" title="Approve"
+                    (click)="accept(f.id!)"
+                    [disabled]="f.status === 'APPROVED'">
+                    <i class="feather-check"></i>
+                  </button>
+                  <button class="btn btn-sm btn-info" title="Custom reply"
+                    (click)="customReply(f.id!)">
+                    ✏️
+                  </button>
+                  <button class="btn btn-sm btn-warning" title="Reject"
+                    (click)="reject(f.id!)"
+                    [disabled]="f.status === 'REJECTED'">
+                    <i class="feather-x"></i>
+                  </button>
+
+                  <button class="btn btn-sm btn-warning"
+        title="Edit"
+        (click)="edit(f)">
+  ✏️
+</button>
+                  
+                  <button class="btn btn-sm btn-danger" title="Delete"
+                    (click)="confirmDelete(f.id!)">
+                    <i class="feather-trash-2"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="filtered.length === 0">
+              <td colspan="8" class="text-center text-muted py-4">No feedbacks found.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Detail Modal -->
+<div class="modal fade show d-block" *ngIf="showDetailModal" style="background:rgba(0,0,0,0.55)">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Feedback #{{ selectedFeedback?.id }}</h5>
+        <button class="btn-close" (click)="showDetailModal = false"></button>
+      </div>
+      <div class="modal-body" *ngIf="selectedFeedback">
+        <div class="row g-4">
+          <div class="col-12 col-md-6">
+            <h6 class="text-muted text-uppercase small mb-3">Feedback details</h6>
+            <div class="mb-3">
+              <span class="fs-4 text-warning">{{ stars(selectedFeedback.rating) }}</span>
+              <span class="ms-2 text-muted">({{ selectedFeedback.rating }}/5)</span>
+            </div>
+            <table class="table table-borderless table-sm mb-3">
+              <tr><td class="text-muted" style="width:110px">Title</td><td><strong>{{ selectedFeedback.title }}</strong></td></tr>
+              <tr><td class="text-muted">Category</td><td>{{ selectedFeedback.category }}</td></tr>
+              <tr><td class="text-muted">Partner ID</td><td>{{ selectedFeedback.partnerId || '—' }}</td></tr>
+              <tr><td class="text-muted">Sentiment</td><td><span [class]="sentimentBadge(selectedFeedback.sentiment)">{{ selectedFeedback.sentiment }}</span></td></tr>
+              <tr><td class="text-muted">Status</td><td><span [class]="statusBadge(selectedFeedback.status)">{{ selectedFeedback.status }}</span></td></tr>
+              <tr><td class="text-muted">Date</td><td class="small">{{ selectedFeedback.createdAt | date:'dd/MM/yyyy HH:mm' }}</td></tr>
+            </table>
+            <div class="bg-light rounded p-3 small">{{ selectedFeedback.comment }}</div>
+            <div class="d-flex gap-2 mt-3">
+              <button class="btn btn-sm btn-success" (click)="accept(selectedFeedback.id!)"
+                [disabled]="selectedFeedback.status === 'APPROVED'">
+                <i class="feather-check me-1"></i>Approve
+              </button>
+              <button class="btn btn-sm btn-warning" (click)="reject(selectedFeedback.id!)"
+                [disabled]="selectedFeedback.status === 'REJECTED'">
+                <i class="feather-x me-1"></i>Reject
+              </button>
+              <button class="btn btn-sm btn-danger ms-auto" (click)="confirmDelete(selectedFeedback.id!)">
+                <i class="feather-trash-2 me-1"></i>Delete
+              </button>
+            </div>
+          </div>
+          <div class="col-12 col-md-6">
+            <h6 class="text-muted text-uppercase small mb-3">Admin response</h6>
+            <div *ngIf="responseSuccess" class="alert alert-success py-2 small">{{ responseSuccess }}</div>
+            <div *ngIf="responseError" class="alert alert-danger py-2 small">{{ responseError }}</div>
+            <ng-container *ngIf="!feedbackResponse">
+              <p class="text-muted small">No response yet.</p>
+              <div class="d-flex flex-column gap-2">
+                <button class="btn btn-primary" (click)="suggestAi()" [disabled]="loadingResponse">
+                  <span *ngIf="loadingResponse" class="spinner-border spinner-border-sm me-1"></span>
+                  <i class="feather-zap me-1" *ngIf="!loadingResponse"></i>Generate AI suggestion
+                </button>
+                <button class="btn btn-outline-secondary" (click)="showCustomForm = true">
+                  <i class="feather-edit-2 me-1"></i>Write manually
+                </button>
+              </div>
+            </ng-container>
+            <ng-container *ngIf="feedbackResponse && !feedbackResponse.response">
+              <div class="alert alert-info small mb-3">
+                <div class="fw-semibold mb-1"><i class="feather-zap me-1"></i>AI Suggestion :</div>
+                {{ feedbackResponse.suggestedResponse }}
+              </div>
+              <div class="d-flex gap-2">
+                <button class="btn btn-success btn-sm" (click)="acceptSuggestion()">
+                  <i class="feather-check me-1"></i>Accept & send
+                </button>
+                <button class="btn btn-outline-secondary btn-sm" (click)="showCustomForm = true">Write something else</button>
+              </div>
+            </ng-container>
+            <ng-container *ngIf="feedbackResponse?.response">
+              <div class="mb-2 text-muted small fw-semibold">Response sent to partner :</div>
+              <div class="bg-light rounded p-3 small mb-2">{{ feedbackResponse!.response }}</div>
+              <div class="text-muted small"><i class="feather-clock me-1"></i>{{ feedbackResponse!.respondedAt | date:'dd/MM/yyyy HH:mm' }}</div>
+              <button class="btn btn-outline-secondary btn-sm mt-2" (click)="showCustomForm = true">
+                <i class="feather-edit-2 me-1"></i>Edit response
+              </button>
+            </ng-container>
+            <div *ngIf="showCustomForm" class="mt-3">
+              <hr>
+              <label class="form-label fw-semibold small">Custom response</label>
+              <textarea class="form-control form-control-sm" rows="5"
+                [(ngModel)]="customResponseText"
+                placeholder="Write your response to the partner..."></textarea>
+              <div class="d-flex gap-2 mt-2">
+                <button class="btn btn-primary btn-sm" (click)="submitCustom()" [disabled]="!customResponseText.trim()">
+                  <i class="feather-send me-1"></i>Send
+                </button>
+                <button class="btn btn-outline-secondary btn-sm" (click)="showCustomForm = false">Cancel</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade show d-block" *ngIf="showDeleteModal" style="background:rgba(0,0,0,0.5)">
+  <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content">
+      <div class="modal-body text-center py-4">
+        <i class="feather-alert-triangle fs-1 text-danger"></i>
+        <h5 class="mt-3">Delete Feedback?</h5>
+        <p class="text-muted small">This action cannot be undone.</p>
+        <div class="d-flex gap-2 justify-content-center">
+          <button class="btn btn-light" (click)="showDeleteModal = false">Cancel</button>
+          <button class="btn btn-danger" (click)="doDelete()">Delete</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
