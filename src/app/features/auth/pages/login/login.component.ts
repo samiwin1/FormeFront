@@ -4,6 +4,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../../core/services/auth.service';
+import { CartService } from '../../../../features/shop/services/cart.service';
 
 @Component({
   standalone: true,
@@ -14,6 +15,7 @@ import { AuthService } from '../../../../core/services/auth.service';
 export class LoginComponent {
   private fb = inject(FormBuilder);
   private auth = inject(AuthService);
+  private cartService = inject(CartService);
   private router = inject(Router);
 
   loading = false;
@@ -42,12 +44,20 @@ export class LoginComponent {
     this.auth.login(payload).subscribe({
       next: () => {
         this.loading = false;
+        const userId = this.auth.getUserId();
+        if (userId != null) this.cartService.refreshCartCount(userId);
         const roles = this.auth.getRoles();
         console.log('Login successful. Roles:', roles);
 
         if (this.auth.isAdmin()) {
           console.log('Navigating to admin dashboard');
           this.router.navigate(['/admin/dashboard']);
+        } else if (this.auth.isEvaluator()) {
+          console.log('Navigating to evaluator oral assignments');
+          this.router.navigate(['/evaluator/oral-assignments']);
+        } else if (this.auth.isUser()) {
+          console.log('Navigating to learner certification space');
+          this.router.navigate(['/me/certification-space']);
         } else {
           console.log('Navigating to home');
           this.router.navigate(['/']);

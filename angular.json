@@ -27,6 +27,7 @@
               }
             ],
             "styles": [
+              "node_modules/apexcharts/dist/apexcharts.css",
               "src/styles.css",
               "src/assets/mentor/vendor/bootstrap/css/bootstrap.min.css",
               "src/assets/mentor/vendor/bootstrap-icons/bootstrap-icons.css",
@@ -38,6 +39,7 @@
               "src/assets/duralux/css/theme.min.css"
             ],
             "scripts": [
+              "src/assets/duralux/vendors/js/jquery.min.js",
               "src/assets/mentor/vendor/bootstrap/js/bootstrap.bundle.min.js",
               "src/assets/mentor/vendor/aos/aos.js",
               "src/assets/mentor/vendor/purecounter/purecounter_vanilla.js",
@@ -66,13 +68,17 @@
             "development": {
               "optimization": false,
               "extractLicenses": false,
-              "sourceMap": true
+              "sourceMap": true,
+              "outputHashing": "media"
             }
           },
           "defaultConfiguration": "development"
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
+          "options": {
+            "proxyConfig": "proxy.conf.json"
+          },
           "configurations": {
             "production": {
               "buildTarget": "forme-frontend:build:production"

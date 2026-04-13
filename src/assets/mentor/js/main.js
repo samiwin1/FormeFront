@@ -6,125 +6,143 @@
 * License: https://bootstrapmade.com/license/
 */
 
-(function() {
+(function () {
   "use strict";
 
-  /**
-   * Apply .scrolled class to the body as the page is scrolled down
-   */
   function toggleScrolled() {
-    const selectBody = document.querySelector('body');
-    const selectHeader = document.querySelector('#header');
-    if (!selectHeader.classList.contains('scroll-up-sticky') && !selectHeader.classList.contains('sticky-top') && !selectHeader.classList.contains('fixed-top')) return;
-    window.scrollY > 100 ? selectBody.classList.add('scrolled') : selectBody.classList.remove('scrolled');
+    const selectBody = document.querySelector("body");
+    const selectHeader = document.querySelector("#header");
+
+    if (!selectBody || !selectHeader) return;
+
+    if (
+      !selectHeader.classList.contains("scroll-up-sticky") &&
+      !selectHeader.classList.contains("sticky-top") &&
+      !selectHeader.classList.contains("fixed-top")
+    ) {
+      return;
+    }
+
+    window.scrollY > 100
+      ? selectBody.classList.add("scrolled")
+      : selectBody.classList.remove("scrolled");
   }
 
-  document.addEventListener('scroll', toggleScrolled);
-  window.addEventListener('load', toggleScrolled);
+  document.addEventListener("scroll", toggleScrolled);
+  window.addEventListener("load", toggleScrolled);
 
-  /**
-   * Mobile nav toggle
-   */
-  const mobileNavToggleBtn = document.querySelector('.mobile-nav-toggle');
+  const mobileNavToggleBtn = document.querySelector(".mobile-nav-toggle");
 
   function mobileNavToogle() {
-    document.querySelector('body').classList.toggle('mobile-nav-active');
-    mobileNavToggleBtn.classList.toggle('bi-list');
-    mobileNavToggleBtn.classList.toggle('bi-x');
+    const body = document.querySelector("body");
+    if (!body || !mobileNavToggleBtn) return;
+
+    body.classList.toggle("mobile-nav-active");
+    mobileNavToggleBtn.classList.toggle("bi-list");
+    mobileNavToggleBtn.classList.toggle("bi-x");
   }
-  mobileNavToggleBtn.addEventListener('click', mobileNavToogle);
 
-  /**
-   * Hide mobile nav on same-page/hash links
-   */
-  document.querySelectorAll('#navmenu a').forEach(navmenu => {
-    navmenu.addEventListener('click', () => {
-      if (document.querySelector('.mobile-nav-active')) {
-        mobileNavToogle();
-      }
+  if (mobileNavToggleBtn) {
+    mobileNavToggleBtn.addEventListener("click", mobileNavToogle);
+  }
+
+  const navLinks = document.querySelectorAll("#navmenu a");
+  if (navLinks && navLinks.length) {
+    navLinks.forEach((navmenu) => {
+      navmenu.addEventListener("click", () => {
+        if (document.querySelector(".mobile-nav-active")) {
+          mobileNavToogle();
+        }
+      });
     });
+  }
 
-  });
+  const dropdownToggles = document.querySelectorAll(".navmenu .toggle-dropdown");
+  if (dropdownToggles && dropdownToggles.length) {
+    dropdownToggles.forEach((navmenu) => {
+      navmenu.addEventListener("click", function (e) {
+        e.preventDefault();
 
-  /**
-   * Toggle mobile nav dropdowns
-   */
-  document.querySelectorAll('.navmenu .toggle-dropdown').forEach(navmenu => {
-    navmenu.addEventListener('click', function(e) {
-      e.preventDefault();
-      this.parentNode.classList.toggle('active');
-      this.parentNode.nextElementSibling.classList.toggle('dropdown-active');
-      e.stopImmediatePropagation();
+        const parent = this.parentNode;
+        const next = parent ? parent.nextElementSibling : null;
+        if (!parent || !next) return;
+
+        parent.classList.toggle("active");
+        next.classList.toggle("dropdown-active");
+        e.stopImmediatePropagation();
+      });
     });
-  });
+  }
 
-  /**
-   * Preloader
-   */
-  const preloader = document.querySelector('#preloader');
+  const preloader = document.querySelector("#preloader");
   if (preloader) {
-    window.addEventListener('load', () => {
+    window.addEventListener("load", () => {
       preloader.remove();
     });
   }
 
-  /**
-   * Scroll top button
-   */
-  let scrollTop = document.querySelector('.scroll-top');
+  const scrollTop = document.querySelector(".scroll-top");
 
   function toggleScrollTop() {
-    if (scrollTop) {
-      window.scrollY > 100 ? scrollTop.classList.add('active') : scrollTop.classList.remove('active');
-    }
+    if (!scrollTop) return;
+    window.scrollY > 100
+      ? scrollTop.classList.add("active")
+      : scrollTop.classList.remove("active");
   }
-  scrollTop.addEventListener('click', (e) => {
-    e.preventDefault();
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth'
+
+  if (scrollTop) {
+    scrollTop.addEventListener("click", (e) => {
+      e.preventDefault();
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
     });
-  });
+  }
 
-  window.addEventListener('load', toggleScrollTop);
-  document.addEventListener('scroll', toggleScrollTop);
+  window.addEventListener("load", toggleScrollTop);
+  document.addEventListener("scroll", toggleScrollTop);
 
-  /**
-   * Animation on scroll function and init
-   */
   function aosInit() {
+    if (typeof AOS === "undefined") return;
+
     AOS.init({
       duration: 600,
-      easing: 'ease-in-out',
+      easing: "ease-in-out",
       once: true,
-      mirror: false
+      mirror: false,
     });
   }
-  window.addEventListener('load', aosInit);
+  window.addEventListener("load", aosInit);
 
-  /**
-   * Initiate glightbox
-   */
-  const glightbox = GLightbox({
-    selector: '.glightbox'
-  });
+  if (typeof GLightbox !== "undefined") {
+    GLightbox({ selector: ".glightbox" });
+  }
 
-  /**
-   * Initiate Pure Counter
-   */
-  new PureCounter();
+  if (typeof PureCounter !== "undefined") {
+    new PureCounter();
+  }
 
-  /**
-   * Init swiper sliders
-   */
   function initSwiper() {
-    document.querySelectorAll(".init-swiper").forEach(function(swiperElement) {
-      let config = JSON.parse(
-        swiperElement.querySelector(".swiper-config").innerHTML.trim()
-      );
+    if (typeof Swiper === "undefined") return;
+
+    document.querySelectorAll(".init-swiper").forEach(function (swiperElement) {
+      const cfgEl = swiperElement.querySelector(".swiper-config");
+      if (!cfgEl) return;
+
+      let config;
+      try {
+        config = JSON.parse(cfgEl.innerHTML.trim());
+      } catch (e) {
+        return;
+      }
 
       if (swiperElement.classList.contains("swiper-tab")) {
-        initSwiperWithCustomPagination(swiperElement, config);
+        if (typeof initSwiperWithCustomPagination === "function") {
+          initSwiperWithCustomPagination(swiperElement, config);
+        } else {
+          new Swiper(swiperElement, config);
+        }
       } else {
         new Swiper(swiperElement, config);
       }
@@ -132,5 +150,4 @@
   }
 
   window.addEventListener("load", initSwiper);
-
 })();

@@ -1,9 +1,10 @@
 @import "bootstrap/dist/css/bootstrap.min.css";
-
 @import "./assets/mentor/vendor/aos/aos.css";
 @import "./assets/mentor/vendor/glightbox/css/glightbox.min.css";
 @import "./assets/mentor/vendor/swiper/swiper-bundle.min.css";
 @import "./assets/mentor/css/main.css";
+@import "./styles/design-system.scss";
+@import "./styles/admin-design-system.css";
 
 /* Fix Mentor navbar button alignment */
 
