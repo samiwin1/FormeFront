@@ -62,6 +62,7 @@ export const routes: Routes = [
       { path: 'deals', loadComponent: () => import('./admin/pages/deals/deals.component').then(m => m.DealsComponent) },
       { path: 'packs', loadComponent: () => import('./admin/pages/packs/packs.component').then(m => m.PacksComponent) },
       { path: 'access-codes', loadComponent: () => import('./admin/pages/access-codes/access-codes.component').then(m => m.AccessCodesComponent) },
+      { path: 'partner-performance', loadComponent: () => import('./admin/pages/partner-performance/partner-performance.component').then(m => m.PartnerPerformanceComponent) },
     ],
   },
   {

@@ -11,6 +11,7 @@ export const environment = {
   paymentApiUrl: useNgProxy ? '/payments-api' : 'http://localhost:8082/api/payments',
   documentApiUrl: useNgProxy ? '/document-api' : 'http://localhost:8085/api',
   articleApiUrl: useNgProxy ? '/article-api' : 'http://localhost:8082/api',
+  partnerPerformanceApiUrl: useNgProxy ? '/partner-performance-api' : 'http://localhost:8082/api/partner-performance',
   // Stripe Publishable key (frontend only). Secret key (sk_...) must stay in backend config.
   stripePublishableKey: 'pk_test_51QxSSXChmhEZInbmW8zEHsoc7tbqeDnZs8sZMx2SgHUKOdhFhBxOBBWnaN4iLoZyBDmao6objazdCSqEQ2tgO7Ay00qOYahLwC',
 };

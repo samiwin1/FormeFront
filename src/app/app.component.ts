@@ -3,10 +3,11 @@ import { Component, OnInit, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { ToastComponent } from './shared/components/toast/toast.component';
 import { KeyboardShortcutsService } from './core/services/keyboard-shortcuts.service';
+import { OnboardingOverlayComponent } from './shared/components/onboarding-overlay/onboarding-overlay.component';
 
 @Component({
   selector: 'app-root',
-  imports: [OverlayModule, RouterOutlet, ToastComponent],
+  imports: [OverlayModule, RouterOutlet, ToastComponent, OnboardingOverlayComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })

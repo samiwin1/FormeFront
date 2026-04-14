@@ -1,6 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../../core/services/auth.service';
+import { OnboardingService } from '../../../../core/services/onboarding.service';
 
 @Component({
   standalone: true,
@@ -11,6 +12,7 @@ import { AuthService } from '../../../../core/services/auth.service';
 })
 export class ProfileComponent {
   private auth = inject(AuthService);
+  private onboarding = inject(OnboardingService);
 
   payload = this.auth.getPayload(); // we’ll add getPayload() if missing
   email = this.auth.getEmail();
@@ -29,5 +31,13 @@ copyEmail() {
     this.copied = true;
     setTimeout(() => (this.copied = false), 1600);
   });
+}
+
+startOnboarding(): void {
+  this.onboarding.startTour();
+}
+
+canShowHeaderTourEntry(): boolean {
+  return this.onboarding.canShowHeaderEntry();
 }
 }

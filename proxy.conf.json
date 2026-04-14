@@ -58,5 +58,14 @@
     "pathRewrite": {
       "^/article-api": "/api"
     }
+  },
+  "/partner-performance-api": {
+    "target": "http://localhost:8082",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug",
+    "pathRewrite": {
+      "^/partner-performance-api": "/api/partner-performance"
+    }
   }
 }
