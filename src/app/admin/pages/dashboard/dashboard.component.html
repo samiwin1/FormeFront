@@ -1,0 +1,319 @@
+<section class="admin-dashboard">
+  <div class="dashboard-toolbar">
+    <div class="toolbar-left">
+      <h1 class="toolbar-title">
+        <i class="bi bi-speedometer2"></i>
+        Admin Dashboard
+      </h1>
+    </div>
+    <div class="toolbar-right">
+      <select class="formation-select" [(ngModel)]="selectedFormationId" (ngModelChange)="loadOverview()">
+        <option value="ALL">All formations</option>
+        <option *ngFor="let formation of formationOptions" [ngValue]="formation.id">
+          {{ formation.title }} (#{{ formation.id }})
+        </option>
+      </select>
+      <button type="button" class="btn-refresh" (click)="loadOverview()">
+        <i class="bi bi-arrow-clockwise"></i>
+      </button>
+    </div>
+  </div>
+
+  <div class="stat-grid">
+    <app-stat-card label="Total Certifications" [value]="totalCertifications" color="blue" iconClass="bi-award-fill" />
+    <app-stat-card label="Oral Sessions Planned" [value]="plannedSessions" color="blue" iconClass="bi-mic-fill" />
+    <app-stat-card label="Learners Assigned" [value]="totalLearnersAssigned" color="purple" iconClass="bi-people-fill" />
+    <app-stat-card label="Pending Reschedule" [value]="pendingReschedules" color="orange" iconClass="bi-arrow-repeat" />
+    <app-stat-card label="Failed After 2 Attempts" [value]="failedAfterTwoAttempts.length" color="red" iconClass="bi-exclamation-octagon-fill" />
+    <app-stat-card label="Certificates Issued" [value]="issuedCertifications" color="green" iconClass="bi-patch-check-fill" />
+  </div>
+
+  <div class="section-card">
+    <div class="section-header">
+      <div class="section-header-left">
+        <i class="bi bi-check2-circle"></i>
+        <div>
+          <h2 class="section-title">Eligible for Oral Exam</h2>
+          <p class="section-subtitle">Passed written exam and not assigned yet</p>
+        </div>
+      </div>
+      <span class="count-badge">{{ filteredEligibleLearners.length }}</span>
+    </div>
+
+    <div class="section-toolbar">
+      <div class="search-box">
+        <i class="bi bi-search"></i>
+        <input type="text" placeholder="Search learner, score, formation..." [(ngModel)]="eligibleSearch" (ngModelChange)="onEligibleSearchOrFilterChange()" />
+      </div>
+      <select class="status-filter" [(ngModel)]="eligibleStatusFilter" (ngModelChange)="onEligibleSearchOrFilterChange()">
+        <option value="ALL">All status</option>
+        <option value="PASSED">Passed</option>
+      </select>
+    </div>
+
+    <div class="section-body">
+      <div *ngIf="filteredEligibleLearners.length === 0" class="empty-state">
+        <i class="bi bi-inbox"></i>
+        <p>No eligible learners found</p>
+      </div>
+
+      <div *ngIf="filteredEligibleLearners.length > 0" class="learners-grid">
+        <div class="learner-card" *ngFor="let l of pagedEligibleLearners">
+          <div class="learner-avatar green">{{ getInitials(displayUserName(l.learnerId, l.learnerName)) }}</div>
+          <div class="learner-info">
+            <h3 class="learner-name">{{ displayUserName(l.learnerId, l.learnerName) }}</h3>
+            <div class="learner-details">
+              <span class="detail-item"><i class="bi bi-book"></i>{{ displayFormationName(l.formationId, l.formationTitle) }}</span>
+              <span class="detail-item"><i class="bi bi-star-fill"></i>Score: {{ l.writtenScore }}</span>
+            </div>
+          </div>
+          <div class="learner-actions">
+            <span class="status-badge eligible">Eligible</span>
+            <a class="btn-assign" routerLink="/admin/oral-sessions" [queryParams]="{ learnerId: l.learnerId, formationId: l.formationId }">
+              <i class="bi bi-person-plus"></i>
+              Assign
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="filteredEligibleLearners.length > 0" class="pagination-bar">
+        <button class="btn-page" (click)="previousEligiblePage()" [disabled]="eligiblePage <= 1">
+          <i class="bi bi-chevron-left"></i>
+          Previous
+        </button>
+        <span class="page-info">Page {{ eligiblePage }} of {{ eligibleTotalPages }}</span>
+        <button class="btn-page" (click)="nextEligiblePage()" [disabled]="eligiblePage >= eligibleTotalPages">
+          Next
+          <i class="bi bi-chevron-right"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="three-column-grid">
+    <div class="mini-section-card blue-theme">
+      <div class="mini-section-header">
+        <i class="bi bi-clipboard-pulse"></i>
+        <div>
+          <h3 class="mini-section-title">Pending Evaluation</h3>
+          <p class="mini-section-subtitle">Assigned but not graded</p>
+        </div>
+        <span class="mini-count-badge">{{ pendingEvaluations.length }}</span>
+      </div>
+      <div class="mini-section-body">
+        <div *ngIf="pendingEvaluations.length === 0" class="mini-empty-state">
+          <i class="bi bi-inbox"></i>
+          <p>No pending evaluations</p>
+        </div>
+        <div *ngIf="pendingEvaluations.length > 0" class="mini-learners-list">
+          <div class="mini-learner-card" *ngFor="let p of pendingEvaluations">
+            <div class="mini-learner-header">
+              <div class="mini-learner-avatar blue">{{ getInitials(displayUserName(p.learnerId, p.learnerName)) }}</div>
+              <div class="mini-learner-info">
+                <h4 class="mini-learner-name">{{ displayUserName(p.learnerId, p.learnerName) }}</h4>
+                <p class="mini-learner-meta"><i class="bi bi-calendar"></i>{{ p.scheduledAt | date:'short' }}</p>
+              </div>
+            </div>
+            <div class="mini-learner-details">
+              <div class="mini-detail-row"><i class="bi bi-person-badge"></i><span>{{ displayUserName(p.evaluatorId, p.evaluatorName) }}</span></div>
+              @if (evaluatorRatings().get(p.evaluatorId); as rating) {
+                <span class="eval-rating">⭐ {{ rating | number:'1.1-1' }}/5</span>
+              } @else {
+                <span class="eval-rating no-rating">No reviews yet</span>
+              }
+              <div class="mini-detail-row"><i class="bi bi-award"></i><span>{{ pendingCertificationTitle(p) }}</span></div>
+              <div class="mini-detail-row">
+                <span class="attempt-badge">#{{ p.attemptNumber || 1 }}</span>
+                <span class="status-badge" [ngClass]="{
+                  'status-assigned': p.status === 'ASSIGNED' || p.status === 'RESCHEDULED' || p.status === 'RESCHEDULE_REQUESTED',
+                  'status-failed': p.status === 'FAILED'
+                }">{{ p.status }}</span>
+              </div>
+            </div>
+            <a class="mini-btn-action blue" routerLink="/admin/oral-sessions"><i class="bi bi-pencil-square"></i>Grade</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mini-section-card green-theme">
+      <div class="mini-section-header">
+        <i class="bi bi-patch-check-fill"></i>
+        <div>
+          <h3 class="mini-section-title">Passed Oral Exam</h3>
+          <p class="mini-section-subtitle">Ready for certificate</p>
+        </div>
+        <span class="mini-count-badge">{{ passedWithoutCertificate.length }}</span>
+      </div>
+      <div class="mini-section-body">
+        <div *ngIf="passedWithoutCertificate.length === 0" class="mini-empty-state">
+          <i class="bi bi-inbox"></i>
+          <p>No learners ready</p>
+        </div>
+        <div *ngIf="passedWithoutCertificate.length > 0" class="mini-learners-list">
+          <div class="mini-learner-card" *ngFor="let p of passedWithoutCertificate">
+            <div class="mini-learner-header">
+              <div class="mini-learner-avatar green">{{ getInitials(displayUserName(p.learnerId, p.learnerName)) }}</div>
+              <div class="mini-learner-info">
+                <h4 class="mini-learner-name">{{ displayUserName(p.learnerId, p.learnerName) }}</h4>
+                <p class="mini-learner-meta"><i class="bi bi-star-fill"></i>Oral Score: {{ p.oralScore }}</p>
+              </div>
+            </div>
+            <button type="button" class="mini-btn-action green" (click)="issueCertificate(p.assignmentId)">
+              <i class="bi bi-file-earmark-check"></i>
+              Issue Certificate
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mini-section-card red-theme">
+      <div class="mini-section-header">
+        <i class="bi bi-exclamation-octagon-fill"></i>
+        <div>
+          <h3 class="mini-section-title">Failed After 2 Attempts</h3>
+          <p class="mini-section-subtitle">Definitive failures</p>
+        </div>
+        <span class="mini-count-badge">{{ failedAfterTwoAttempts.length }}</span>
+      </div>
+      <div class="mini-section-body">
+        <div *ngIf="failedAfterTwoAttempts.length === 0" class="mini-empty-state">
+          <i class="bi bi-inbox"></i>
+          <p>No failed learners</p>
+        </div>
+        <div *ngIf="failedAfterTwoAttempts.length > 0" class="mini-learners-list">
+          <div class="mini-learner-card" *ngFor="let f of failedAfterTwoAttempts">
+            <div class="mini-learner-header">
+              <div class="mini-learner-avatar red">{{ getInitials(displayUserName(f.learnerId, f.learnerName)) }}</div>
+              <div class="mini-learner-info">
+                <h4 class="mini-learner-name">{{ displayUserName(f.learnerId, f.learnerName) }}</h4>
+                <p class="mini-learner-meta"><i class="bi bi-award"></i>{{ failedCertificationTitle(f) }}</p>
+              </div>
+            </div>
+            <div class="mini-learner-details">
+              <div class="mini-detail-row"><span>Attempt #{{ f.attemptNumber || 2 }}</span><span>Score: {{ f.oralScore ?? '-' }}</span></div>
+            </div>
+            <div class="mini-status-badge failed"><i class="bi bi-x-circle"></i>FAILED</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3 mt-2">
+    <div class="col-xl-3 col-md-6">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body d-flex align-items-center gap-3">
+          <div class="rounded-circle bg-primary bg-opacity-10 p-3"><i class="feather-users text-primary fs-4"></i></div>
+          <div><div class="text-muted small">Total Partners</div><div class="fs-3 fw-bold">{{ totalPartners }}</div></div>
+          <a routerLink="/admin/partners" class="stretched-link"></a>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body d-flex align-items-center gap-3">
+          <div class="rounded-circle bg-info bg-opacity-10 p-3"><i class="feather-briefcase text-info fs-4"></i></div>
+          <div><div class="text-muted small">Total Deals</div><div class="fs-3 fw-bold">{{ totalDeals }}</div></div>
+          <a routerLink="/admin/deals" class="stretched-link"></a>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body d-flex align-items-center gap-3">
+          <div class="rounded-circle bg-warning bg-opacity-10 p-3"><i class="feather-package text-warning fs-4"></i></div>
+          <div><div class="text-muted small">Total Packs</div><div class="fs-3 fw-bold">{{ totalPacks }}</div></div>
+          <a routerLink="/admin/packs" class="stretched-link"></a>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body d-flex align-items-center gap-3">
+          <div class="rounded-circle bg-success bg-opacity-10 p-3"><i class="feather-key text-success fs-4"></i></div>
+          <div><div class="text-muted small">Access Codes</div><div class="fs-3 fw-bold">{{ totalCodes }}</div></div>
+          <a routerLink="/admin/access-codes" class="stretched-link"></a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3 mt-1">
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm border-start border-success border-3">
+        <div class="card-body d-flex justify-content-between align-items-center">
+          <div><div class="text-muted small">Active Codes</div><div class="fs-4 fw-bold text-success">{{ activeCodesCount }}</div></div>
+          <span class="badge bg-success bg-opacity-10 text-success p-2 rounded-circle"><i class="feather-check-circle fs-5"></i></span>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm border-start border-danger border-3">
+        <div class="card-body d-flex justify-content-between align-items-center">
+          <div><div class="text-muted small">Expired Codes</div><div class="fs-4 fw-bold text-danger">{{ expiredCodesCount }}</div></div>
+          <span class="badge bg-danger bg-opacity-10 text-danger p-2 rounded-circle"><i class="feather-clock fs-5"></i></span>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm border-start border-secondary border-3">
+        <div class="card-body d-flex justify-content-between align-items-center">
+          <div><div class="text-muted small">Used Codes</div><div class="fs-4 fw-bold text-secondary">{{ usedCodesCount }}</div></div>
+          <span class="badge bg-secondary bg-opacity-10 text-secondary p-2 rounded-circle"><i class="feather-slash fs-5"></i></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card border-0 shadow-sm mt-3">
+    <div class="card-header d-flex align-items-center justify-content-between">
+      <h5 class="card-title mb-0">Business Partner Statistics</h5>
+      <a routerLink="/admin/partners" class="btn btn-sm btn-outline-primary"><i class="feather-users me-1"></i>View All</a>
+    </div>
+    <div class="card-body p-0">
+      <div *ngIf="loadingPartners" class="text-center py-4">
+        <div class="spinner-border text-primary" role="status"></div>
+      </div>
+      <div class="table-responsive" *ngIf="!loadingPartners">
+        <table class="table table-hover mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>#</th>
+              <th>Partner</th>
+              <th>Email</th>
+              <th class="text-center">Total Deals</th>
+              <th class="text-center">Used Codes</th>
+              <th class="text-center">Activity</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let p of partners">
+              <td class="text-muted">{{ p.id }}</td>
+              <td><div class="fw-semibold">{{ p.name }}</div><div class="text-muted small">{{ p.contactPhone }}</div></td>
+              <td class="text-muted">{{ p.contactEmail }}</td>
+              <td class="text-center">
+                <span *ngIf="p.loadingStats" class="spinner-border spinner-border-sm text-muted"></span>
+                <span *ngIf="!p.loadingStats" class="fw-bold text-info">{{ p.stats?.totalDeals ?? '—' }}</span>
+              </td>
+              <td class="text-center">
+                <span *ngIf="p.loadingStats" class="spinner-border spinner-border-sm text-muted"></span>
+                <span *ngIf="!p.loadingStats" class="fw-bold text-warning">{{ p.stats?.usedCodes ?? '—' }}</span>
+              </td>
+              <td class="text-center">
+                <span *ngIf="!p.loadingStats" class="badge rounded-pill" [ngClass]="getActivityBadge(p.stats)">
+                  {{ getActivityLabel(p.stats) }}
+                </span>
+              </td>
+            </tr>
+            <tr *ngIf="partners.length === 0">
+              <td colspan="6" class="text-center text-muted py-4">No partners found.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>

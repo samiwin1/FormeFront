@@ -1,0 +1,102 @@
+<section class="cart-page">
+  <div class="cart-page__hero">
+    <div class="container cart-page__hero-inner">
+      <p class="cart-page__eyebrow">Checkout</p>
+      <h1>Your cart</h1>
+      <p>Review your selected courses before payment.</p>
+    </div>
+  </div>
+
+  <div class="container cart-page__content">
+    @if (error) {
+      <div class="cart-alert" role="alert">
+        <span>{{ error }}</span>
+        <button type="button" class="cart-alert__close" (click)="error = null" aria-label="Close">x</button>
+      </div>
+    }
+
+    @if (loading) {
+      <div class="cart-loading">
+        <div class="spinner-border text-success" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <p>Loading your cart...</p>
+      </div>
+    } @else if (items.length === 0) {
+      <div class="cart-empty card-shell">
+        <h2>Your cart is empty</h2>
+        <p>Discover courses and add the ones you want to learn next.</p>
+        <a routerLink="/courses" class="cart-btn cart-btn--primary">Browse courses</a>
+      </div>
+    } @else {
+      <div class="cart-grid">
+        <div class="cart-items card-shell">
+          <div class="cart-items__head">
+            <h2>Items</h2>
+            <span>{{ items.length }} course{{ items.length === 1 ? '' : 's' }}</span>
+          </div>
+
+          <div class="cart-items__list">
+            @for (item of items; track item.idCartItem) {
+              <article class="cart-item">
+                <div class="cart-item__main">
+                  <h3>{{ item.formationTitleSnapshot || 'Course' }}</h3>
+                  <div class="cart-item__meta">
+                    <span>Qty: {{ item.quantity }}</span>
+                    <span>Unit: {{ item.unitPriceSnapshot }} TND</span>
+                  </div>
+                </div>
+
+                <div class="cart-item__side">
+                  <strong>{{ (item.unitPriceSnapshot ?? 0) * item.quantity }} TND</strong>
+                  <button
+                    type="button"
+                    class="cart-btn cart-btn--ghost"
+                    [disabled]="removingId === item.idCartItem"
+                    (click)="removeItem(item)"
+                  >
+                    @if (removingId === item.idCartItem) {
+                      <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+                    } @else {
+                      Remove
+                    }
+                  </button>
+                </div>
+              </article>
+            }
+          </div>
+
+          <a routerLink="/courses" class="cart-link">+ Add another course</a>
+        </div>
+
+        <aside class="cart-summary card-shell">
+          <h2>Summary</h2>
+
+          <div class="cart-summary__row">
+            <span>Items</span>
+            <strong>{{ items.length }}</strong>
+          </div>
+
+          <div class="cart-summary__row cart-summary__row--total">
+            <span>Total</span>
+            <strong>{{ total }} TND</strong>
+          </div>
+
+          <button
+            type="button"
+            class="cart-btn cart-btn--primary cart-btn--full"
+            [disabled]="checkoutLoading"
+            (click)="proceedToCheckout()"
+          >
+            @if (checkoutLoading) {
+              <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+            }
+            Proceed to checkout
+          </button>
+
+          <p class="cart-summary__hint">Secure payment. You can review your order on the next step.</p>
+        </aside>
+      </div>
+    }
+  </div>
+</section>
