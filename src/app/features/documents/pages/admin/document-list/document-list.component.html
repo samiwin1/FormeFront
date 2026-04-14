@@ -69,18 +69,20 @@
           </div>
           <div class="card-actions">
             <a [routerLink]="['/admin/documents/edit', d.id]" class="btn-card btn-edit">Edit</a>
-            <button
-              type="button"
-              class="btn-card btn-delete"
-              [disabled]="deletingId === d.id"
-              (click)="deleteDocument(d)"
-            >
-              @if (deletingId === d.id) {
-                <span class="spinner-sm"></span> Deleting...
-              } @else {
-                Delete
-              }
-            </button>
+            @if (canDeleteDocument(d)) {
+              <button
+                type="button"
+                class="btn-card btn-delete"
+                [disabled]="deletingId === d.id"
+                (click)="deleteDocument(d)"
+              >
+                @if (deletingId === d.id) {
+                  <span class="spinner-sm"></span> Deleting...
+                } @else {
+                  Delete
+                }
+              </button>
+            }
           </div>
         </div>
       }

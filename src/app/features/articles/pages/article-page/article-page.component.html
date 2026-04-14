@@ -57,6 +57,23 @@
       } @else if (articles.length === 0) {
         <div class="article-state">No article published yet.</div>
       } @else {
+        <div class="article-stats card-shell">
+          <div class="article-stats__head">
+            <span class="article-stats__badge"><i class="bi bi-trophy"></i> Best article</span>
+            <span class="article-stats__total">Total likes: {{ totalLikes }}</span>
+          </div>
+
+          @if (bestLikedArticle && topLikeCount > 0) {
+            <h3>{{ bestLikedArticle.titre }}</h3>
+            <p>
+              Most liked article with <strong>{{ topLikeCount }}</strong> likes.
+            </p>
+          } @else {
+            <h3>No best article yet</h3>
+            <p>Articles exist, but no likes yet. First like will define the top article.</p>
+          }
+        </div>
+
         <div class="article-list">
           @for (article of articles; track trackByArticleId($index, article)) {
             <article class="article-card card-shell">
@@ -86,6 +103,21 @@
                   <i class="bi bi-chat-dots"></i>
                   <span>{{ article.commentCount ?? 0 }}</span>
                 </button>
+                @if (canDeleteArticle(article)) {
+                  <button
+                    type="button"
+                    class="article-action article-action--danger"
+                    [disabled]="deletingArticleId === article.id"
+                    (click)="deleteArticle(article)"
+                  >
+                    @if (deletingArticleId === article.id) {
+                      Deleting...
+                    } @else {
+                      <i class="bi bi-trash"></i>
+                      <span>Delete</span>
+                    }
+                  </button>
+                }
                 <div class="article-translate" role="group" aria-label="Translate article">
                   @for (option of languageOptions; track option.code) {
                     <button
@@ -115,9 +147,67 @@
                         <div class="article-comment">
                           <div class="article-comment__head">
                             <strong>{{ comment.authorName || 'User' }}</strong>
-                            <span>{{ comment.createdAt | date:'short' }}</span>
+                            <div class="article-comment__meta">
+                              <span>{{ comment.createdAt | date:'short' }}</span>
+                              @if (canEditComment(comment)) {
+                                <button
+                                  type="button"
+                                  class="article-comment__edit"
+                                  [disabled]="savingCommentId === comment.id"
+                                  (click)="startEditComment(comment)"
+                                >
+                                  Edit
+                                </button>
+                              }
+                              @if (canDeleteComment(comment)) {
+                                <button
+                                  type="button"
+                                  class="article-comment__delete"
+                                  [disabled]="deletingCommentId === comment.id"
+                                  (click)="deleteComment(article, comment)"
+                                >
+                                  @if (deletingCommentId === comment.id) {
+                                    Deleting...
+                                  } @else {
+                                    Delete
+                                  }
+                                </button>
+                              }
+                            </div>
                           </div>
-                          <p>{{ comment.content }}</p>
+                          @if (editingCommentId === comment.id) {
+                            <div class="article-comment__edit-form">
+                              <textarea
+                                [(ngModel)]="commentEditDrafts[comment.id!]"
+                                rows="3"
+                                placeholder="Edit comment..."
+                              ></textarea>
+                              <div class="article-comment__edit-actions">
+                                <button
+                                  type="button"
+                                  class="article-comment__save"
+                                  [disabled]="savingCommentId === comment.id"
+                                  (click)="saveEditedComment(article, comment)"
+                                >
+                                  @if (savingCommentId === comment.id) {
+                                    Saving...
+                                  } @else {
+                                    Save
+                                  }
+                                </button>
+                                <button
+                                  type="button"
+                                  class="article-comment__cancel"
+                                  [disabled]="savingCommentId === comment.id"
+                                  (click)="cancelEditComment(comment)"
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            </div>
+                          } @else {
+                            <p>{{ comment.content }}</p>
+                          }
                         </div>
                       }
                     </div>

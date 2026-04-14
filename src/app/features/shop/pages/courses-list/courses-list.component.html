@@ -141,20 +141,37 @@
               <ul class="docs-list">
                 @for (doc of selectedDocs; track doc.id) {
                   <li>
-                    <button
-                      type="button"
-                      class="docs-list__item"
-                      [class.docs-list__item--active]="selectedDoc?.id === doc.id"
-                      (click)="selectDocument(doc)"
-                    >
-                      <div class="docs-list__info">
-                        <i class="bi bi-file-earmark-text docs-list__icon" aria-hidden="true"></i>
-                        <div class="docs-list__text">
-                          <span class="docs-list__title">{{ doc.title || doc.fileName }}</span>
-                          <span class="docs-list__meta">{{ displayFileType(doc) }}</span>
+                    <div class="docs-list__row">
+                      <button
+                        type="button"
+                        class="docs-list__item"
+                        [class.docs-list__item--active]="selectedDoc?.id === doc.id"
+                        (click)="selectDocument(doc)"
+                      >
+                        <div class="docs-list__info">
+                          <i class="bi bi-file-earmark-text docs-list__icon" aria-hidden="true"></i>
+                          <div class="docs-list__text">
+                            <span class="docs-list__title">{{ doc.title || doc.fileName }}</span>
+                            <span class="docs-list__meta">{{ displayFileType(doc) }}</span>
+                          </div>
                         </div>
-                      </div>
-                    </button>
+                      </button>
+                      @if (canDeleteDocument(doc)) {
+                        <button
+                          type="button"
+                          class="docs-list__delete"
+                          [disabled]="deletingDocId === doc.id"
+                          (click)="deleteDocumentFromModal(doc)"
+                          aria-label="Delete document"
+                        >
+                          @if (deletingDocId === doc.id) {
+                            <span class="courses-btn__spinner" aria-hidden="true"></span>
+                          } @else {
+                            <i class="bi bi-trash"></i>
+                          }
+                        </button>
+                      }
+                    </div>
                   </li>
                 }
               </ul>

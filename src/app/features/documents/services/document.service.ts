@@ -70,8 +70,11 @@ export class DocumentService {
     });
   }
 
-  deleteDocument(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.baseUrl}/${id}`);
+  deleteDocument(id: number, requesterId: number, isSuperAdmin: boolean): Observable<void> {
+    const params = new HttpParams()
+      .set('requesterId', String(requesterId))
+      .set('isSuperAdmin', String(isSuperAdmin));
+    return this.http.delete<void>(`${this.baseUrl}/${id}`, { params });
   }
 
   downloadFile(id: number): Observable<Blob> {
@@ -84,5 +87,9 @@ export class DocumentService {
 
   askDocument(id: number, question: string): Observable<{ answer: string; snippets: string[] }> {
     return this.http.post<{ answer: string; snippets: string[] }>(`${this.baseUrl}/${id}/ask`, { question });
+  }
+
+  getDownloadUrl(id: number): string {
+    return `${this.baseUrl}/${id}/file`;
   }
 }

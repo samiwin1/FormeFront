@@ -1,35 +1,81 @@
-<section class="order-confirmation-section py-5">
-  <div class="container">
+<section class="order-confirmation-page">
+  <div class="order-confirmation-page__hero">
+    <div class="container order-confirmation-page__hero-inner">
+      <p class="order-confirmation-page__eyebrow">Payment received</p>
+      <h1>Order confirmed</h1>
+      <p>Thank you. Your order has been completed successfully.</p>
+    </div>
+  </div>
+
+  <div class="container order-confirmation-page__content">
     @if (loading) {
-      <div class="text-center py-5">
-        <div class="spinner-border text-primary" role="status">
+      <div class="confirm-loading card-shell">
+        <div class="spinner-border text-success" role="status">
           <span class="visually-hidden">Loading...</span>
         </div>
+        <h2>Preparing your receipt</h2>
+        <p>We are loading your payment confirmation and order details.</p>
       </div>
     } @else if (error) {
-      <div class="alert alert-danger" role="alert">{{ error }}</div>
-      <a routerLink="/courses" class="btn btn-primary">Back to courses</a>
-    } @else if (order) {
-      <h2 class="mb-4">Order confirmed</h2>
-      <p class="text-success mb-4">Thank you. Your order has been completed.</p>
-      <div class="card mb-4">
-        <div class="card-body">
-          <p><strong>Order #{{ order.idOrder }}</strong></p>
-          <p class="mb-0">Total: {{ order.totalAmount }} {{ order.currency ?? 'TND' }}</p>
+      <div class="confirm-alert card-shell">
+        <div>
+          <h2>We couldn’t verify your payment</h2>
+          <p>{{ error }}</p>
         </div>
+        <a routerLink="/courses" class="confirm-btn confirm-btn--primary">Back to courses</a>
       </div>
-      @if (items.length > 0) {
-        <h5 class="mb-3">Items</h5>
-        <ul class="list-group mb-4">
-          @for (item of items; track item.idOrderItem) {
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-              <span>{{ item.formationTitleSnapshot }} × {{ item.quantity }}</span>
-              <span>{{ item.unitPriceSnapshot * item.quantity }} TND</span>
-            </li>
+    } @else if (order) {
+      <div class="confirm-layout">
+        <div class="confirm-main card-shell">
+          <div class="confirm-main__head">
+            <span class="confirm-badge"><i class="bi bi-check2-circle"></i> Paid</span>
+            <a routerLink="/courses" class="confirm-btn confirm-btn--ghost">Continue shopping</a>
+          </div>
+
+          <div class="confirm-order-id">
+            <p>Order #{{ order.idOrder }}</p>
+            <strong>{{ order.totalAmount }} {{ order.currency ?? 'TND' }}</strong>
+          </div>
+
+          @if (items.length > 0) {
+            <div class="confirm-items">
+              <h3>Items</h3>
+              <ul class="confirm-list">
+                @for (item of items; track item.idOrderItem) {
+                  <li class="confirm-list__item">
+                    <div>
+                      <strong>{{ item.formationTitleSnapshot }}</strong>
+                      <span>Quantity: {{ item.quantity }}</span>
+                    </div>
+                    <strong>{{ item.unitPriceSnapshot * item.quantity }} TND</strong>
+                  </li>
+                }
+              </ul>
+            </div>
           }
-        </ul>
-      }
-      <a routerLink="/courses" class="btn btn-primary">Continue shopping</a>
+        </div>
+
+        <aside class="confirm-side card-shell">
+          <h3>Summary</h3>
+          <div class="confirm-side__row">
+            <span>Status</span>
+            <strong>Completed</strong>
+          </div>
+          <div class="confirm-side__row">
+            <span>Items</span>
+            <strong>{{ items.length }}</strong>
+          </div>
+          <div class="confirm-side__row confirm-side__row--total">
+            <span>Total</span>
+            <strong>{{ order.totalAmount }} {{ order.currency ?? 'TND' }}</strong>
+          </div>
+          <div class="confirm-side__banner">
+            <i class="bi bi-receipt"></i>
+            <p>Your receipt is ready. You can keep browsing other courses anytime.</p>
+          </div>
+          <a routerLink="/courses" class="confirm-btn confirm-btn--primary confirm-btn--full">Browse more courses</a>
+        </aside>
+      </div>
     }
   </div>
 </section>

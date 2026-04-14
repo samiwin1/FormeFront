@@ -7,6 +7,7 @@ import { evaluatorGuard } from './core/guards/evaluator.guard';
 import { learnerGuard } from './core/guards/learner.guard';
 import { superAdminGuard } from './core/guards/super-admin.guard';
 import { formationRoutes, adminFormationRoutes } from './features/formation/formation.routes';
+import { DocumentListAdminComponent } from './features/documents/pages/admin/document-list/document-list-admin.component';
 
 export const routes: Routes = [
   {
@@ -56,7 +57,7 @@ export const routes: Routes = [
       { path: 'products/list', loadComponent: () => import('./features/shop/pages/admin/product-list/product-list.component').then(m => m.ProductListComponent) },
       { path: 'documents/add', loadComponent: () => import('./features/documents/pages/admin/document-add/document-add.component').then(m => m.DocumentAddComponent) },
       { path: 'documents/edit/:id', loadComponent: () => import('./features/documents/pages/admin/document-edit/document-edit.component').then(m => m.DocumentEditComponent) },
-      { path: 'documents/list', loadComponent: () => import('./features/documents/pages/admin/document-list/document-list.component').then(m => m.DocumentListComponent) },
+      { path: 'documents/list', component: DocumentListAdminComponent },
       { path: 'orders', loadComponent: () => import('./features/shop/pages/admin/order-list/order-list.component').then(m => m.OrderListComponent) },
       { path: 'partners', loadComponent: () => import('./admin/pages/partners/partners.component').then(m => m.PartnersComponent) },
       { path: 'deals', loadComponent: () => import('./admin/pages/deals/deals.component').then(m => m.DealsComponent) },

@@ -2,6 +2,7 @@ export type ArticleCategory = 'GUIDE' | 'ACTUALITE' | 'CONSEIL';
 
 export interface Article {
   id?: number;
+  ownerId?: number;
   titre: string;
   contenu: string;
   categorie: ArticleCategory;

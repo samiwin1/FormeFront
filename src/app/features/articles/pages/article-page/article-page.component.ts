@@ -45,7 +45,12 @@ export class ArticlePageComponent implements OnInit {
   comments: Record<number, ArticleComment[]> = {};
   commentsLoading: Record<number, boolean> = {};
   commentsOpen: Record<number, boolean> = {};
+  editingCommentId: number | null = null;
+  commentEditDrafts: Record<number, string> = {};
+  savingCommentId: number | null = null;
+  deletingCommentId: number | null = null;
   likeLoading: Record<number, boolean> = {};
+  deletingArticleId: number | null = null;
   translationLoading: Record<number, boolean> = {};
   selectedLanguage: Record<number, ArticleLanguage> = {};
   translationError: Record<number, string> = {};
@@ -97,6 +102,7 @@ export class ArticlePageComponent implements OnInit {
 
     this.publishing = true;
     this.articleService.createArticle({
+      ownerId: this.currentUserId,
       titre,
       contenu,
       categorie: this.composer.categorie,
@@ -190,6 +196,113 @@ export class ArticlePageComponent implements OnInit {
     });
   }
 
+  canDeleteComment(comment: ArticleComment): boolean {
+    const userId = this.currentUserId;
+    if (userId == null) return false;
+    if (this.auth.isSuperAdmin()) return true;
+    return comment.userId === userId;
+  }
+
+  canEditComment(comment: ArticleComment): boolean {
+    const userId = this.currentUserId;
+    if (userId == null) return false;
+    if (this.auth.isAdmin()) return true;
+    return comment.userId === userId;
+  }
+
+  startEditComment(comment: ArticleComment): void {
+    if (comment.id == null || !this.canEditComment(comment)) {
+      return;
+    }
+    this.editingCommentId = comment.id;
+    this.commentEditDrafts[comment.id] = comment.content;
+  }
+
+  cancelEditComment(comment: ArticleComment): void {
+    if (comment.id == null) return;
+    delete this.commentEditDrafts[comment.id];
+    if (this.editingCommentId === comment.id) {
+      this.editingCommentId = null;
+    }
+  }
+
+  saveEditedComment(article: Article, comment: ArticleComment): void {
+    if (article.id == null || comment.id == null) return;
+    if (!this.canEditComment(comment)) {
+      this.toast.error('Only admin or comment owner can edit this comment.');
+      return;
+    }
+
+    const requesterId = this.currentUserId;
+    if (requesterId == null) {
+      this.toast.error('You must be logged in to edit this comment.');
+      return;
+    }
+
+    const nextContent = (this.commentEditDrafts[comment.id] ?? '').trim();
+    if (!nextContent) {
+      this.toast.error('Comment content is required.');
+      return;
+    }
+
+    this.savingCommentId = comment.id;
+    this.articleService.updateComment(
+      article.id,
+      comment.id,
+      { userId: comment.userId, authorName: comment.authorName, content: nextContent },
+      requesterId,
+      this.auth.isAdmin(),
+    ).subscribe({
+      next: (updated) => {
+        const articleId = article.id as number;
+        const list = this.comments[articleId] ?? [];
+        this.comments[articleId] = list.map((item) => (item.id === updated.id ? updated : item));
+        this.savingCommentId = null;
+        this.editingCommentId = null;
+        delete this.commentEditDrafts[comment.id as number];
+        this.toast.success('Comment updated.');
+      },
+      error: (err) => {
+        this.savingCommentId = null;
+        this.toast.error(err?.error?.message || err?.message || 'Could not update comment.');
+      },
+    });
+  }
+
+  deleteComment(article: Article, comment: ArticleComment): void {
+    if (article.id == null || comment.id == null) return;
+    if (!this.canDeleteComment(comment)) {
+      this.toast.error('Only super admin or comment owner can delete this comment.');
+      return;
+    }
+
+    const requesterId = this.currentUserId;
+    if (requesterId == null) {
+      this.toast.error('You must be logged in to delete this comment.');
+      return;
+    }
+
+    if (!confirm('Delete this comment?')) {
+      return;
+    }
+
+    this.deletingCommentId = comment.id;
+    this.articleService.deleteComment(article.id, comment.id, requesterId, this.auth.isSuperAdmin()).subscribe({
+      next: () => {
+        const articleId = article.id as number;
+        const list = this.comments[articleId] ?? [];
+        this.comments[articleId] = list.filter((item) => item.id !== comment.id);
+        article.commentCount = Math.max(0, (article.commentCount ?? 0) - 1);
+        this.deletingCommentId = null;
+        this.toast.success('Comment deleted.');
+      },
+      error: (err) => {
+        this.deletingCommentId = null;
+        this.toast.error(err?.error?.message || err?.message || 'Could not delete comment.');
+      },
+    });
+  }
+
   categoryLabel(category: ArticleCategory): string {
     const labels: Record<ArticleCategory, string> = {
       GUIDE: 'Guide',
@@ -205,6 +318,24 @@ export class ArticlePageComponent implements OnInit {
 
   articleKey(article: Article): number {
     return article.id ?? 0;
+  }
+
+  get bestLikedArticle(): Article | null {
+    if (this.articles.length === 0) {
+      return null;
+    }
+
+    return this.articles.reduce((best, current) =>
+      this.likeValue(current) > this.likeValue(best) ? current : best
+    );
+  }
+
+  get topLikeCount(): number {
+    return this.likeValue(this.bestLikedArticle);
+  }
+
+  get totalLikes(): number {
+    return this.articles.reduce((sum, article) => sum + this.likeValue(article), 0);
   }
 
   languageOptions = [
@@ -273,6 +404,44 @@ export class ArticlePageComponent implements OnInit {
     return this.getSelectedLanguage(article) === 'ar';
   }
 
+  canDeleteArticle(article: Article): boolean {
+    const userId = this.currentUserId;
+    if (userId == null) return false;
+    if (this.auth.isAdmin()) return true;
+    return article.ownerId === userId;
+  }
+
+  deleteArticle(article: Article): void {
+    if (article.id == null) return;
+    if (!this.canDeleteArticle(article)) {
+      this.toast.error('Only admin or the user who posted this article can delete it.');
+      return;
+    }
+
+    const requesterId = this.currentUserId;
+    if (requesterId == null) {
+      this.toast.error('You must be logged in to delete an article.');
+      return;
+    }
+
+    if (!confirm(`Delete article "${article.titre}"?`)) {
+      return;
+    }
+
+    this.deletingArticleId = article.id;
+    this.articleService.deleteArticle(article.id, requesterId, this.auth.isAdmin()).subscribe({
+      next: () => {
+        this.articles = this.articles.filter((a) => a.id !== article.id);
+        this.deletingArticleId = null;
+        this.toast.success('Article deleted.');
+      },
+      error: (err) => {
+        this.deletingArticleId = null;
+        this.toast.error(err?.error?.message || err?.message || 'Could not delete this article.');
+      },
+    });
+  }
+
   translationErrorMessage(article: Article): string {
     const articleId = this.articleKey(article);
     return this.translationError[articleId] ?? '';
@@ -292,5 +461,9 @@ export class ArticlePageComponent implements OnInit {
       this.articles[index] = updated;
       this.articles = [...this.articles];
     }
+  }
+
+  private likeValue(article: Article | null | undefined): number {
+    return article?.likeCount ?? 0;
   }
 }

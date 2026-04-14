@@ -45,6 +45,7 @@ export class CoursesListComponent implements OnInit, OnDestroy {
   previewError: string | null = null;
   openingDocId: number | null = null;
   downloadingDocId: number | null = null;
+  deletingDocId: number | null = null;
   chatQuestion = '';
   chatLoading = false;
   chatMessages: Array<{ role: 'assistant' | 'user'; text: string }> = [];
@@ -344,15 +345,31 @@ export class CoursesListComponent implements OnInit, OnDestroy {
         const a = document.createElement('a');
         a.href = url;
         a.download = doc.fileName || 'document';
+        a.style.display = 'none';
         document.body.appendChild(a);
         a.click();
-        window.URL.revokeObjectURL(url);
         a.remove();
+        // Revoke later to avoid canceling download in some browsers.
+        window.setTimeout(() => window.URL.revokeObjectURL(url), 2000);
         this.downloadingDocId = null;
       },
       error: () => {
+        let fallbackAttempted = false;
+        if (doc.id) {
+          fallbackAttempted = true;
+          const a = document.createElement('a');
+          a.href = this.documentService.getDownloadUrl(doc.id);
+          a.target = '_blank';
+          a.rel = 'noopener';
+          a.style.display = 'none';
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+        }
         this.downloadingDocId = null;
-        this.toast.error('Could not download this document.');
+        if (!fallbackAttempted) {
+          this.toast.error('Could not download this document.');
+        }
       }
     });
   }
@@ -376,6 +393,59 @@ export class CoursesListComponent implements OnInit, OnDestroy {
         this.chatMessages.push({ role: 'assistant', text: 'I could not answer right now. Please try again.' });
         this.chatLoading = false;
       }
+    });
+  }
+
+  canDeleteDocument(doc: AdminDocument): boolean {
+    const userId = this.authService.getUserId();
+    if (userId == null) return false;
+    if (this.authService.isSuperAdmin()) return true;
+    return doc.ownerId === userId;
+  }
+
+  deleteDocumentFromModal(doc: AdminDocument): void {
+    const id = doc.id;
+    if (id == null) return;
+    if (!this.canDeleteDocument(doc)) {
+      this.toast.error('Only super admin or the document owner can delete this document.');
+      return;
+    }
+
+    const requesterId = this.authService.getUserId();
+    if (requesterId == null) {
+      this.toast.error('You must be logged in to delete a document.');
+      return;
+    }
+
+    const isSuperAdmin = this.authService.isSuperAdmin();
+    const label = doc.title || doc.fileName || `#${id}`;
+    if (!confirm(`Delete document "${label}"?`)) return;
+
+    this.deletingDocId = id;
+    this.documentService.deleteDocument(id, requesterId, isSuperAdmin).subscribe({
+      next: () => {
+        this.selectedDocs = this.selectedDocs.filter((d) => d.id !== id);
+
+        if (this.selectedDoc?.id === id) {
+          const nextDoc = this.selectedDocs[0] ?? null;
+          if (nextDoc) {
+            this.selectDocument(nextDoc);
+          } else {
+            this.selectedDoc = null;
+            this.previewText = null;
+            this.previewError = null;
+            this.revokePreviewUrl();
+            this.chatMessages = [];
+          }
+        }
+
+        this.deletingDocId = null;
+        this.toast.success('Document deleted successfully.');
+      },
+      error: (err) => {
+        this.deletingDocId = null;
+        this.toast.error(err?.error?.message || err?.message || 'Could not delete this document.');
+      },
     });
   }
 

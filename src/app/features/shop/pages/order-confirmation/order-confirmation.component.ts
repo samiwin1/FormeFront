@@ -1,6 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { CartService } from '../../services/cart.service';
 import { OrderService } from '../../services/order.service';
 import { AdminOrderService } from '../../services/admin-order.service';
 import { Order, OrderItem } from '../../models/shop.models';
@@ -16,6 +17,7 @@ export class OrderConfirmationComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private orderService = inject(OrderService);
   private adminOrderService = inject(AdminOrderService);
+  private cartService = inject(CartService);
 
   order: Order | null = null;
   items: OrderItem[] = [];
@@ -40,6 +42,28 @@ export class OrderConfirmationComponent implements OnInit {
             this.adminOrderService.getOrderItemsByOrderId(id).subscribe({
               next: (list) => {
                 this.items = list ?? [];
+                if (order.userId != null) {
+                  this.cartService.getActiveCartByUser(order.userId).subscribe({
+                    next: (cart) => {
+                      if (cart?.idCart != null) {
+                        this.cartService.updateCart({ ...cart, status: 'COMPLETED' }).subscribe({
+                          next: () => {
+                            this.loading = false;
+                          },
+                          error: () => {
+                            this.loading = false;
+                          },
+                        });
+                      } else {
+                        this.loading = false;
+                      }
+                    },
+                    error: () => {
+                      this.loading = false;
+                    },
+                  });
+                  return;
+                }
                 this.loading = false;
               },
               error: () => {

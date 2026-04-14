@@ -34,8 +34,11 @@ export class ArticleService {
     return this.http.put<Article>(`${this.baseUrl}/${id}`, payload);
   }
 
-  deleteArticle(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.baseUrl}/${id}`);
+  deleteArticle(id: number, requesterId: number, isAdmin: boolean): Observable<void> {
+    const params = new HttpParams()
+      .set('requesterId', String(requesterId))
+      .set('isAdmin', String(isAdmin));
+    return this.http.delete<void>(`${this.baseUrl}/${id}`, { params });
   }
 
   toggleLike(articleId: number, userId: number): Observable<Article> {
@@ -48,6 +51,20 @@ export class ArticleService {
 
   addComment(articleId: number, payload: ArticleComment): Observable<ArticleComment> {
     return this.http.post<ArticleComment>(`${this.baseUrl}/${articleId}/comments`, payload);
+  }
+
+  updateComment(articleId: number, commentId: number, payload: ArticleComment, requesterId: number, isAdmin: boolean): Observable<ArticleComment> {
+    const params = new HttpParams()
+      .set('requesterId', String(requesterId))
+      .set('isAdmin', String(isAdmin));
+    return this.http.put<ArticleComment>(`${this.baseUrl}/${articleId}/comments/${commentId}`, payload, { params });
+  }
+
+  deleteComment(articleId: number, commentId: number, requesterId: number, isSuperAdmin: boolean): Observable<void> {
+    const params = new HttpParams()
+      .set('requesterId', String(requesterId))
+      .set('isSuperAdmin', String(isSuperAdmin));
+    return this.http.delete<void>(`${this.baseUrl}/${articleId}/comments/${commentId}`, { params });
   }
 
   translateArticle(articleId: number, targetLanguage: ArticleTargetLanguage): Observable<TranslatedArticleView> {

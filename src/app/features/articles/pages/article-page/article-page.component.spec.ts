@@ -1,3 +1,5 @@
+/// <reference types="jasmine" />
+
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ArticlePageComponent } from './article-page.component';
 import { provideHttpClient } from '@angular/common/http';

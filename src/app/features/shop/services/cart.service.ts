@@ -26,6 +26,13 @@ export class CartService {
     });
   }
 
+  updateCart(cart: Cart): Observable<Cart> {
+    if (cart.idCart == null) {
+      throw new Error('Cart id is required');
+    }
+    return this.http.put<Cart>(`${this.baseUrl}/cart/updateCart/${cart.idCart}`, cart);
+  }
+
   addCartItem(cartItem: {
     cart: { idCart: number };
     product: { idProduct: number };
