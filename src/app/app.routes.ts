@@ -34,6 +34,7 @@ export const routes: Routes = [
       { path: 'cart', loadComponent: () => import('./features/shop/pages/cart/cart.component').then(m => m.CartComponent), canActivate: [authGuard] },
       { path: 'checkout', loadComponent: () => import('./features/shop/pages/checkout/checkout.component').then(m => m.CheckoutComponent), canActivate: [authGuard] },
       { path: 'order/confirmation/:orderId', loadComponent: () => import('./features/shop/pages/order-confirmation/order-confirmation.component').then(m => m.OrderConfirmationComponent), canActivate: [authGuard] },
+      { path: 'announcements', loadComponent: () => import('./features/public/pages/announcements/announcements-page.component').then(m => m.AnnouncementsPageComponent), canActivate: [authGuard] },
     ],
   },
   {

@@ -61,7 +61,7 @@
             <div class="pf-row">
               <div class="pf-label">Roles</div>
               <div class="pf-value">
-                <div class="pf-badges" *ngIf="roles?.length; else noRoles">
+                <div class="pf-badges" *ngIf="roles.length; else noRoles">
                   <span class="pf-badge" *ngFor="let r of roles">
                     <i class="bi bi-person-badge"></i>
                     {{ r }}
@@ -103,6 +103,18 @@
               Email copied!
             </div>
           </div>
+        </div>
+
+        <!-- Announcements Section -->
+        <div class="pf-announcements-section">
+          <div class="pf-announcements-header">
+            <h2>
+              <i class="bi bi-megaphone"></i>
+              Latest Announcements
+            </h2>
+            <p class="pf-sub">Stay updated with platform announcements</p>
+          </div>
+          <ng-container *ngComponentOutlet="announcementsDisplayComponent"></ng-container>
         </div>
       </div>
     </div>

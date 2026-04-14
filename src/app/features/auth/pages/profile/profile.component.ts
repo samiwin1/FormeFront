@@ -1,6 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../../core/services/auth.service';
+import { AnnouncementsDisplayComponent } from '../../../../shared/components/announcements-display/announcements-display.component';
 
 @Component({
   standalone: true,
@@ -11,6 +12,7 @@ import { AuthService } from '../../../../core/services/auth.service';
 })
 export class ProfileComponent {
   private auth = inject(AuthService);
+  announcementsDisplayComponent = AnnouncementsDisplayComponent;
 
   payload = this.auth.getPayload(); // we’ll add getPayload() if missing
   email = this.auth.getEmail();
