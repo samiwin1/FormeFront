@@ -1,0 +1,201 @@
+<div class="mentor-study-plans container py-4">
+  <nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb mb-0">
+      <li class="breadcrumb-item"><a routerLink="/me/mentor">AI Mentor</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Study Plans</li>
+    </ol>
+  </nav>
+
+  <div class="page-hero rounded-4 p-4 mb-4 shadow-sm bg-white">
+    <div class="d-flex flex-column flex-lg-row justify-content-between gap-3 align-items-start">
+      <div>
+        <p class="section-label mb-2">Study plan dashboard</p>
+        <h1 class="h3 mb-2">My study plans</h1>
+        <p class="text-muted mb-0">AI-generated plans saved from your mentor sessions. Review progress, compare priorities, and focus on the next study item.</p>
+      </div>
+      <div class="hero-stats text-md-end">
+        <div class="stat-block">
+          <span class="stat-value">{{ plans.length }}</span>
+          <span class="stat-label">Plans saved</span>
+        </div>
+        <div class="stat-block">
+          <span class="stat-value">{{ plans.length ? (plans[0].createdAt | date:'shortDate') : '—' }}</span>
+          <span class="stat-label">Most recent</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="streak-row mt-3">
+      @if (streak && streak.currentStreak > 0) {
+        <div class="streak-banner">
+          🔥 <strong>{{ streak.currentStreak }}</strong> day streak
+          @if (streak.bestStreak > streak.currentStreak) {
+            <span class="text-muted small ms-2">Best: {{ streak.bestStreak }}</span>
+          }
+        </div>
+      }
+      @if (itemsCompletedToday > 0) {
+        <div class="items-today-badge">
+          ✅ <strong>{{ itemsCompletedToday }}</strong> done this session
+        </div>
+      }
+    </div>
+  </div>
+
+  <div class="page-actions d-flex flex-column flex-md-row justify-content-between gap-3 align-items-start mb-4">
+    <a routerLink="/me/mentor" class="btn btn-outline-secondary btn-sm">Back to mentor</a>
+    <div class="text-secondary small">Displaying {{ plans.length }} {{ plans.length === 1 ? 'plan' : 'plans' }}</div>
+  </div>
+
+  @if (loading) {
+    <div class="text-center py-5">
+      <div class="spinner-border text-secondary" role="status"></div>
+      <div class="text-muted mt-2">Loading your study plans…</div>
+    </div>
+  }
+
+  @if (error && !loading) {
+    <div class="alert alert-danger rounded-4">{{ error }}</div>
+  }
+
+  @if (!loading && !error && plans.length === 0) {
+    <div class="empty-state rounded-4 p-4 text-center border border-dashed border-secondary-subtle">
+      <i class="bi bi-journal-x fs-1 text-muted mb-3"></i>
+      <p class="mb-1 fw-semibold">No study plans yet.</p>
+      <p class="text-muted">They will appear here after your mentor session generates a plan for you.</p>
+    </div>
+  }
+
+  @if (!loading && !error && plans.length > 0) {
+    <div class="plans-grid">
+      @for (plan of plans; track plan.id) {
+        <article class="plan-card mtr-card" (click)="openPlanDetails(plan)" role="button" tabindex="0">
+          <div class="plan-card-accent"></div>
+          <div class="plan-card-header d-flex flex-column gap-3 gap-lg-0 flex-lg-row justify-content-between align-items-start">
+            <div class="plan-card-title-group">
+              <div class="plan-category"><span class="badge {{ channelBadgeClass(plan.sourceChannel) }}">{{ channelLabel(plan.sourceChannel) }}</span></div>
+              <h2 class="plan-title">{{ plan.title }}</h2>
+            </div>
+            <div class="plan-meta text-secondary small text-start text-lg-end">
+              <div class="meta-pill"><strong>{{ plan.items.length }}</strong> {{ plan.items.length === 1 ? 'item' : 'items' }}</div>
+              <div class="meta-pill">Created {{ plan.createdAt | date:'mediumDate' }}</div>
+            </div>
+          </div>
+          @if (plan.items.length > 0) {
+            <div class="progress-line mt-3" (click)="$event.stopPropagation()">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="small text-muted">{{ completedCount(plan) }}/{{ plan.items.length }} done</span>
+                <span class="small text-muted">{{ (completedCount(plan) / plan.items.length * 100 | number:'1.0-0') }}%</span>
+              </div>
+              <div class="progress" style="height:5px">
+                <div class="progress-bar bg-success"
+                     [style.width]="(completedCount(plan) / plan.items.length * 100) + '%'"></div>
+              </div>
+            </div>
+          }
+        </article>
+      }
+    </div>
+
+    <div class="plan-modal-backdrop" *ngIf="selectedPlan" (click)="closePlanDetails()">
+      <div class="plan-modal" (click)="$event.stopPropagation()">
+        <div class="modal-header d-flex justify-content-between align-items-start gap-3">
+          <div>
+            <p class="section-label mb-2">Study plan details</p>
+            <h2 class="modal-title">{{ selectedPlan!.title }}</h2>
+            <p class="text-muted small mb-0">{{ selectedPlan!.items.length }} {{ selectedPlan!.items.length === 1 ? 'item' : 'items' }} · {{ getPlanDuration(selectedPlan!) }} min total</p>
+            @if (selectedPlan!.items.length > 0) {
+              <div class="mt-2">
+                <div class="progress" style="height:5px; width:200px">
+                  <div class="progress-bar bg-success"
+                       [style.width]="(completedCount(selectedPlan!) / selectedPlan!.items.length * 100) + '%'"></div>
+                </div>
+                <span class="small text-muted">{{ completedCount(selectedPlan!) }}/{{ selectedPlan!.items.length }} completed</span>
+              </div>
+            }
+          </div>
+          <button type="button" class="btn-close" aria-label="Close" (click)="closePlanDetails()">×</button>
+        </div>
+
+        <div class="modal-content">
+          @if (selectedPlan && selectedPlan.items.length) {
+            <div class="modal-items">
+              @for (item of selectedPlan.items; track item.id) {
+                <div class="modal-item" [class.item-done]="item.completed">
+                  <input type="checkbox"
+                         class="form-check-input mt-1 flex-shrink-0"
+                         [checked]="item.completed"
+                         [disabled]="item.completed"
+                         (change)="markCompleted(item)">
+                  <div class="item-content">
+                    <div class="item-title">{{ item.title }}</div>
+                    <div class="item-meta d-flex flex-wrap gap-2">
+                      @if (item.itemType) {
+                        <span class="item-tag">{{ item.itemType }}</span>
+                      }
+                      @if (item.durationMinutes) {
+                        <span class="item-duration">{{ item.durationMinutes }} min</span>
+                      }
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          } @else {
+            <div class="text-center py-4 text-muted">This plan has no items yet.</div>
+          }
+        </div>
+      </div>
+    </div>
+  }
+</div>
+
+@if (toast && !toast.planComplete) {
+  <div class="motivation-toast">
+    <div class="toast-particles">
+      <span class="particle">✨</span>
+      <span class="particle">🌟</span>
+      <span class="particle">⭐</span>
+      <span class="particle">💫</span>
+      <span class="particle">🎉</span>
+    </div>
+    <div class="toast-icon">🎯</div>
+    <div class="toast-body">
+      <div class="toast-title">Task complete!</div>
+      <div class="toast-message">{{ toast.message }}</div>
+      @if (toast.streak > 0) {
+        <div class="toast-streak">
+          <span class="streak-fire">🔥</span>
+          <span class="streak-text">{{ toast.streak }} day streak!</span>
+        </div>
+      }
+    </div>
+    <div class="toast-checkmark">✓</div>
+  </div>
+}
+
+@if (toast && toast.planComplete) {
+  <div class="plan-complete-toast">
+    <div class="pc-particles">
+      <span class="pc-particle">🎊</span>
+      <span class="pc-particle">🎉</span>
+      <span class="pc-particle">🥳</span>
+      <span class="pc-particle">⭐</span>
+      <span class="pc-particle">🌟</span>
+      <span class="pc-particle">✨</span>
+      <span class="pc-particle">🏅</span>
+      <span class="pc-particle">💫</span>
+    </div>
+    <div class="pc-trophy">🏆</div>
+    <div class="pc-body">
+      <div class="pc-label">Plan complete!</div>
+      <div class="pc-message">{{ toast.message }}</div>
+      @if (toast.streak > 0) {
+        <div class="toast-streak">
+          <span class="streak-fire">🔥</span>
+          <span class="streak-text">{{ toast.streak }} day streak!</span>
+        </div>
+      }
+    </div>
+  </div>
+}

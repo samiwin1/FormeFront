@@ -1,7 +1,8 @@
+import { AsyncPipe, NgIf } from '@angular/common';
 import { Component, HostListener, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
-import { AsyncPipe, NgIf } from '@angular/common';
 import { AuthService } from '../../core/services/auth.service';
+import { CartService } from '../../features/shop/services/cart.service';
 import { NotificationBellComponent } from '../components/notification-bell/notification-bell.component';
 
 @Component({
@@ -13,13 +14,14 @@ import { NotificationBellComponent } from '../components/notification-bell/notif
 })
 export class HeaderComponent {
   private auth = inject(AuthService);
+  cartService = inject(CartService);
 
   isLoggedIn$ = this.auth.isLoggedIn$;
+  cartCount$ = this.cartService.cartCount$;
 
   mobileOpen = false;
   menuOpen = false;
 
-  // ✅ show admin button only for admin/super-admin
   isAdminOrSuperAdmin(): boolean {
     return this.auth.isAdmin() || this.auth.isSuperAdmin();
   }
@@ -44,6 +46,10 @@ export class HeaderComponent {
     return this.auth.isUser();
   }
 
+  certificationHomeLink(): string {
+    return this.auth.isEvaluator() ? '/evaluator/oral-assignments' : '/me/certification-space';
+  }
+
   toggleMenu() {
     this.menuOpen = !this.menuOpen;
   }
@@ -57,14 +63,12 @@ export class HeaderComponent {
     this.menuOpen = false;
   }
 
-  // Close dropdown if click outside
   @HostListener('document:click', ['$event'])
   onDocClick(e: MouseEvent) {
     const target = e.target as HTMLElement;
     if (!target.closest('.fm-dropdown')) this.menuOpen = false;
   }
 
-  // Close mobile menu on Escape
   @HostListener('document:keydown.escape')
   onEsc() {
     this.closeAll();

@@ -10,6 +10,11 @@ export const learnerGuard: CanActivateFn = () => {
     return true;
   }
 
+  if (auth.isEvaluator()) {
+    router.navigate(['/evaluator/oral-assignments']);
+    return false;
+  }
+
   router.navigate(['/']);
   return false;
 };

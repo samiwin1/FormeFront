@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../enviroments/environment';
 import {
+  FeedbackContextDto,
   FeedbackResponse,
   PendingFeedbackDto,
   SessionFeedbackSummaryDto,
@@ -20,6 +21,10 @@ export class FeedbackService {
 
   checkPendingFeedback(): Observable<PendingFeedbackDto> {
     return this.http.get<PendingFeedbackDto>(`${this.api}/me/feedback/pending`);
+  }
+
+  getFeedbackContext(issuedCertificationId: number): Observable<FeedbackContextDto> {
+    return this.http.get<FeedbackContextDto>(`${this.api}/me/feedback/context/${issuedCertificationId}`);
   }
 
   getSessionFeedbackSummary(sessionId: number): Observable<SessionFeedbackSummaryDto> {

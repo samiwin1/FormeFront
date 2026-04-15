@@ -1,0 +1,110 @@
+:host {
+  --mtr-accent: #5fcf80;
+  --mtr-heading: #37423b;
+  --mtr-border: #e2e8f0;
+  --mtr-radius-md: 12px;
+  --mtr-shadow-hover: 0 10px 24px rgba(0,0,0,0.10);
+}
+
+.mtr-card {
+  border: 1px solid var(--mtr-border);
+  border-radius: var(--mtr-radius-md);
+  background: #ffffff;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.2s;
+}
+
+.mtr-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--mtr-shadow-hover);
+  border-color: color-mix(in srgb, var(--mtr-accent), transparent 60%);
+}
+
+.mtr-controls-bar {
+  background: #f8f9fa;
+  border: 1px solid var(--mtr-border);
+}
+
+.weekly-brief-hero {
+  border-color: rgba(95, 207, 128, 0.25);
+}
+
+.locale-input {
+  min-width: 160px;
+}
+
+.weekly-brief-card {
+  overflow: hidden;
+}
+
+.section-card {
+  background: #f8f9fa;
+  border-radius: 14px;
+  border: 1px solid rgba(94, 103, 121, 0.08);
+}
+
+.section-title {
+  color: var(--mtr-heading);
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+}
+
+.section-list,
+.study-plan-list {
+  list-style: none;
+  padding-left: 0;
+  margin-bottom: 0;
+}
+
+.section-list li,
+.study-plan-list li {
+  margin-bottom: 0.85rem;
+  padding-left: 0.25rem;
+}
+
+.section-list li::marker,
+.study-plan-list li::marker {
+  color: var(--mtr-accent);
+}
+
+.weak-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.weak-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.45rem 0.75rem;
+  border-radius: 999px;
+  background: #e7f7ed;
+  color: #166534;
+  font-size: 0.85rem;
+}
+
+.plan-item-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.plan-item-type {
+  background: color-mix(in srgb, var(--mtr-accent), transparent 85%);
+  color: var(--mtr-accent);
+  font-size: 0.78rem;
+}
+
+.plan-item-title {
+  font-weight: 600;
+}
+
+@media (max-width: 767.98px) {
+  .mtr-controls-bar {
+    width: 100%;
+  }
+}
+
+pre {
+  max-height: 360px;
+}

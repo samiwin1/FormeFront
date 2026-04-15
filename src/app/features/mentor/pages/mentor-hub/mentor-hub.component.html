@@ -1,0 +1,187 @@
+<div class="container py-4">
+
+  <!-- Hero Banner -->
+  <div class="mtr-hero d-flex align-items-center gap-3 mb-4">
+    <div class="mtr-hero-icon">
+      <i class="bi bi-robot fs-2"></i>
+    </div>
+    <div class="flex-grow-1">
+      <h1 class="h3 mb-0 mtr-heading-color">AI Mentor</h1>
+      <p class="text-muted mb-0 small">Your personalised learning assistant — advice, paths, and alerts tailored to you.</p>
+    </div>
+    <app-streak-badge></app-streak-badge>
+  </div>
+
+  @if (loading) {
+    <div class="text-center py-5">
+      <div class="mtr-spinner" role="status">
+        <span class="visually-hidden">Loading…</span>
+      </div>
+      <p class="text-muted mt-3 small">Checking your profile…</p>
+    </div>
+  } @else if (portfolioMissing) {
+    <div class="mtr-alert-card mtr-alert-medium p-3 mb-4 d-flex align-items-center gap-3">
+      <i class="bi bi-person-exclamation fs-4 text-warning flex-shrink-0"></i>
+      <div>
+        Complete your <strong>learning profile</strong> so the mentor can tailor advice.
+        <a routerLink="/me/mentor/portfolio" class="mtr-link ms-1">Edit profile</a>
+      </div>
+    </div>
+  }
+
+  <!-- Difficulty alerts -->
+  @if (visibleAlerts.length > 0) {
+    <div class="mb-4">
+      <p class="mtr-section-label mb-2"><i class="bi bi-exclamation-triangle me-1"></i>Learning alerts</p>
+      @for (alert of visibleAlerts; track alert.formationId) {
+        <div class="mtr-alert-card p-3 mb-2 d-flex align-items-start gap-3"
+             [class.mtr-alert-high]="alert.severity === 'HIGH'"
+             [class.mtr-alert-medium]="alert.severity === 'MEDIUM'"
+             [class.mtr-alert-low]="alert.severity === 'LOW'">
+          <i class="bi fs-5 mt-1 flex-shrink-0"
+             [class.bi-exclamation-triangle-fill]="alert.severity === 'HIGH'"
+             [class.text-danger]="alert.severity === 'HIGH'"
+             [class.bi-exclamation-circle-fill]="alert.severity === 'MEDIUM'"
+             [class.text-warning]="alert.severity === 'MEDIUM'"
+             [class.bi-info-circle-fill]="alert.severity === 'LOW'"
+             [class.text-info]="alert.severity === 'LOW'"></i>
+          <div class="flex-grow-1 min-w-0">
+            <div class="fw-semibold small">{{ alert.formationTitle }}</div>
+            <p class="text-muted small mb-0">{{ alert.description }}</p>
+          </div>
+          <div class="d-flex gap-2 flex-shrink-0">
+            <a [routerLink]="['/me/mentor/remediation', alert.formationId]" class="mtr-btn mtr-btn-sm">Get help</a>
+            <button type="button" class="mtr-btn mtr-btn-sm mtr-btn-ghost" (click)="dismiss(alert)">Dismiss</button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Feature cards -->
+  <p class="mtr-section-label mb-3">Quick access</p>
+  <div class="row g-4">
+
+    <!-- Learning profile -->
+    <div class="col-md-6 col-lg-4">
+      <a routerLink="/me/mentor/portfolio" class="mtr-card mtr-card-link h-100 d-block text-decoration-none p-3">
+        <div class="d-flex align-items-center gap-3 mb-2">
+          <div class="mtr-icon-circle"><i class="bi bi-person-lines-fill"></i></div>
+          <h2 class="h6 mb-0 mtr-heading-color fw-semibold">Learning profile</h2>
+        </div>
+        <p class="text-muted small mb-0">Goals, style, self-assessed skills.</p>
+        @if (portfolio) {
+          <div class="mt-3">
+            <div class="d-flex justify-content-between mb-1">
+              <span class="text-muted" style="font-size:0.7rem">Profile completeness</span>
+              <span class="fw-semibold" style="font-size:0.7rem; color: var(--mtr-accent)">{{ profileScore }}%</span>
+            </div>
+            <div class="mtr-progress-bar-wrap">
+              <div class="mtr-progress-bar"
+                   [style.width]="profileScore + '%'"
+                   [class.mtr-progress-success]="profileScore >= 80"
+                   [class.mtr-progress-warn]="profileScore >= 50 && profileScore < 80"
+                   [class.mtr-progress-danger]="profileScore < 50"></div>
+            </div>
+            @if (profileScore < 80) {
+              <p class="text-muted mt-1 mb-0" style="font-size:0.68rem">Fill in more details for better advice.</p>
+            }
+          </div>
+        }
+      </a>
+    </div>
+
+    <!-- Ask the mentor -->
+    <div class="col-md-6 col-lg-4">
+      <a routerLink="/me/mentor/ask" class="mtr-card mtr-card-link h-100 d-block text-decoration-none p-3">
+        <div class="d-flex align-items-center gap-3 mb-2">
+          <div class="mtr-icon-circle"><i class="bi bi-chat-dots"></i></div>
+          <h2 class="h6 mb-0 mtr-heading-color fw-semibold">Ask the mentor</h2>
+        </div>
+        <p class="text-muted small mb-0">Ask questions about your progress.</p>
+      </a>
+    </div>
+
+    <!-- Learning path -->
+    <div class="col-md-6 col-lg-4">
+      <a routerLink="/me/mentor/learning-path" class="mtr-card mtr-card-link mtr-card-featured h-100 d-block text-decoration-none p-3">
+        <div class="d-flex align-items-center gap-3 mb-2">
+          <div class="mtr-icon-circle mtr-icon-circle-accent"><i class="bi bi-map"></i></div>
+          <h2 class="h6 mb-0 fw-semibold" style="color: var(--mtr-accent)">My learning path</h2>
+        </div>
+        <p class="text-muted small mb-0">AI-generated priority path to your goals.</p>
+      </a>
+    </div>
+
+    <!-- Study plans -->
+    <div class="col-md-6 col-lg-4">
+      <a routerLink="/me/mentor/study-plans" class="mtr-card mtr-card-link h-100 d-block text-decoration-none p-3">
+        <div class="d-flex align-items-center gap-3 mb-2">
+          <div class="mtr-icon-circle"><i class="bi bi-journal-check"></i></div>
+          <h2 class="h6 mb-0 mtr-heading-color fw-semibold">My study plans</h2>
+        </div>
+        <p class="text-muted small mb-0">AI-generated plans saved from your sessions.</p>
+      </a>
+    </div>
+
+    <!-- Advice history -->
+    <div class="col-md-6 col-lg-4">
+      <a routerLink="/me/mentor/history" class="mtr-card mtr-card-link h-100 d-block text-decoration-none p-3">
+        <div class="d-flex align-items-center gap-3 mb-2">
+          <div class="mtr-icon-circle"><i class="bi bi-clock-history"></i></div>
+          <h2 class="h6 mb-0 mtr-heading-color fw-semibold">Advice history</h2>
+        </div>
+        <p class="text-muted small mb-0">Past mentor sessions.</p>
+      </a>
+    </div>
+
+    <!-- Saved advice / bookmarks -->
+    <div class="col-md-6 col-lg-4">
+      <a routerLink="/me/mentor/bookmarks" class="mtr-card mtr-card-link h-100 d-block text-decoration-none p-3">
+        <div class="d-flex align-items-center gap-3 mb-2">
+          <div class="mtr-icon-circle" style="background:#fef3c7; color:#d97706;"><i class="bi bi-bookmark-star-fill"></i></div>
+          <h2 class="h6 mb-0 mtr-heading-color fw-semibold">Saved advice</h2>
+        </div>
+        <p class="text-muted small mb-0">Advice you bookmarked for quick access.</p>
+      </a>
+    </div>
+
+    <!-- Streak card -->
+    @if (streak) {
+      <div class="col-md-6 col-lg-4">
+        <div class="mtr-card p-3 h-100">
+          <div class="d-flex align-items-center gap-3 mb-2">
+            <div class="mtr-icon-circle" style="background:#fff7ed; color:#ea580c;">
+              <i class="bi bi-fire"></i>
+            </div>
+            <h2 class="h6 mb-0 mtr-heading-color fw-semibold">Learning streak</h2>
+          </div>
+          <div class="d-flex gap-4 mt-2">
+            <div>
+              <div class="fw-bold fs-4" style="color:#ea580c">{{ streak.currentStreak }}</div>
+              <div class="text-muted small">Current</div>
+            </div>
+            <div>
+              <div class="fw-bold fs-4 text-muted">{{ streak.bestStreak }}</div>
+              <div class="text-muted small">Best</div>
+            </div>
+          </div>
+          <p class="text-muted small mb-0 mt-2">
+            <i class="bi"
+               [class.bi-check-circle-fill]="streak.activeToday"
+               [class.bi-clock]="!streak.activeToday"
+               [class.text-success]="streak.activeToday"
+               [class.text-warning]="!streak.activeToday"></i>
+            {{ streak.activeToday ? 'Active today!' : 'No session yet today' }}
+          </p>
+        </div>
+      </div>
+    }
+
+  </div>
+
+  <p class="text-muted small mt-4 mb-0">
+    For <strong>pre-exam tips</strong>, open a formation and use the link from your course view, or go to
+    <code>/me/mentor/pre-exam/&lt;formationId&gt;</code>.
+  </p>
+</div>

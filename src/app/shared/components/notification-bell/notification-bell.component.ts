@@ -1,5 +1,5 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { AppNotification, NotificationService } from '../../../core/services/notification.service';
 
@@ -46,6 +46,14 @@ import { AppNotification, NotificationService } from '../../../core/services/not
                   } @else if (notif.type === 'SESSION_ASSIGNED') {
                     <div class="notif-icon notif-icon-info">
                       <i class="feather-calendar"></i>
+                    </div>
+                  } @else if (notif.type === 'NEW_FORMATION_DEMAND') {
+                    <div class="notif-icon notif-icon-warning">
+                      <i class="feather-inbox"></i>
+                    </div>
+                  } @else if (notif.type === 'FORMATION_FULFILLED') {
+                    <div class="notif-icon notif-icon-success">
+                      <i class="feather-check-circle"></i>
                     </div>
                   } @else {
                     <div class="notif-icon notif-icon-default">
@@ -187,6 +195,11 @@ import { AppNotification, NotificationService } from '../../../core/services/not
       color: white;
     }
     
+    .notif-icon-warning {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: white;
+    }
+
     .notif-icon-default {
       background: linear-gradient(135deg, #8b5cf6, #7c3aed);
       color: white;
@@ -243,6 +256,8 @@ import { AppNotification, NotificationService } from '../../../core/services/not
   `]
 })
 export class NotificationBellComponent implements OnInit, OnDestroy {
+  @Input() isAdmin = false;
+
   private readonly notificationService = inject(NotificationService);
   private readonly router = inject(Router);
   readonly panelOpen = signal(false);
@@ -251,7 +266,7 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
   readonly unreadNotifications = computed(() => this.notifications().filter((n) => !n.read));
 
   ngOnInit(): void {
-    this.notificationService.startPolling();
+    this.notificationService.startPolling(this.isAdmin);
   }
 
   ngOnDestroy(): void {
@@ -302,6 +317,16 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
       } else {
         this.navigateAndScroll('/me/certification-space', 'my-oral-sessions');
       }
+      return;
+    }
+
+    if (notification.type === 'NEW_FORMATION_DEMAND') {
+      this.router.navigate(['/admin/formation-demands']);
+      return;
+    }
+
+    if (notification.type === 'FORMATION_FULFILLED') {
+      this.router.navigate(['/me/formations']);
       return;
     }
 

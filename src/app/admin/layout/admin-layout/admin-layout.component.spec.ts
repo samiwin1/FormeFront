@@ -1,4 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { RouterTestingModule } from '@angular/router/testing';
 
 import { AdminLayoutComponent } from './admin-layout.component';
 
@@ -8,7 +10,7 @@ describe('AdminLayoutComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AdminLayoutComponent]
+      imports: [AdminLayoutComponent, HttpClientTestingModule, RouterTestingModule]
     })
     .compileComponents();
 

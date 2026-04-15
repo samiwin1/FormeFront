@@ -1,0 +1,93 @@
+<section class="container-fluid py-3">
+  <div class="d-flex align-items-center gap-2 mb-3">
+    <h3 class="mb-0">Partner Intelligence</h3>
+    <input class="form-control w-auto" type="number" [(ngModel)]="partnerId" min="1" />
+    <button class="btn btn-primary btn-sm" (click)="refreshAll(true)" title="Run a new AI Analysis across all modules">Run Full AI Analysis</button>
+  </div>
+
+  <div class="alert alert-info border-0 shadow-sm d-flex align-items-center gap-3">
+    <i class="fa fa-robot fs-4"></i>
+    <div>
+      <strong>How our AI works:</strong> The Intelligence Engine aggregates your partner's historical sales data, engagement metrics, and anomaly detection logs. It then synthetically predicts a health score, uncovers hidden risks (Anomalies), generates a 30-day forecast, and proactively recommends actionable interventions (like assigning vouchers) to boost partner performance.
+    </div>
+  </div>
+
+  <div class="row g-3 mb-3" *ngIf="overview">
+    <div class="col-md-3">
+      <div class="card p-3 h-100 shadow-sm border-0">
+        <div class="text-muted d-flex justify-content-between">
+          <span title="The overall wellness score of the partner based on performance KPIs and engagement." style="cursor:help;">Health Score ℹ️</span>
+          <button class="btn btn-link p-0 text-decoration-none" (click)="refreshOverview(true)"><small>↻</small></button>
+        </div>
+        <div class="fs-3 fw-bold text-primary">{{ overview.avgHealthScore | number: '1.0-0' }}</div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card p-3 h-100 shadow-sm border-0">
+        <div class="text-muted d-flex justify-content-between">
+          <span title="Critical operational or security issues detected within this partner's network." style="cursor:help;">Open Anomalies ℹ️</span>
+          <button class="btn btn-link p-0 text-decoration-none" (click)="refreshOverview(true)"><small>↻</small></button>
+        </div>
+        <div class="fs-3 fw-bold text-danger">{{ overview.openAnomalies }}</div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card p-3 h-100 shadow-sm border-0">
+        <div class="text-muted d-flex justify-content-between">
+          <span title="Actionable AI-generated steps awaiting your approval to improve partner metrics." style="cursor:help;">Pending Recs ℹ️</span>
+          <button class="btn btn-link p-0 text-decoration-none" (click)="refreshOverview(true)"><small>↻</small></button>
+        </div>
+        <div class="fs-3 fw-bold text-warning">{{ overview.pendingRecommendations }}</div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card p-3 h-100 shadow-sm border-0">
+        <div class="text-muted d-flex justify-content-between">
+          <span title="Predictive AI forecast of expected revenue from this partner over the next 30 days." style="cursor:help;">Forecast 30d ℹ️</span>
+          <button class="btn btn-link p-0 text-decoration-none" (click)="refreshForecasts()"><small>↻</small></button>
+        </div>
+        <div class="fs-3 fw-bold text-success">{{ overview.forecast30d | currency }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-lg-6">
+      <div class="card p-3 shadow-sm border-0 h-100">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="mb-0">AI Recommendations</h5>
+          <button class="btn btn-sm btn-outline-secondary" (click)="refreshRecommendations(true)">Refresh</button>
+        </div>
+        <p class="text-muted small">The AI suggests the following interventions based on recent dips or spikes in performance.</p>
+        <div class="list-group">
+          <button class="list-group-item list-group-item-action" *ngFor="let r of recommendations" (click)="selectedRecommendation = r">
+            <div class="d-flex justify-content-between"><strong>{{ r.actionTitle }}</strong><span class="badge bg-secondary">{{ r.status }}</span></div>
+            <small>{{ r.rationale }}</small>
+          </button>
+        </div>
+        <div *ngIf="!recommendations.length" class="text-center text-muted py-3">No recommendations currently generated.</div>
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <div class="card p-3 mb-3 shadow-sm border-0">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="mb-0">Detected Anomalies</h5>
+          <button class="btn btn-sm btn-outline-secondary" (click)="refreshAnomalies(true)">Refresh</button>
+        </div>
+        <div *ngFor="let a of anomalies" class="border border-danger border-opacity-50 rounded p-2 mb-2 bg-danger bg-opacity-10 text-danger">
+          <strong>{{ a.anomalyType }}</strong> - {{ a.explanation }}
+        </div>
+        <div *ngIf="!anomalies.length" class="text-center text-muted py-2">No anomalies detected.</div>
+      </div>
+      <div class="card p-3 shadow-sm border-0">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="mb-0">Latest AI Summary</h5>
+          <button class="btn btn-sm btn-outline-secondary" (click)="refreshSummaries(true)">Refresh</button>
+        </div>
+        <p class="mb-0 lh-lg" style="white-space: pre-wrap;">{{ summaries[0]?.summary || 'No summary yet. Click refresh to query the AI.' }}</p>
+      </div>
+    </div>
+  </div>
+
+  <app-recommendation-review-modal [item]="selectedRecommendation" (decision)="onDecision($event)"></app-recommendation-review-modal>
+</section>

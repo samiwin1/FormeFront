@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { catchError, of } from 'rxjs';
 import { environment } from '../../../enviroments/environment';
 import {
   Certification,
@@ -15,6 +16,12 @@ export class CertificationService {
 
   list() {
     return this.http.get<Certification[]>(this.baseUrl);
+  }
+
+  count() {
+    return this.http.get<{ count: number }>(`${this.baseUrl}/count`).pipe(
+      catchError(() => of({ count: 0 }))
+    );
   }
 
   create(payload: CreateCertificationRequest) {

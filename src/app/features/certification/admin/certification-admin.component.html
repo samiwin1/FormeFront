@@ -536,6 +536,12 @@
               <div class="learner-select-wrapper">
                 <select class="form-select" formControlName="learnerId">
                   <option [ngValue]="null" disabled>Select learner</option>
+                  <option [ngValue]="null" disabled *ngIf="eligibilityLoading">
+                    Loading eligible learners...
+                  </option>
+                  <option [ngValue]="null" disabled *ngIf="!eligibilityLoading && assignmentForm.value.formationId && learnerOptions.length === 0">
+                    No eligible learners for selected formation
+                  </option>
                   <option *ngFor="let learner of learnerOptions" [ngValue]="learner.userId">
                     {{ learner.displayName }} (#{{ learner.userId }}){{ learner.profession ? (' - ' + learner.profession) : '' }}
                   </option>
@@ -589,6 +595,12 @@
               </ng-template>
               <small class="text-danger" *ngIf="assignmentSubmitAttempted && assignmentForm.controls.formationId.invalid">
                 Valid formation is required.
+              </small>
+              <small class="form-hint" *ngIf="assignmentForm.value.formationId && !eligibilityLoading && !eligibilityError">
+                {{ learnerOptions.length }} eligible learner(s) available for this formation.
+              </small>
+              <small class="text-danger" *ngIf="eligibilityError">
+                {{ eligibilityError }}
               </small>
             </div>
           </div>

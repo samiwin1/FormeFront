@@ -19,7 +19,18 @@ export class HeaderComponent {
     this.auth.logout();
     this.router.navigate(['/login']);
   }
-    closeAll() {
+  
+  toggleSidebar(event: Event) {
+    event.preventDefault();
+    const htmlElement = document.documentElement;
+    if (htmlElement.classList.contains('minimenu')) {
+      htmlElement.classList.remove('minimenu');
+    } else {
+      htmlElement.classList.add('minimenu');
+    }
+  }
+
+  closeAll() {
     this.mobileOpen = false;
     this.menuOpen = false;
   }

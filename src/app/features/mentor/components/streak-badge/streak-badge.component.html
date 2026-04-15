@@ -1,0 +1,9 @@
+@if (streak && streak.currentStreak > 0) {
+  <div class="streak-badge"
+       [class.active-today]="streak.activeToday"
+       [title]="'Best streak: ' + streak.bestStreak + ' days'">
+    <span class="streak-flame">🔥</span>
+    <span class="streak-count">{{ streak.currentStreak }}</span>
+    <span class="streak-label">day streak</span>
+  </div>
+}

@@ -8,7 +8,7 @@ import { FooterComponent } from '../../footer/footer.component';
   selector: 'app-public-layout',
   standalone: true,
   imports: [RouterOutlet, NgIf, HeaderComponent, FooterComponent],
-  templateUrl: './public-layout.component.html'
+  templateUrl: './public-layout.component.html',
 })
 export class PublicLayoutComponent {
   private readonly router = inject(Router);
@@ -19,7 +19,8 @@ export class PublicLayoutComponent {
       this.router.url.startsWith('/me/certification-space') ||
       this.router.url.startsWith('/evaluator/oral-assignments') ||
       this.router.url.startsWith('/formations') ||
-      this.router.url.startsWith('/events')
+      this.router.url.startsWith('/events') ||
+      this.router.url.startsWith('/me/mentor')
     );
   }
 }

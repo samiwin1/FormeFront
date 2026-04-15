@@ -1,0 +1,35 @@
+.streak-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #ea580c;
+  transition: all 0.2s ease;
+}
+
+.streak-badge.active-today {
+  background: #fff7ed;
+  border-color: #f97316;
+  box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.15);
+}
+
+.streak-flame {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.streak-count {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.streak-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #c2410c;
+}

@@ -43,42 +43,60 @@
   - Error alerts removed
   - Success messages via toasts
 
-## 📋 IN PROGRESS (30%)
+## 📋 IN PROGRESS (100%) - MENTOR COMPONENTS COMPLETED ✅
 
-### Components to Update
+### Mentor Components - COMPLETED ✅
 
-#### Certification Admin Component
-**File:** `src/app/features/certification/admin/certification-admin.component.ts`
-- [ ] Add ToastService
-- [ ] Replace error/success alerts with toasts
-- [ ] Add skeleton loaders
-- [ ] Update button classes
-- [ ] Add ARIA labels
+#### Mentor Ask Component
+**File:** `src/app/features/mentor/pages/mentor-ask/mentor-ask.component.ts`
+- ✅ Added ToastService injection
+- ✅ Replaced error/success alerts with toast notifications
+- ✅ Removed error properties from component
+- ✅ Removed error displays from template
 
-#### Reschedule Admin Component
-**File:** `src/app/admin/pages/reschedule-admin/reschedule-admin.component.ts`
-- [ ] Add ToastService
-- [ ] Replace error/success alerts with toasts
-- [ ] Add skeleton loaders
-- [ ] Update button classes
+#### Mentor Hub Component
+**File:** `src/app/features/mentor/pages/mentor-hub/mentor-hub.component.ts`
+- ✅ Added ToastService injection
+- ✅ Improved loading state with spinner and ARIA label
 
-#### Sessions Calendar Component
-**File:** `src/app/admin/pages/sessions-calendar/sessions-calendar.component.ts`
-- [ ] Add ToastService
-- [ ] Replace error alerts with toasts
-- [ ] Add skeleton loaders
+#### Mentor Weekly Brief Component
+**File:** `src/app/features/mentor/pages/mentor-weekly-brief/mentor-weekly-brief.component.ts`
+- ✅ Added ToastService injection
+- ✅ Replaced error alerts with toast notifications
+- ✅ Removed error displays from template
 
-#### Issued Certificates Component
-**File:** `src/app/admin/pages/issued-certificates-admin/issued-certificates-admin.component.ts`
-- [ ] Add ToastService
-- [ ] Add skeleton loaders
-- [ ] Update button classes
+#### Mentor Pre-Exam Component
+**File:** `src/app/features/mentor/pages/mentor-pre-exam/mentor-pre-exam.component.ts`
+- ✅ Added ToastService injection
+- ✅ Replaced error alerts with toast notifications
+- ✅ Removed error displays from template
 
-#### Admin Management Component
-**File:** `src/app/admin/pages/admin-management/admin-management.component.ts`
-- [ ] Add ToastService
-- [ ] Add skeleton loaders
-- [ ] Update button classes
+#### Mentor Learning Path Component
+**File:** `src/app/features/mentor/pages/mentor-learning-path/mentor-learning-path.component.ts`
+- ✅ Added ToastService injection
+- ✅ Replaced error alerts with toast notifications
+- ✅ Removed error displays from template
+
+#### Mentor History Component
+**File:** `src/app/features/mentor/pages/mentor-history/mentor-history.component.ts`
+- ✅ Added ToastService injection
+- ✅ Replaced error alerts with toast notifications
+- ✅ Removed error displays from template
+
+#### Portfolio Edit Component
+**File:** `src/app/features/mentor/pages/portfolio-edit/portfolio-edit.component.ts`
+- ✅ Added ToastService injection
+- ✅ Replaced error/success alerts with toast notifications
+- ✅ Removed error/success properties from component
+- ✅ Removed error/success displays from template
+
+#### Mentor Routes
+**File:** `src/app/features/mentor/mentor.routes.ts`
+- ✅ Routes are properly configured with guards
+
+### Skeleton Loader Component
+**File:** `src/app/shared/components/skeleton-loader/skeleton-loader.component.ts`
+- ✅ Component exists and is functional
 
 ## 🔜 TODO (0%)
 

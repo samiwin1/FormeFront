@@ -1,0 +1,128 @@
+<div class="formation-demands container-fluid py-4 px-4">
+
+  <!-- Header -->
+  <div class="page-header mb-4">
+    <div class="d-flex align-items-start justify-content-between flex-wrap gap-3">
+      <div>
+        <h1 class="h3 fw-bold mb-1">Formation Demand</h1>
+        <p class="text-muted mb-0">Roles learners asked about that have no matching formation yet.</p>
+      </div>
+      <button class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-2" (click)="load()">
+        <i class="bi bi-arrow-clockwise"></i> Refresh
+      </button>
+    </div>
+  </div>
+
+  @if (error) {
+    <div class="alert alert-danger rounded-4">{{ error }}</div>
+  }
+
+  @if (loading) {
+    <div class="text-center py-5">
+      <div class="spinner-border text-secondary" role="status"></div>
+      <div class="text-muted mt-2">Loading demands…</div>
+    </div>
+  }
+
+  @if (!loading) {
+
+    <!-- Top roles bar chart -->
+    @if (byRole.length > 0) {
+      <div class="section-card mb-4">
+        <div class="section-card-header">
+          <span class="section-icon">📊</span>
+          <h2 class="section-title">Top Requested Roles</h2>
+          <span class="badge-count">{{ byRole.length }} roles</span>
+        </div>
+        <div class="bar-chart-list">
+          @for (r of topRoles(); track r.requestedRole) {
+            <div class="bar-row">
+              <div class="bar-label">{{ r.requestedRole }}</div>
+              <div class="bar-track">
+                <div class="bar-fill" [style.width]="barWidth(r.count)">
+                  <span class="bar-value">{{ r.count }}</span>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- Demand cards -->
+    @if (demands.length === 0) {
+      <div class="empty-state">
+        <i class="bi bi-inbox fs-1 text-muted mb-3 d-block"></i>
+        <p class="fw-semibold mb-1">No formation demands yet.</p>
+        <p class="text-muted small">Demands are recorded when learners ask about a role that has no matching formation.</p>
+      </div>
+    } @else {
+      <div class="demands-grid">
+        @for (d of demands; track d.requestedRole) {
+          <div class="demand-card" [class.expanded]="expandedRole === d.requestedRole">
+
+            <div class="demand-card-header">
+              <div class="demand-icon">🎯</div>
+              <div class="demand-info">
+                <h3 class="demand-role">{{ d.requestedRole }}</h3>
+                <div class="demand-meta">
+                  @if (d.recentDemands.length > 0) {
+                    <span class="meta-date">Latest: {{ formatDate(d.recentDemands[0].createdAt) }}</span>
+                  }
+                </div>
+              </div>
+              <div class="demand-badge">
+                <span class="requests-count">{{ d.totalRequests }}</span>
+                <span class="requests-label">request{{ d.totalRequests !== 1 ? 's' : '' }}</span>
+              </div>
+            </div>
+
+            @if (d.recentDemands.length > 0 && d.recentDemands[0].detectedSkillsGap) {
+              <div class="skills-gap">
+                <span class="skills-gap-label">Skills gap detected:</span>
+                <span class="skills-gap-text">{{ d.recentDemands[0].detectedSkillsGap }}</span>
+              </div>
+            }
+
+            <div class="demand-card-footer">
+              <button class="btn-toggle" (click)="toggleExpand(d.requestedRole)">
+                <i class="bi" [class.bi-chevron-down]="expandedRole === d.requestedRole"
+                              [class.bi-chevron-right]="expandedRole !== d.requestedRole"></i>
+                {{ expandedRole === d.requestedRole ? 'Hide' : 'View' }} {{ d.recentDemands.length }} request{{ d.recentDemands.length !== 1 ? 's' : '' }}
+              </button>
+              <a [routerLink]="createFormationLink(d.requestedRole)"
+                 class="btn btn-primary btn-sm d-flex align-items-center gap-1">
+                <i class="bi bi-plus-lg"></i> Create Formation
+              </a>
+            </div>
+
+            @if (expandedRole === d.requestedRole) {
+              <div class="requests-list">
+                <div class="requests-list-header">Individual requests</div>
+                @for (item of d.recentDemands; track item.id) {
+                  <div class="request-row">
+                    <div class="request-user">
+                      <i class="bi bi-person-circle me-1"></i>User #{{ item.userId }}
+                    </div>
+                    <div class="request-gap">{{ item.detectedSkillsGap ?? '—' }}</div>
+                    <div class="request-date">{{ formatDate(item.createdAt) }}</div>
+                    <button class="btn btn-sm"
+                            [class.btn-outline-success]="!item.fulfilled"
+                            [class.btn-success]="item.fulfilled"
+                            [disabled]="item.fulfilled"
+                            (click)="fulfillDemand(item)">
+                      <i class="bi" [class.bi-check-lg]="item.fulfilled" [class.bi-send]="!item.fulfilled"></i>
+                      {{ item.fulfilled ? 'Notified' : 'Notify learner' }}
+                    </button>
+                  </div>
+                }
+              </div>
+            }
+
+          </div>
+        }
+      </div>
+    }
+
+  }
+</div>

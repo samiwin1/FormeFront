@@ -11,8 +11,7 @@ import { Subscription } from 'rxjs';
     <div class="toast-container" role="alert" aria-live="polite">
       <div *ngFor="let toast of toasts" 
            class="toast animate-slideInRight"
-           [ngClass]="'toast-' + toast.type"
-           [@slideIn]>
+         [ngClass]="'toast-' + toast.type">
         <div class="toast-icon">
           <i class="bi" [ngClass]="{
             'bi-check-circle-fill text-success': toast.type === 'success',

@@ -88,19 +88,16 @@ export class AdminManagementComponent implements OnInit, AfterViewInit, OnDestro
   }
 
   ngAfterViewInit(): void {
+    // Only load moment; jQuery is already global from angular.json.
+    // Skip apexcharts and dashboard-init to avoid "Element not found" when chart containers are missing.
     setTimeout(() => {
-      const scripts = [
-        'assets/duralux/vendors/js/apexcharts.min.js',
-        'assets/duralux/js/dashboard-init.min.js'
-      ];
-
-      scripts.forEach(src => {
-        if (!document.querySelector(`script[src*="${src}"]`)) {
-          const script = document.createElement('script');
-          script.src = src;
-          document.body.appendChild(script);
-        }
-      });
+      const scriptSrc = 'assets/duralux/vendors/js/moment.min.js';
+      if (document.querySelector(`script[src*="moment.min.js"]`)) return;
+      const script = document.createElement('script');
+      script.src = scriptSrc;
+      script.onload = () => {};
+      script.onerror = () => {};
+      document.body.appendChild(script);
     }, 300);
   }
 
