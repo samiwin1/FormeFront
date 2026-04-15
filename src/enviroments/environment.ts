@@ -11,7 +11,12 @@ export const environment = {
   paymentApiUrl: useNgProxy ? '/payments-api' : 'http://localhost:8082/api/payments',
   documentApiUrl: useNgProxy ? '/document-api' : 'http://localhost:8085/api',
   articleApiUrl: useNgProxy ? '/article-api' : 'http://localhost:8082/api',
+  businessApiUrl: useNgProxy ? '/business-api' : 'http://localhost:8082/api',
   partnerPerformanceApiUrl: useNgProxy ? '/partner-performance-api' : 'http://localhost:8082/api/partner-performance',
+  partnerContractApiUrl: useNgProxy ? '/partner-contract-api' : 'http://localhost:8082/api/partner-contracts',
+  voucherFraudApiUrl: useNgProxy ? '/voucher-fraud-api' : 'http://localhost:8082/api/voucher-fraud',
+  partnerBillingApiUrl: useNgProxy ? '/partner-billing-api' : 'http://localhost:8082/api/partner-billing',
+  partnerIntelligenceApiUrl: useNgProxy ? '/partner-intelligence-api' : 'http://localhost:8082/api/partner-intelligence',
   // Stripe Publishable key (frontend only). Secret key (sk_...) must stay in backend config.
   stripePublishableKey: 'pk_test_51QxSSXChmhEZInbmW8zEHsoc7tbqeDnZs8sZMx2SgHUKOdhFhBxOBBWnaN4iLoZyBDmao6objazdCSqEQ2tgO7Ay00qOYahLwC',
 };

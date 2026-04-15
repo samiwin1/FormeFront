@@ -62,6 +62,18 @@
   transition: background .15s ease, color .15s ease;
 }
 
+.minimenu {
+  --admin-sidebar-width: 0px !important;
+}
+
+html.minimenu .admin-sidebar {
+  display: none !important;
+}
+
+html.minimenu .nxl-navigation {
+  display: none !important;
+}
+
 .nav-wow a:hover{
   background: rgba(26,204,141,.10);
   color: #0b1a2b;

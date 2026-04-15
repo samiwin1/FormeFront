@@ -9,6 +9,9 @@
     </ul>
   </div>
   <div class="page-header-right ms-auto d-flex gap-2">
+    <button class="btn btn-outline-secondary" (click)="load(true)">
+      <i class="feather-refresh-cw me-1"></i> Refresh
+    </button>
     <!-- ✅ Export PDF liste complète -->
     <button class="btn btn-danger" (click)="exportPDF()" [disabled]="loading">
       <i class="feather-file-text me-2"></i>

@@ -21,6 +21,7 @@ import { forkJoin, map } from 'rxjs';
 import { FeedbackService } from '../../../core/services/feedback.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { BusinessService, PartnerStats, PartnerWithStats } from '../../../core/services/business.service';
+import { PartnerIntelligenceService } from '../../../core/services/partner-intelligence.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -37,6 +38,7 @@ export class DashboardComponent implements OnInit {
   private readonly feedbackService = inject(FeedbackService);
   private readonly toastService = inject(ToastService);
   private readonly businessService = inject(BusinessService);
+  private readonly partnerIntelligenceService = inject(PartnerIntelligenceService);
 
   certifications: Certification[] = [];
   sessions: OralSession[] = [];
@@ -71,6 +73,10 @@ export class DashboardComponent implements OnInit {
   loadingBusiness = true;
   partners: PartnerWithStats[] = [];
   loadingPartners = true;
+  aiHealthScore = 0;
+  aiOpenAnomalies = 0;
+  aiPendingRecommendations = 0;
+  aiForecast30d = 0;
 
   constructor() {
     effect(() => {
@@ -133,6 +139,18 @@ export class DashboardComponent implements OnInit {
     this.loadFormationOptions();
     this.loadBusinessOverview();
     this.loadPartnerStats();
+    this.loadAiOverview();
+  }
+
+  private loadAiOverview(): void {
+    this.partnerIntelligenceService.runInference(1).subscribe({
+      next: (overview) => {
+        this.aiHealthScore = overview.avgHealthScore;
+        this.aiOpenAnomalies = overview.openAnomalies;
+        this.aiPendingRecommendations = overview.pendingRecommendations;
+        this.aiForecast30d = overview.forecast30d;
+      }
+    });
   }
 
   loadOverview(): void {

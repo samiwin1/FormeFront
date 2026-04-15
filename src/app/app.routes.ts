@@ -63,6 +63,10 @@ export const routes: Routes = [
       { path: 'packs', loadComponent: () => import('./admin/pages/packs/packs.component').then(m => m.PacksComponent) },
       { path: 'access-codes', loadComponent: () => import('./admin/pages/access-codes/access-codes.component').then(m => m.AccessCodesComponent) },
       { path: 'partner-performance', loadComponent: () => import('./admin/pages/partner-performance/partner-performance.component').then(m => m.PartnerPerformanceComponent) },
+      { path: 'partner-contracts', loadComponent: () => import('./admin/pages/partner-contracts/partner-contracts.component').then(m => m.PartnerContractsComponent) },
+      { path: 'voucher-fraud', loadComponent: () => import('./admin/pages/voucher-fraud/voucher-fraud.component').then(m => m.VoucherFraudComponent) },
+      { path: 'partner-billing', loadComponent: () => import('./admin/pages/partner-billing/partner-billing.component').then(m => m.PartnerBillingComponent) },
+      { path: 'partner-intelligence', loadComponent: () => import('./admin/pages/partner-intelligence/partner-intelligence.component').then(m => m.PartnerIntelligenceComponent) },
     ],
   },
   {

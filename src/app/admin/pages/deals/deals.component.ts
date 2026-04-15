@@ -27,11 +27,11 @@ export class DealsComponent implements OnInit {
 
   form: Deal = { title: '', description: '', partnerId: 0, startDate: '', endDate: '' };
 
-  ngOnInit(): void { this.load(); }
+  ngOnInit(): void { this.load(false); }
 
-  load(): void {
+  load(force = false): void {
     this.loading = true;
-    this.businessService.getDeals().subscribe({
+    this.businessService.getDeals(force).subscribe({
       next: (data: Deal[]) => {
         this.deals = data;
         this.filteredDeals = data;

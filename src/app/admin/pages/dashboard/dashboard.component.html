@@ -268,6 +268,42 @@
     </div>
   </div>
 
+  <div class="row g-3 mt-1">
+    <div class="col-xl-3 col-md-6">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body">
+          <div class="text-muted small">AI Health Score</div>
+          <div class="fs-3 fw-bold">{{ aiHealthScore | number:'1.0-0' }}</div>
+          <a routerLink="/admin/partner-intelligence" class="stretched-link"></a>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body">
+          <div class="text-muted small">AI Open Anomalies</div>
+          <div class="fs-3 fw-bold">{{ aiOpenAnomalies }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body">
+          <div class="text-muted small">AI Pending Recommendations</div>
+          <div class="fs-3 fw-bold">{{ aiPendingRecommendations }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body">
+          <div class="text-muted small">AI Forecast 30d</div>
+          <div class="fs-3 fw-bold">{{ aiForecast30d | currency }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="card border-0 shadow-sm mt-3">
     <div class="card-header d-flex align-items-center justify-content-between">
       <h5 class="card-title mb-0">Business Partner Statistics</h5>

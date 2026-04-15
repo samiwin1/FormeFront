@@ -10,7 +10,7 @@
     </ul>
   </div>
   <div class="page-header-right ms-auto d-flex gap-2">
-    <button class="btn btn-light" (click)="refreshAll()"><i class="feather-refresh-cw me-1"></i>Refresh</button>
+    <button class="btn btn-light" (click)="refreshAll(true)"><i class="feather-refresh-cw me-1"></i>Refresh</button>
   </div>
 </div>
 
@@ -23,7 +23,7 @@
       </div>
       <div class="control-field">
         <label class="form-label">Period</label>
-        <select class="form-select" [(ngModel)]="period" (ngModelChange)="loadLeaderboard()">
+        <select class="form-select" [(ngModel)]="period" (ngModelChange)="loadLeaderboard(true)">
           <option value="7d">Last 7 days</option>
           <option value="30d">Last 30 days</option>
           <option value="90d">Last 90 days</option>
@@ -31,7 +31,7 @@
       </div>
       <div class="control-field">
         <label class="form-label">Metric</label>
-        <select class="form-select" [(ngModel)]="metric" (ngModelChange)="loadLeaderboard()">
+        <select class="form-select" [(ngModel)]="metric" (ngModelChange)="loadLeaderboard(true)">
           <option value="redemptionRate">Redemption Rate</option>
           <option value="redeemed">Redeemed</option>
           <option value="issued">Issued</option>
@@ -40,17 +40,18 @@
       </div>
       <div class="control-field">
         <label class="form-label">Leaderboard size</label>
-        <input class="form-control" type="number" min="1" max="50" [(ngModel)]="limit" (change)="loadLeaderboard()" />
+        <input class="form-control" type="number" min="1" max="50" [(ngModel)]="limit" (change)="loadLeaderboard(true)" />
       </div>
       <div class="action-group">
-        <button class="btn btn-primary" (click)="loadKpi()">Load KPI</button>
-        <button class="btn btn-outline-primary" (click)="loadLeaderboard()">Load Leaderboard</button>
+        <button class="btn btn-primary" (click)="loadKpi(true)">Load KPI</button>
+        <button class="btn btn-outline-primary" (click)="loadLeaderboard(true)">Load Leaderboard</button>
       </div>
     </div>
   </div>
 
   <div class="kpi-grid mb-4">
-    <div class="kpi-card card-hero card-redemption">
+    <div class="kpi-card card-hero card-redemption position-relative">
+      <button class="btn btn-link text-white position-absolute top-0 end-0 p-2 text-decoration-none" (click)="loadKpi(true)" title="Refresh KPI">↻</button>
       <div class="kpi-label">Redemption Rate</div>
       <div class="kpi-value" *ngIf="!loadingKpi">{{ asPercent(kpi?.redemptionRate) }}</div>
       <div class="kpi-value" *ngIf="loadingKpi">...</div>
@@ -115,14 +116,28 @@
       <div class="card stretch stretch-full">
         <div class="card-header d-flex align-items-center justify-content-between">
           <h5 class="card-title mb-0">Open Alerts</h5>
-          <button class="btn btn-sm btn-light" (click)="loadAlerts()">Reload</button>
+          <button class="btn btn-sm btn-light" (click)="loadAlerts(true)"><i class="feather-refresh-cw me-1"></i>Reload</button>
         </div>
         <div class="card-body">
           <div *ngIf="alertsError" class="alert alert-warning">{{ alertsError }}</div>
           <div *ngIf="loadingAlerts" class="text-center py-5"><div class="spinner-border text-primary"></div></div>
 
+          <div class="d-flex flex-wrap align-items-center gap-2 mb-3" *ngIf="!loadingAlerts">
+            <div class="input-group input-group-sm" style="max-width: 300px;">
+              <span class="input-group-text"><i class="feather-search"></i></span>
+              <input class="form-control" placeholder="Search alerts..." [(ngModel)]="alertSearch" (ngModelChange)="onAlertFiltersChanged()">
+            </div>
+            <select class="form-select form-select-sm" style="max-width: 180px;" [(ngModel)]="alertSeverityFilter" (ngModelChange)="onAlertFiltersChanged()">
+              <option value="ALL">All severities</option>
+              <option value="CRITICAL">Critical</option>
+              <option value="HIGH">High</option>
+              <option value="MEDIUM">Medium</option>
+              <option value="LOW">Low</option>
+            </select>
+          </div>
+
           <div class="d-flex flex-column gap-2" *ngIf="!loadingAlerts">
-            <div class="alert-card" *ngFor="let alert of alerts">
+            <div class="alert-card" *ngFor="let alert of paginatedAlerts">
               <div class="d-flex align-items-start justify-content-between gap-2">
                 <div>
                   <span class="badge" [ngClass]="severityClass(alert.severity)">{{ alert.severity }}</span>
@@ -139,7 +154,15 @@
               </div>
             </div>
 
-            <div class="text-center text-muted py-4" *ngIf="alerts.length === 0">No open alerts. System looks healthy.</div>
+            <div class="text-center text-muted py-4" *ngIf="filteredAlerts.length === 0">No open alerts. System looks healthy.</div>
+            <div class="d-flex align-items-center justify-content-between pt-2" *ngIf="filteredAlerts.length > 0">
+              <small class="text-muted">{{ filteredAlerts.length }} alert(s)</small>
+              <div class="d-flex align-items-center gap-2">
+                <button class="btn btn-sm btn-light" [disabled]="alertPage <= 1" (click)="previousAlertPage()">Prev</button>
+                <span class="small text-muted">Page {{ alertPage }} / {{ alertTotalPages }}</span>
+                <button class="btn btn-sm btn-light" [disabled]="alertPage >= alertTotalPages" (click)="nextAlertPage()">Next</button>
+              </div>
+            </div>
           </div>
         </div>
       </div>

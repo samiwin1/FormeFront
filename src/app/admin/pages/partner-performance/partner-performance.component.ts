@@ -30,6 +30,10 @@ export class PartnerPerformanceComponent implements OnInit {
   loadingLeaderboard = false;
   loadingAlerts = false;
   resolvingAlertId: number | null = null;
+  alertSearch = '';
+  alertSeverityFilter: PerformanceAlert['severity'] | 'ALL' = 'ALL';
+  alertPage = 1;
+  readonly alertPageSize = 5;
 
   kpi: PartnerKpi | null = null;
   leaderboard: LeaderboardRow[] = [];
@@ -40,20 +44,20 @@ export class PartnerPerformanceComponent implements OnInit {
   alertsError = '';
 
   ngOnInit(): void {
-    this.refreshAll();
+    this.refreshAll(false);
   }
 
-  refreshAll(): void {
-    this.loadKpi();
-    this.loadLeaderboard();
-    this.loadAlerts();
+  refreshAll(force = true): void {
+    this.loadKpi(force);
+    this.loadLeaderboard(force);
+    this.loadAlerts(force);
   }
 
-  loadKpi(): void {
+  loadKpi(force = true): void {
     this.loadingKpi = true;
     this.kpiError = '';
 
-    this.performanceService.getPartnerKpis(this.partnerId).subscribe({
+    this.performanceService.getPartnerKpis(this.partnerId, undefined, undefined, force).subscribe({
       next: (kpi) => {
         this.kpi = kpi;
         this.loadingKpi = false;
@@ -66,11 +70,11 @@ export class PartnerPerformanceComponent implements OnInit {
     });
   }
 
-  loadLeaderboard(): void {
+  loadLeaderboard(force = true): void {
     this.loadingLeaderboard = true;
     this.leaderboardError = '';
 
-    this.performanceService.getLeaderboard(this.period, this.metric, this.limit).subscribe({
+    this.performanceService.getLeaderboard(this.period, this.metric, this.limit, force).subscribe({
       next: (rows) => {
         this.leaderboard = rows;
         this.loadingLeaderboard = false;
@@ -83,13 +87,14 @@ export class PartnerPerformanceComponent implements OnInit {
     });
   }
 
-  loadAlerts(): void {
+  loadAlerts(force = true): void {
     this.loadingAlerts = true;
     this.alertsError = '';
 
-    this.performanceService.getAlerts(true).subscribe({
+    this.performanceService.getAlerts(true, force).subscribe({
       next: (alerts) => {
         this.alerts = alerts;
+        this.alertPage = 1;
         this.loadingAlerts = false;
       },
       error: () => {
@@ -106,12 +111,47 @@ export class PartnerPerformanceComponent implements OnInit {
     this.performanceService.resolveAlert(alertId).subscribe({
       next: () => {
         this.resolvingAlertId = null;
-        this.loadAlerts();
+        this.loadAlerts(true);
       },
       error: () => {
         this.resolvingAlertId = null;
       },
     });
+  }
+
+  get filteredAlerts(): PerformanceAlert[] {
+    const term = this.alertSearch.trim().toLowerCase();
+    return this.alerts.filter((alert) => {
+      const severityOk = this.alertSeverityFilter === 'ALL' || alert.severity === this.alertSeverityFilter;
+      if (!severityOk) return false;
+      if (!term) return true;
+      const haystack = [alert.type, alert.message, String(alert.partnerId ?? ''), String(alert.dealId ?? '')]
+        .join(' ')
+        .toLowerCase();
+      return haystack.includes(term);
+    });
+  }
+
+  get alertTotalPages(): number {
+    return Math.max(1, Math.ceil(this.filteredAlerts.length / this.alertPageSize));
+  }
+
+  get paginatedAlerts(): PerformanceAlert[] {
+    const safePage = Math.min(this.alertPage, this.alertTotalPages);
+    const start = (safePage - 1) * this.alertPageSize;
+    return this.filteredAlerts.slice(start, start + this.alertPageSize);
+  }
+
+  onAlertFiltersChanged(): void {
+    this.alertPage = 1;
+  }
+
+  nextAlertPage(): void {
+    this.alertPage = Math.min(this.alertTotalPages, this.alertPage + 1);
+  }
+
+  previousAlertPage(): void {
+    this.alertPage = Math.max(1, this.alertPage - 1);
   }
 
   severityClass(severity: PerformanceAlert['severity']): string {

@@ -59,13 +59,58 @@
       "^/article-api": "/api"
     }
   },
-  "/partner-performance-api": {
+  "/business-api": {
     "target": "http://localhost:8082",
     "secure": false,
     "changeOrigin": true,
     "logLevel": "debug",
     "pathRewrite": {
+      "^/business-api": "/api"
+    }
+  },
+  "/partner-performance-api": {
+    "target": "http://localhost:8088",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug",
+    "pathRewrite": {
       "^/partner-performance-api": "/api/partner-performance"
+    }
+  },
+  "/partner-contract-api": {
+    "target": "http://localhost:8089",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug",
+    "pathRewrite": {
+      "^/partner-contract-api": "/api/partner-contracts"
+    }
+  },
+  "/voucher-fraud-api": {
+    "target": "http://localhost:8091",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug",
+    "pathRewrite": {
+      "^/voucher-fraud-api": "/api/voucher-fraud"
+    }
+  },
+  "/partner-billing-api": {
+    "target": "http://localhost:8092",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug",
+    "pathRewrite": {
+      "^/partner-billing-api": "/api/partner-billing"
+    }
+  },
+  "/partner-intelligence-api": {
+    "target": "http://localhost:8082",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug",
+    "pathRewrite": {
+      "^/partner-intelligence-api": "/api/partner-intelligence"
     }
   }
 }
