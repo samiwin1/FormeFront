@@ -4,7 +4,6 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { CartService } from '../../features/shop/services/cart.service';
 import { NotificationBellComponent } from '../components/notification-bell/notification-bell.component';
-import { OnboardingService } from '../../core/services/onboarding.service';
 
 @Component({
   selector: 'app-header',
@@ -15,7 +14,6 @@ import { OnboardingService } from '../../core/services/onboarding.service';
 })
 export class HeaderComponent {
   private auth = inject(AuthService);
-  private onboarding = inject(OnboardingService);
   cartService = inject(CartService);
 
   isLoggedIn$ = this.auth.isLoggedIn$;
@@ -63,15 +61,6 @@ export class HeaderComponent {
   closeAll() {
     this.mobileOpen = false;
     this.menuOpen = false;
-  }
-
-  canShowTourEntry(): boolean {
-    return this.onboarding.canShowHeaderEntry();
-  }
-
-  startTour(): void {
-    this.onboarding.startTour();
-    this.closeAll();
   }
 
   @HostListener('document:click', ['$event'])

@@ -5,7 +5,6 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../../core/services/auth.service';
 import { CartService } from '../../../../features/shop/services/cart.service';
-import { OnboardingService } from '../../../../core/services/onboarding.service';
 
 @Component({
   standalone: true,
@@ -17,7 +16,6 @@ export class LoginComponent {
   private fb = inject(FormBuilder);
   private auth = inject(AuthService);
   private cartService = inject(CartService);
-  private onboarding = inject(OnboardingService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
 
@@ -57,23 +55,19 @@ export class LoginComponent {
         const roles = this.auth.getRoles();
         console.log('Login successful. Roles:', roles);
 
-        let target = '/';
         if (this.auth.isAdmin()) {
           console.log('Navigating to admin dashboard');
-          target = '/admin/dashboard';
+          this.router.navigate(['/admin/dashboard']);
         } else if (this.auth.isEvaluator()) {
           console.log('Navigating to evaluator oral assignments');
-          target = '/evaluator/oral-assignments';
+          this.router.navigate(['/evaluator/oral-assignments']);
         } else if (this.auth.isUser()) {
           console.log('Navigating to learner certification space');
-          target = '/me/certification-space';
+          this.router.navigate(['/me/certification-space']);
         } else {
           console.log('Navigating to home');
+          this.router.navigate(['/']);
         }
-
-        this.router.navigateByUrl(target).then(() => {
-          this.onboarding.startIfPendingAfterLogin();
-        });
       },
       error: (err) => {
         this.loading = false;

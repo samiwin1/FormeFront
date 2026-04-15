@@ -31,7 +31,7 @@
       <div class="pf-body">
         <div class="pf-grid">
           <!-- Account info -->
-          <div class="pf-panel" data-ob="profile-onboarding-panel">
+          <div class="pf-panel">
             <div class="pf-panel-head">
               <div>
                 <h2>Account</h2>
@@ -101,39 +101,6 @@
             <div class="pf-note" *ngIf="copied">
               <i class="bi bi-clipboard-check"></i>
               Email copied!
-            </div>
-          </div>
-
-          <div class="pf-panel">
-            <div class="pf-panel-head">
-              <div>
-                <h2>Guided onboarding</h2>
-                <span class="pf-sub">Replay the app walkthrough any time</span>
-              </div>
-            </div>
-
-            <div class="pf-row">
-              <div class="pf-label">Availability</div>
-              <div class="pf-value">
-                <span class="pf-muted" *ngIf="canShowHeaderTourEntry(); else settingsOnly">
-                  Also available from header quick action (first 3 days after first login).
-                </span>
-                <ng-template #settingsOnly>
-                  <span class="pf-muted">
-                    Available here in settings after the first 3 days.
-                  </span>
-                </ng-template>
-              </div>
-            </div>
-
-            <div class="pf-row">
-              <div class="pf-label">Action</div>
-              <div class="pf-value">
-                <button class="pf-btn pf-btn-light" type="button" (click)="startOnboarding()">
-                  <i class="bi bi-compass"></i>
-                  Start guided tour
-                </button>
-              </div>
             </div>
           </div>
         </div>
