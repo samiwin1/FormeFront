@@ -20,6 +20,11 @@
             Copy email
           </button>
 
+          <button class="pf-btn pf-btn-light" type="button" (click)="startTour()">
+            <i class="bi bi-stars"></i>
+            Start guided tour
+          </button>
+
           <button class="pf-btn pf-btn-danger" type="button" (click)="logout()">
             <i class="bi bi-box-arrow-right"></i>
             Logout
@@ -31,7 +36,7 @@
       <div class="pf-body">
         <div class="pf-grid">
           <!-- Account info -->
-          <div class="pf-panel">
+          <div class="pf-panel" data-ob="profile-onboarding-panel">
             <div class="pf-panel-head">
               <div>
                 <h2>Account</h2>

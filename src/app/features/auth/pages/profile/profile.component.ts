@@ -2,6 +2,7 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../../core/services/auth.service';
 import { AnnouncementsDisplayComponent } from '../../../../shared/components/announcements-display/announcements-display.component';
+import { OnboardingService } from '../../../../core/services/onboarding.service';
 
 @Component({
   standalone: true,
@@ -12,6 +13,7 @@ import { AnnouncementsDisplayComponent } from '../../../../shared/components/ann
 })
 export class ProfileComponent {
   private auth = inject(AuthService);
+  private onboarding = inject(OnboardingService);
   announcementsDisplayComponent = AnnouncementsDisplayComponent;
 
   payload = this.auth.getPayload(); // we’ll add getPayload() if missing
@@ -22,6 +24,11 @@ export class ProfileComponent {
   logout() {
     this.auth.logout();
   }
+
+  startTour() {
+    this.onboarding.startTour();
+  }
+
   copied = false;
 
 copyEmail() {
