@@ -44,7 +44,7 @@
           <p class="courses-empty__text">Check back soon — new formations will appear here.</p>
         </div>
       } @else {
-        <div class="row g-4 courses-grid">
+        <div class="row g-4 courses-grid" data-ob="courses-grid">
           @for (product of products; track product.idProduct) {
             <div class="col-12 col-md-6 col-xl-4">
               <article class="course-card">

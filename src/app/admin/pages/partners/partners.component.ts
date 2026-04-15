@@ -27,11 +27,11 @@ export class PartnersComponent implements OnInit {
 
   form: Partner = { name: '', contactEmail: '', contactPhone: '' };
 
-  ngOnInit(): void { this.load(); }
+  ngOnInit(): void { this.load(false); }
 
-  load(): void {
+  load(force = false): void {
     this.loading = true;
-    this.businessService.getPartners().subscribe({
+    this.businessService.getPartners(force).subscribe({
       next: (data: Partner[]) => {
         this.partners = data;
         this.filteredPartners = data;   // ✅ initialise la liste filtrée

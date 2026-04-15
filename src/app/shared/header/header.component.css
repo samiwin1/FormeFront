@@ -12,12 +12,12 @@
 
 /* layout */
 .fm-container{
-  max-width: 1200px;
+  max-width: 1600px;
   margin: 0 auto;
-  padding: 12px 16px;
+  padding: 12px 24px;
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 16px;
 }
 
 /* brand */
@@ -27,6 +27,12 @@
   gap: 10px;
   text-decoration: none;
   flex: 0 0 auto;
+}
+
+@media (min-width: 992px){
+  .fm-brand{
+    margin-left: 0;
+  }
 }
 .fm-logo{
   width: 42px; height: 42px;
@@ -49,13 +55,21 @@
   display: flex;
   gap: 10px;
 }
+
+@media (min-width: 992px){
+  .fm-nav{
+    margin-left: 0;
+  }
+}
 .fm-nav a{
   text-decoration: none;
   font-weight: 800;
   color: rgba(11,26,43,.78);
-  padding: 10px 12px;
+  padding: 8px 10px;
+  font-size: 15px;
   border-radius: 999px;
   transition: .15s ease;
+  white-space: nowrap;
 }
 .fm-nav a:hover{
   background: rgba(26,204,141,.10);

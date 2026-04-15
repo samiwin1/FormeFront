@@ -27,11 +27,11 @@ export class PacksComponent implements OnInit {
 
   form: Pack = { name: '', description: '', validityMonths: 1, active: true };
 
-  ngOnInit(): void { this.load(); }
+  ngOnInit(): void { this.load(false); }
 
-  load(): void {
+  load(force = false): void {
     this.loading = true;
-    this.businessService.getPacks().subscribe({
+    this.businessService.getPacks(force).subscribe({
       next: (data: Pack[]) => {
         this.packs = data;
         this.filteredPacks = data;
@@ -74,12 +74,12 @@ export class PacksComponent implements OnInit {
     this.errorMessage = null;
     if (this.isEdit && this.form.id) {
       this.businessService.updatePack(this.form.id, this.form).subscribe({
-        next: () => { this.showModal = false; this.load(); },
+        next: () => { this.showModal = false; this.load(false); },
         error: (err) => { this.errorMessage = err.error?.message || 'Update failed'; }
       });
     } else {
       this.businessService.createPack(this.form).subscribe({
-        next: () => { this.showModal = false; this.load(); },
+        next: () => { this.showModal = false; this.load(false); },
         error: (err) => { this.errorMessage = err.error?.message || 'Create failed'; }
       });
     }
@@ -93,7 +93,7 @@ export class PacksComponent implements OnInit {
   doDelete(): void {
     if (this.deleteId) {
       this.businessService.deletePack(this.deleteId).subscribe({
-        next: () => { this.showDeleteModal = false; this.deleteId = null; this.load(); },
+        next: () => { this.showDeleteModal = false; this.deleteId = null; this.load(false); },
         error: (err) => { console.error('Delete error:', err); }
       });
     }

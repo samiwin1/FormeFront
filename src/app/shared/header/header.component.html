@@ -47,16 +47,19 @@
 
       <!-- Logged IN -->
       <ng-container *ngIf="(isLoggedIn$ | async)">
+        <button type="button" class="fm-btn fm-btn-ghost" *ngIf="canShowTourEntry()" (click)="startTour()">
+          <i class="bi bi-compass"></i>
+          Guided Tour
+        </button>
         <a routerLink="/cart" class="fm-btn fm-btn-ghost position-relative me-2" aria-label="Cart">
           <i class="bi bi-cart3"></i>
           <span *ngIf="(cartCount$ | async) as count" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary" [class.invisible]="count === 0">{{ count }}</span>
         </a>
         <app-notification-bell></app-notification-bell>
         <div class="fm-dropdown" [class.open]="menuOpen">
-          <button class="fm-user" type="button" (click)="toggleMenu()">
-            <span class="fm-avatar">U</span>
-            <span class="fm-user-text">Account</span>
-            <i class="bi bi-chevron-down"></i>
+          <button class="fm-user" type="button" (click)="toggleMenu()" aria-label="User Menu" style="padding: 0 4px 0 0;">
+            <span class="fm-avatar" style="margin-left: 4px;">U</span>
+            <i class="bi bi-chevron-down ms-1"></i>
           </button>
 
           <div class="fm-menu" *ngIf="menuOpen">
@@ -76,11 +79,11 @@
               <i class="bi bi-patch-check"></i>
               Certification Admin
             </a>
-            <a routerLink="/evaluator/oral-assignments" (click)="closeMenu()" *ngIf="isEvaluator()">
+            <a routerLink="/evaluator/oral-assignments" (click)="closeMenu()" *ngIf="isEvaluator()" data-ob="header-evaluator-space">
               <i class="bi bi-clipboard-check"></i>
               Evaluator Space
             </a>
-            <a routerLink="/me/certification-space" (click)="closeMenu()" *ngIf="isLearner()">
+            <a routerLink="/me/certification-space" (click)="closeMenu()" *ngIf="isLearner()" data-ob="header-learner-space">
               <i class="bi bi-award"></i>
               Learner Space
             </a>
@@ -138,6 +141,9 @@
       </ng-container>
 
       <ng-container *ngIf="(isLoggedIn$ | async)">
+        <button type="button" class="fm-btn fm-btn-ghost w-100" *ngIf="canShowTourEntry()" (click)="startTour()">
+          <i class="bi bi-compass"></i> Guided Tour
+        </button>
         <a routerLink="/cart" (click)="closeAll()" class="fm-btn fm-btn-ghost w-100">
           <i class="bi bi-cart3"></i> Cart <span *ngIf="(cartCount$ | async) as c">{{ c > 0 ? '(' + c + ')' : '' }}</span>
         </a>

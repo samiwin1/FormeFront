@@ -44,13 +44,13 @@ export class AccessCodesComponent implements OnInit {
   previewCodes: string[] = [];
 
   ngOnInit(): void {
-    this.load();
+    this.load(false);
     this.loadPartnersAndDeals();
   }
 
-  load(): void {
+  load(force = false): void {
     this.loading = true;
-    this.businessService.getAccessCodes().subscribe({
+    this.businessService.getAccessCodes(force).subscribe({
       next: (data) => {
         this.accessCodes = data;
         this.filteredCodes = data;
@@ -178,7 +178,7 @@ export class AccessCodesComponent implements OnInit {
           if (saved === this.previewCodes.length) {
             this.generating = false;
             this.showGenerateModal = false;
-            this.load();
+            this.load(false);
           }
         },
         error: (err) => {
@@ -205,12 +205,12 @@ export class AccessCodesComponent implements OnInit {
     this.errorMessage = null;
     if (this.isEdit && this.form.id) {
       this.businessService.updateAccessCode(this.form.id, this.form).subscribe({
-        next: () => { this.showModal = false; this.load(); },
+        next: () => { this.showModal = false; this.load(false); },
         error: (err) => { this.errorMessage = err.error?.message || 'Update failed'; }
       });
     } else {
       this.businessService.createAccessCode(this.form).subscribe({
-        next: () => { this.showModal = false; this.load(); },
+        next: () => { this.showModal = false; this.load(false); },
         error: (err) => { this.errorMessage = err.error?.message || 'Create failed'; }
       });
     }
@@ -221,7 +221,7 @@ export class AccessCodesComponent implements OnInit {
   doDelete(): void {
     if (this.deleteId) {
       this.businessService.deleteAccessCode(this.deleteId).subscribe({
-        next: () => { this.showDeleteModal = false; this.deleteId = null; this.load(); },
+        next: () => { this.showDeleteModal = false; this.deleteId = null; this.load(false); },
         error: (err) => { console.error(err); }
       });
     }

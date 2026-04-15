@@ -32,4 +32,12 @@ copyEmail() {
     setTimeout(() => (this.copied = false), 1600);
   });
 }
+
+startOnboarding(): void {
+  this.onboarding.startTour();
+}
+
+canShowHeaderTourEntry(): boolean {
+  return this.onboarding.canShowHeaderEntry();
+}
 }
