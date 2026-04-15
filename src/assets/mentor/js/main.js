@@ -29,11 +29,6 @@
     window.scrollY > 100
       ? selectBody.classList.add("scrolled")
       : selectBody.classList.remove("scrolled");
-    const selectBody = document.querySelector('body');
-    const selectHeader = document.querySelector('#header');
-    if (!selectBody || !selectHeader) return;
-    if (!selectHeader.classList.contains('scroll-up-sticky') && !selectHeader.classList.contains('sticky-top') && !selectHeader.classList.contains('fixed-top')) return;
-    window.scrollY > 100 ? selectBody.classList.add('scrolled') : selectBody.classList.remove('scrolled');
   }
 
   document.addEventListener("scroll", toggleScrolled);
@@ -56,9 +51,6 @@
   // ✅ only attach if button exists
   if (mobileNavToggleBtn) {
     mobileNavToggleBtn.addEventListener("click", mobileNavToogle);
-  }
-  if (mobileNavToggleBtn) {
-    mobileNavToggleBtn.addEventListener('click', mobileNavToogle);
   }
 
   /**

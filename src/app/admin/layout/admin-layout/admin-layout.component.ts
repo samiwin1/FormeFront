@@ -1,7 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, OnDestroy, inject } from '@angular/core';
-
-import { Component, inject } from '@angular/core';
+import { AfterViewInit, Component, inject } from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { ThemeLoaderService } from '../../../core/services/theme-loader.service'; // adjust path if needed
@@ -58,6 +56,14 @@ export class AdminLayoutComponent implements AfterViewInit  {
     return this.router.url.includes('/admin/formations');
   }
 
+  isEventsRoute(): boolean {
+    return this.router.url.includes('/admin/events');
+  }
+
+  hideFooterForAdminContent(): boolean {
+    return this.isFormationRoute() || this.isEventsRoute();
+  }
+
   logout() {
     this.auth.logout();
     this.router.navigate(['/login']);
@@ -72,6 +78,4 @@ export class AdminLayoutComponent implements AfterViewInit  {
       await this.theme.loadScript(src);
     }
   }
-
-}
 }

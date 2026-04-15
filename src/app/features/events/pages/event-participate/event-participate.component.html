@@ -1,0 +1,133 @@
+<section class="evp">
+  <div class="evp-inner">
+    <nav class="evp-nav" aria-label="Breadcrumb">
+      <a routerLink="/events" class="evp-link">Events</a>
+      <span class="evp-sep" aria-hidden="true">/</span>
+      <a [routerLink]="['/events', eventId]" class="evp-link">{{ loading ? '…' : (full?.title || teaser?.title || 'Event') }}</a>
+      <span class="evp-sep" aria-hidden="true">/</span>
+      <span class="evp-here">Participate</span>
+    </nav>
+
+    <button type="button" class="evp-back" (click)="router.navigate(['/events', eventId])">
+      ← Back to event
+    </button>
+
+    @if (loading) {
+      <div class="evp-state">
+        <span class="evp-spinner"></span>
+        <p>Loading brief…</p>
+      </div>
+    } @else if (error) {
+      <div class="evp-error">
+        <p>{{ error }}</p>
+        <a routerLink="/events" class="evp-link">Back to events hub</a>
+      </div>
+    } @else if (teaser) {
+      <article class="evp-card">
+        <p class="evp-kicker">Event brief</p>
+        <h1 class="evp-title">{{ teaser.title }}</h1>
+        <div class="evp-tags">
+          <span class="evp-tag">Starts {{ formatDate(teaser.startDate) }}</span>
+          <span class="evp-tag">Deadline {{ formatDate(teaser.deadline) }}</span>
+        </div>
+        <div class="evp-notice">{{ teaser.message }}</div>
+        <p class="evp-lead">The full description and requirements appear here once the event has started. You can still register now.</p>
+        <div class="evp-actions">
+          <button type="button" class="evp-btn evp-btn-primary" (click)="confirmParticipate()" [disabled]="joinBusy">
+            @if (joinBusy) {
+              <span class="evp-btn-spin"></span>
+            }
+            Participate
+          </button>
+        </div>
+        @if (joinMsg) {
+          <p
+            class="evp-msg"
+            [class.evp-msg--ok]="joinMsg.includes('registered')"
+            [class.evp-msg--err]="!joinMsg.includes('registered')"
+          >
+            {{ joinMsg }}
+          </p>
+        }
+        @if (postJoinHint) {
+          <p class="evp-hint">{{ postJoinHint }}</p>
+        }
+        @if (eventStarted(teaser)) {
+          <button type="button" class="evp-btn evp-btn-outline" (click)="goWorkspace()">Open workspace</button>
+        }
+      </article>
+    } @else if (full) {
+      <article class="evp-card">
+        <p class="evp-kicker">Event brief · read before participating</p>
+        <h1 class="evp-title">{{ full.title }}</h1>
+        <div class="evp-tags">
+          <span class="evp-tag">Starts {{ formatDate(full.startDate) }}</span>
+          <span class="evp-tag">Deadline {{ formatDate(full.deadline) }}</span>
+          <span class="evp-tag">{{ full.participantCount ?? 0 }} joined</span>
+        </div>
+
+        @if (full.description?.trim()) {
+          <div class="evp-block">
+            <h2 class="evp-h2">Description</h2>
+            <p class="evp-preline">{{ full.description }}</p>
+          </div>
+        }
+
+        @if (full.requirements?.trim()) {
+          <div class="evp-block">
+            <h2 class="evp-h2">Requirements</h2>
+            @if (bulletListFrom(full.requirements); as items) {
+              <ul class="evp-list">
+                @for (item of items; track $index) {
+                  <li>{{ item }}</li>
+                }
+              </ul>
+            } @else {
+              <p class="evp-preline">{{ full.requirements }}</p>
+            }
+          </div>
+        }
+
+        @if (full.successMetrics?.trim()) {
+          <div class="evp-block">
+            <h2 class="evp-h2">Success metrics</h2>
+            @if (bulletListFrom(full.successMetrics); as mItems) {
+              <ul class="evp-list">
+                @for (item of mItems; track $index) {
+                  <li>{{ item }}</li>
+                }
+              </ul>
+            } @else {
+              <p class="evp-preline">{{ full.successMetrics }}</p>
+            }
+          </div>
+        }
+
+        <div class="evp-actions">
+          <button type="button" class="evp-btn evp-btn-primary" (click)="confirmParticipate()" [disabled]="joinBusy">
+            @if (joinBusy) {
+              <span class="evp-btn-spin"></span>
+            }
+            Participate
+          </button>
+        </div>
+        @if (joinMsg) {
+          <p
+            class="evp-msg"
+            [class.evp-msg--ok]="joinMsg.includes('registered')"
+            [class.evp-msg--err]="!joinMsg.includes('registered')"
+          >
+            {{ joinMsg }}
+          </p>
+        }
+        @if (postJoinHint) {
+          <p class="evp-hint">{{ postJoinHint }}</p>
+        }
+        @if (eventStarted(full)) {
+          <p class="evp-after">You can open the workspace to upload your work and use the assistant.</p>
+          <button type="button" class="evp-btn evp-btn-outline" (click)="goWorkspace()">Go to participant workspace</button>
+        }
+      </article>
+    }
+  </div>
+</section>

@@ -1,0 +1,326 @@
+<section class="ev-detail">
+  <div class="ev-container">
+    <nav class="ev-breadcrumb" aria-label="Breadcrumb">
+      <a routerLink="/events" class="ev-breadcrumb-link">Events</a>
+      <span class="ev-breadcrumb-sep" aria-hidden="true">/</span>
+      <span class="ev-breadcrumb-current">{{ loading ? '…' : (full?.title || teaser?.title || 'Event') }}</span>
+    </nav>
+
+    <button type="button" class="ev-page-back" (click)="router.navigate(['/events'])">← Back to events</button>
+
+    @if (loading) {
+      <div class="ev-loading">
+        <span class="ev-spinner"></span>
+        <p>Loading event…</p>
+      </div>
+    } @else if (error) {
+      <div class="ev-error">
+        <p>{{ error }}</p>
+        <a routerLink="/events" class="ev-link">Back to events hub</a>
+      </div>
+    } @else if (teaser) {
+      <article class="ev-card">
+        @if (teaser.viewerHasJoined) {
+          <p class="ev-kicker">You’re registered</p>
+          <h1 class="ev-title">{{ teaser.title }}</h1>
+          <div class="ev-meta-tags">
+            <span class="ev-tag">Starts {{ formatDate(teaser.startDate) }}</span>
+            <span class="ev-tag">Deadline {{ formatDate(teaser.deadline) }}</span>
+            @if (teaser.viewerScore != null) {
+              <span class="ev-tag ev-tag--mark">Your mark {{ teaser.viewerScore }}/100</span>
+            }
+          </div>
+          <div class="ev-notice ev-notice--success">{{ teaser.message }}</div>
+          <p class="ev-footnote">
+            The full brief, requirements, and submission workspace stay hidden until the start date — that’s normal.
+          </p>
+        } @else {
+          <p class="ev-kicker">Event · Before start</p>
+          <h1 class="ev-title">{{ teaser.title }}</h1>
+          <div class="ev-meta-tags">
+            <span class="ev-tag">Starts {{ formatDate(teaser.startDate) }}</span>
+            <span class="ev-tag">Deadline {{ formatDate(teaser.deadline) }}</span>
+          </div>
+          <div class="ev-notice">{{ teaser.message }}</div>
+          <p class="ev-footnote">
+            Join as a <strong>participant</strong> to compete, or <strong>sponsor a tier</strong> (VIP, Gold, Silver) when the organizer has set prices — any logged-in account can purchase a slot.
+          </p>
+          <div class="ev-cta ev-cta--teaser-dual">
+            <div class="ev-cta-left">
+              <button type="button" class="ev-btn ev-btn-primary" (click)="joinEvent()" [disabled]="joinBusy">
+                @if (joinBusy) {
+                  <span class="ev-btn-spinner"></span>
+                }
+                Join as participant
+              </button>
+              @if (!auth.getToken()) {
+                <span class="ev-cta-hint">Log in to join.</span>
+              }
+            </div>
+            <button type="button" class="ev-btn ev-btn-partner" (click)="joinAsPartner()">
+              Join as partner
+            </button>
+          </div>
+        }
+        @if ((teaser.vipPrice ?? 0) + (teaser.goldPrice ?? 0) + (teaser.silverPrice ?? 0) > 0) {
+          <div id="ev-sponsor-section" class="ev-sponsor ev-sponsor--compact">
+            <strong>Sponsor this event (paid tiers)</strong>
+            <div class="ev-sponsor-grid ev-sponsor-grid--compact">
+              <div class="ev-sponsor-card">
+                <span class="ev-sponsor-tier">VIP</span>
+                <span class="ev-sponsor-price">{{ formatMoney(teaser.vipPrice) }}</span>
+                <span class="ev-sponsor-slots">{{ teaser.currentVip ?? 0 }} / {{ teaser.maxVip ?? 0 }}</span>
+                @if (tierCanPurchase(teaser.vipPrice, teaser.maxVip, teaser.currentVip)) {
+                  <button
+                    type="button"
+                    class="ev-btn ev-btn-secondary ev-btn-sm"
+                    (click)="buyPartnerTier('VIP')"
+                    [disabled]="partnerBuyBusy !== null"
+                  >
+                    @if (partnerBuyBusy === 'VIP') {
+                      <span class="ev-btn-spinner"></span>
+                    } @else {
+                      Buy VIP
+                    }
+                  </button>
+                } @else {
+                  <span class="ev-muted small">Not available</span>
+                }
+              </div>
+              <div class="ev-sponsor-card">
+                <span class="ev-sponsor-tier">Gold</span>
+                <span class="ev-sponsor-price">{{ formatMoney(teaser.goldPrice) }}</span>
+                <span class="ev-sponsor-slots">{{ teaser.currentGold ?? 0 }} / {{ teaser.maxGold ?? 0 }}</span>
+                @if (tierCanPurchase(teaser.goldPrice, teaser.maxGold, teaser.currentGold)) {
+                  <button
+                    type="button"
+                    class="ev-btn ev-btn-secondary ev-btn-sm"
+                    (click)="buyPartnerTier('GOLD')"
+                    [disabled]="partnerBuyBusy !== null"
+                  >
+                    @if (partnerBuyBusy === 'GOLD') {
+                      <span class="ev-btn-spinner"></span>
+                    } @else {
+                      Buy Gold
+                    }
+                  </button>
+                } @else {
+                  <span class="ev-muted small">Not available</span>
+                }
+              </div>
+              <div class="ev-sponsor-card">
+                <span class="ev-sponsor-tier">Silver</span>
+                <span class="ev-sponsor-price">{{ formatMoney(teaser.silverPrice) }}</span>
+                <span class="ev-sponsor-slots">{{ teaser.currentSilver ?? 0 }} / {{ teaser.maxSilver ?? 0 }}</span>
+                @if (tierCanPurchase(teaser.silverPrice, teaser.maxSilver, teaser.currentSilver)) {
+                  <button
+                    type="button"
+                    class="ev-btn ev-btn-secondary ev-btn-sm"
+                    (click)="buyPartnerTier('SILVER')"
+                    [disabled]="partnerBuyBusy !== null"
+                  >
+                    @if (partnerBuyBusy === 'SILVER') {
+                      <span class="ev-btn-spinner"></span>
+                    } @else {
+                      Buy Silver
+                    }
+                  </button>
+                } @else {
+                  <span class="ev-muted small">Not available</span>
+                }
+              </div>
+            </div>
+            <p class="ev-tier-note">
+              Prices are set by the organizer. Reserving a tier is separate from participating as a learner; complete payment per organizer instructions.
+            </p>
+            @if (!auth.getToken()) {
+              <p class="ev-muted small">Log in to buy a tier.</p>
+            }
+            @if (partnerMsg) {
+              <p class="ev-msg ev-msg--err">{{ partnerMsg }}</p>
+            }
+          </div>
+        }
+        @if (joinMsg) {
+          <p class="ev-msg ev-msg--err">{{ joinMsg }}</p>
+        }
+        <p class="ev-footnote">
+          <a routerLink="/formations" class="ev-inline-link">Browse formations</a>
+        </p>
+      </article>
+    } @else if (full) {
+      <article class="ev-card ev-card--hero">
+        <p class="ev-kicker">Online event</p>
+        <h1 class="ev-title">{{ full.title }}</h1>
+
+        <div class="ev-meta-tags">
+          <span class="ev-tag">Starts {{ formatDate(full.startDate) }}</span>
+          <span class="ev-tag">Deadline {{ formatDate(full.deadline) }}</span>
+          @if (!eventStarted(full)) {
+            <span class="ev-tag ev-tag--warn">Upcoming</span>
+          } @else if (submissionOpen(full)) {
+            <span class="ev-tag ev-tag--ok">Submissions open</span>
+          } @else {
+            <span class="ev-tag ev-tag--muted">Submissions closed</span>
+          }
+          <span class="ev-tag ev-tag--accent">{{ full.participantCount ?? 0 }} joined</span>
+          @if (full.viewerHasJoined) {
+            <span class="ev-tag ev-tag--ok">You’re registered</span>
+          }
+          @if (full.viewerIsSponsor) {
+            <span class="ev-tag ev-tag--accent">Sponsor</span>
+          }
+          @if (full.viewerScore != null) {
+            <span class="ev-tag ev-tag--mark">Your mark {{ full.viewerScore }}/100</span>
+          }
+        </div>
+
+        @if (!full.viewerHasJoined && !full.viewerIsSponsor && full.description && full.description.trim()) {
+          <div class="ev-block">
+            <strong>Overview</strong>
+            <p>{{ descriptionPreview(full.description) }}</p>
+            <p class="ev-muted">Join to register. Full requirements stay locked until the event starts.</p>
+          </div>
+        }
+
+        @if (full.viewerIsSponsor && !full.viewerHasJoined) {
+          <div class="ev-block ev-block--compact">
+            <strong>Sponsor</strong>
+            <p class="ev-muted">
+              You’re sponsoring this event. View participant submissions, marks, README Q&amp;A, and ZIP downloads on the
+              <a [routerLink]="['/events', eventId, 'sponsor-insights']" class="ev-inline-link">sponsor dashboard</a>.
+            </p>
+          </div>
+        }
+
+        @if (full.viewerHasJoined && eventStarted(full) && full.description && full.description.trim()) {
+          <div class="ev-block">
+            <strong>Overview</strong>
+            <p class="ev-preline">{{ full.description }}</p>
+            <p class="ev-muted">
+              Full structured brief:
+              <a [routerLink]="['/events', eventId, 'participate']" class="ev-inline-link">open details page</a>.
+            </p>
+          </div>
+        }
+
+        @if (full.viewerHasJoined && !eventStarted(full)) {
+          <div class="ev-block ev-block--compact">
+            <strong>Participant</strong>
+            <p class="ev-muted">You’re registered. The full overview and requirements will appear here on the start date.</p>
+          </div>
+        }
+
+        @if (!full.viewerHasJoined && !full.viewerIsSponsor && (full.requirements?.trim() || full.successMetrics?.trim())) {
+          <div class="ev-block ev-block--compact">
+            <strong>Participant</strong>
+            <p class="ev-muted">Use <strong>Join as participant</strong> to register. Details unlock when the event starts.</p>
+          </div>
+        }
+
+        <div id="ev-sponsor-section" class="ev-sponsor">
+          <strong>Sponsor this event</strong>
+          <p class="ev-tier-note">
+            Separate from learner registration. Any logged-in user can reserve VIP, Gold, or Silver when slots are available. Checkout is completed per organizer instructions.
+          </p>
+          <div class="ev-sponsor-grid">
+            <div class="ev-sponsor-card">
+              <span class="ev-sponsor-tier">VIP</span>
+              <span class="ev-sponsor-price">{{ formatMoney(full.vipPrice) }}</span>
+              <span class="ev-sponsor-slots">{{ full.currentVip ?? 0 }} / {{ full.maxVip }} taken</span>
+              @if (tierCanPurchase(full.vipPrice, full.maxVip, full.currentVip)) {
+                <button
+                  type="button"
+                  class="ev-btn ev-btn-secondary ev-btn-sm"
+                  (click)="buyPartnerTier('VIP')"
+                  [disabled]="partnerBuyBusy !== null"
+                >
+                  @if (partnerBuyBusy === 'VIP') {
+                    <span class="ev-btn-spinner"></span>
+                  } @else {
+                    Buy VIP
+                  }
+                </button>
+              } @else {
+                <span class="ev-muted small">Not available</span>
+              }
+            </div>
+            <div class="ev-sponsor-card">
+              <span class="ev-sponsor-tier">Gold</span>
+              <span class="ev-sponsor-price">{{ formatMoney(full.goldPrice) }}</span>
+              <span class="ev-sponsor-slots">{{ full.currentGold ?? 0 }} / {{ full.maxGold }} taken</span>
+              @if (tierCanPurchase(full.goldPrice, full.maxGold, full.currentGold)) {
+                <button
+                  type="button"
+                  class="ev-btn ev-btn-secondary ev-btn-sm"
+                  (click)="buyPartnerTier('GOLD')"
+                  [disabled]="partnerBuyBusy !== null"
+                >
+                  @if (partnerBuyBusy === 'GOLD') {
+                    <span class="ev-btn-spinner"></span>
+                  } @else {
+                    Buy Gold
+                  }
+                </button>
+              } @else {
+                <span class="ev-muted small">Not available</span>
+              }
+            </div>
+            <div class="ev-sponsor-card">
+              <span class="ev-sponsor-tier">Silver</span>
+              <span class="ev-sponsor-price">{{ formatMoney(full.silverPrice) }}</span>
+              <span class="ev-sponsor-slots">{{ full.currentSilver ?? 0 }} / {{ full.maxSilver }} taken</span>
+              @if (tierCanPurchase(full.silverPrice, full.maxSilver, full.currentSilver)) {
+                <button
+                  type="button"
+                  class="ev-btn ev-btn-secondary ev-btn-sm"
+                  (click)="buyPartnerTier('SILVER')"
+                  [disabled]="partnerBuyBusy !== null"
+                >
+                  @if (partnerBuyBusy === 'SILVER') {
+                    <span class="ev-btn-spinner"></span>
+                  } @else {
+                    Buy Silver
+                  }
+                </button>
+              } @else {
+                <span class="ev-muted small">Not available</span>
+              }
+            </div>
+          </div>
+          @if (!auth.getToken()) {
+            <p class="ev-muted small">Log in to buy a tier.</p>
+          }
+          @if (partnerMsg) {
+            <p class="ev-msg ev-msg--err">{{ partnerMsg }}</p>
+          }
+        </div>
+
+        <div class="ev-cta">
+          @if (full.viewerIsSponsor && !full.viewerHasJoined) {
+            <a [routerLink]="['/events', eventId, 'sponsor-insights']" class="ev-btn ev-btn-outline ev-btn-link">Open sponsor dashboard</a>
+          }
+          @if (!full.viewerHasJoined && !full.viewerIsSponsor) {
+            <button type="button" class="ev-btn ev-btn-primary" (click)="joinEvent()" [disabled]="joinBusy">
+              @if (joinBusy) {
+                <span class="ev-btn-spinner"></span>
+              }
+              Join as participant
+            </button>
+          } @else if (full.viewerHasJoined && eventStarted(full)) {
+            <button type="button" class="ev-btn ev-btn-primary" (click)="goToBrief()">Open details page</button>
+            <a [routerLink]="['/events', eventId, 'workspace']" class="ev-btn ev-btn-outline ev-btn-link">Open workspace</a>
+          } @else if (full.viewerHasJoined) {
+            <p class="ev-cta-waiting muted">You’re registered. Come back when the event starts to open the brief and workspace.</p>
+          }
+          @if (!auth.getToken() && !full.viewerIsSponsor) {
+            <span class="ev-cta-hint">Log in to join as a participant.</span>
+          }
+        </div>
+        @if (joinMsg) {
+          <p class="ev-msg ev-msg--err">{{ joinMsg }}</p>
+        }
+      </article>
+    }
+  </div>
+</section>

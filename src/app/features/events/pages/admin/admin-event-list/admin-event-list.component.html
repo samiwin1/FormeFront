@@ -1,0 +1,73 @@
+<div class="admin-events py-4">
+  <div class="events-header">
+    <h1 class="events-title">Manage Events</h1>
+    <div class="events-header-actions">
+      <a routerLink="/admin/events/create" class="btn-add">
+        <i class="bi bi-plus-lg"></i>
+        Add Event
+      </a>
+    </div>
+  </div>
+
+  @if (loading) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading events...</p>
+    </div>
+  } @else if (error) {
+    <div class="list-error" role="alert">
+      <span>{{ error }}</span>
+      <button type="button" class="btn-retry" (click)="load()">Retry</button>
+    </div>
+  } @else if (events.length === 0) {
+    <div class="empty-state">
+      <div class="empty-icon">
+        <i class="bi bi-calendar-event"></i>
+      </div>
+      <h3>There are no events currently</h3>
+      <p class="text-muted">Create an event to open registration and submissions for participants.</p>
+      <a routerLink="/admin/events/create" class="btn btn-primary btn-lg">Add Event</a>
+    </div>
+  } @else {
+    <div class="events-grid">
+      @for (e of events; track e.id; let i = $index) {
+        <article class="event-card" [style.animation-delay]="(i * 50) + 'ms'">
+          <div class="card-main">
+            <div class="card-header">
+              <h3 class="card-title">{{ e.title }}</h3>
+              <span
+                class="status-badge"
+                [class.published]="eventPhase(e) === 'submissions_open'"
+                [class.draft]="eventPhase(e) === 'upcoming'"
+                [class.closed]="eventPhase(e) === 'ended'"
+              >
+                {{ phaseLabel(e) }}
+              </span>
+            </div>
+            <div class="card-meta">
+              <span class="meta-item"><i class="bi bi-play-circle" aria-hidden="true"></i> {{ formatDate(e.startDate) }}</span>
+              <span class="meta-item"><i class="bi bi-flag" aria-hidden="true"></i> {{ formatDate(e.deadline) }}</span>
+              <span class="meta-item"><i class="bi bi-people" aria-hidden="true"></i> {{ e.participantCount ?? 0 }} joined</span>
+            </div>
+          </div>
+
+          <div class="card-actions">
+            <a
+              [routerLink]="['/admin/events', e.id, 'participants']"
+              class="action-btn participants"
+              title="Participants & submissions"
+            >
+              <i class="bi bi-people" aria-hidden="true"></i>
+            </a>
+            <a [routerLink]="['/admin/events', e.id, 'edit']" class="action-btn edit" title="Edit event">
+              <i class="bi bi-pencil" aria-hidden="true"></i>
+            </a>
+            <button type="button" class="action-btn delete" (click)="e.id != null && delete(e.id)" title="Delete">
+              <i class="bi bi-trash" aria-hidden="true"></i>
+            </button>
+          </div>
+        </article>
+      }
+    </div>
+  }
+</div>

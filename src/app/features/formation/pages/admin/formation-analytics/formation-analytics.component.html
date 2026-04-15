@@ -62,7 +62,7 @@
         <div class="stat-icon obstacles"><i class="bi bi-exclamation-diamond"></i></div>
         <div class="stat-content">
           <span class="stat-value">
-            {{ (data.learningObstacles.evaluationObstacles?.length ?? 0) + (data.learningObstacles.retryObstacles?.length ?? 0) + (data.learningObstacles.dropOffObstacles?.length ?? 0) }}
+            {{ data.learningObstacles.evaluationObstacles.length + data.learningObstacles.retryObstacles.length + data.learningObstacles.dropOffObstacles.length }}
           </span>
           <span class="stat-label">Learning Obstacles</span>
           <span class="stat-rate">Eval · Retry · Drop-off</span>
