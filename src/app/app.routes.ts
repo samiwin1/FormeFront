@@ -7,6 +7,7 @@ import { evaluatorGuard } from './core/guards/evaluator.guard';
 import { learnerGuard } from './core/guards/learner.guard';
 import { superAdminGuard } from './core/guards/super-admin.guard';
 import { formationRoutes, adminFormationRoutes } from './features/formation/formation.routes';
+import { mentorRoutes } from './features/mentor/mentor.routes';
 
 export const routes: Routes = [
   {
@@ -18,6 +19,10 @@ export const routes: Routes = [
       { path: 'register', loadComponent: () => import('./features/auth/pages/register/register.component').then(m => m.RegisterComponent) },
       { path: 'profile', loadComponent: () => import('./features/auth/pages/profile/profile.component').then(m => m.ProfileComponent), canActivate: [authGuard] },
       { path: 'formations', children: formationRoutes },
+      { path: 'learner/onboarding', redirectTo: 'me/mentor/portfolio', pathMatch: 'full' },
+      { path: 'learner/recommendations', redirectTo: 'me/mentor', pathMatch: 'full' },
+      { path: 'me/recommendations', redirectTo: 'me/mentor', pathMatch: 'prefix' },
+      { path: 'me/mentor', children: mentorRoutes },
       { path: 'me/certification-list', redirectTo: 'me/certification-space', pathMatch: 'full' },
       {
         path: 'evaluator/oral-assignments',
@@ -46,6 +51,9 @@ export const routes: Routes = [
       { path: 'reschedule', loadComponent: () => import('./admin/pages/reschedule-admin/reschedule-admin.component').then(m => m.RescheduleAdminComponent) },
       { path: 'issued-certificates', loadComponent: () => import('./admin/pages/issued-certificates-admin/issued-certificates-admin.component').then(m => m.IssuedCertificatesAdminComponent) },
       { path: 'sessions-calendar', loadComponent: () => import('./admin/pages/sessions-calendar/sessions-calendar.component').then(m => m.SessionsCalendarComponent) },
+      { path: 'mentor-users/:userId', loadComponent: () => import('./admin/pages/mentor-user-detail/mentor-user-detail.component').then(m => m.MentorUserDetailComponent) },
+      { path: 'formation-demands', loadComponent: () => import('./admin/pages/formation-demands/formation-demands.component').then(m => m.FormationDemandsComponent) },
+      { path: 'mentor-analytics', loadComponent: () => import('./admin/pages/mentor-analytics/mentor-analytics.component').then(m => m.MentorAnalyticsComponent) },
     ],
   },
   {

@@ -1,0 +1,167 @@
+<div class="mentor-analytics container-fluid py-4 px-4">
+
+  <!-- Header -->
+  <div class="page-header mb-4">
+    <nav aria-label="breadcrumb" class="mb-2">
+      <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><a routerLink="/admin/dashboard">Admin</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Mentor Analytics</li>
+      </ol>
+    </nav>
+    <h1 class="h3 mb-1">Mentor Analytics</h1>
+    <p class="text-muted mb-0">AI usage, formation demand, feedback quality, and learner streaks.</p>
+  </div>
+
+  @if (loading) {
+    <div class="text-center py-5">
+      <div class="spinner-border text-secondary" role="status"></div>
+      <div class="text-muted mt-2">Loading analytics…</div>
+    </div>
+  }
+
+  @if (error && !loading) {
+    <div class="alert alert-danger rounded-4">{{ error }}</div>
+  }
+
+  @if (!loading && !error) {
+
+    <!-- Summary KPI row -->
+    <div class="kpi-row mb-4">
+      <div class="kpi-card">
+        <div class="kpi-icon">🤖</div>
+        <div class="kpi-value">{{ totalSessions() }}</div>
+        <div class="kpi-label">Total AI sessions</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon">📋</div>
+        <div class="kpi-value">{{ demands.length }}</div>
+        <div class="kpi-label">Demanded formations</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon">👍</div>
+        <div class="kpi-value">{{ satisfactionRate() }}%</div>
+        <div class="kpi-label">Satisfaction rate</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon">🔥</div>
+        <div class="kpi-value">{{ (topStreaks[0] ? topStreaks[0].streak : null) ?? 0 }}</div>
+        <div class="kpi-label">Top streak (days)</div>
+      </div>
+    </div>
+
+    <div class="analytics-grid">
+
+      <!-- AI Usage -->
+      <div class="stat-card full-width">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h2 class="card-title mb-0">📈 AI Usage</h2>
+          <div class="btn-group btn-group-sm" role="group">
+            <button type="button" class="btn"
+                    [class.btn-success]="usageMode === 'daily'"
+                    [class.btn-outline-secondary]="usageMode !== 'daily'"
+                    (click)="setUsageMode('daily')">Daily</button>
+            <button type="button" class="btn"
+                    [class.btn-success]="usageMode === 'monthly'"
+                    [class.btn-outline-secondary]="usageMode !== 'monthly'"
+                    (click)="setUsageMode('monthly')">Monthly</button>
+          </div>
+        </div>
+        @if (usageChartOptions) {
+          <apx-chart
+            [series]="usageChartOptions.series"
+            [chart]="usageChartOptions.chart"
+            [xaxis]="usageChartOptions.xaxis"
+            [stroke]="usageChartOptions.stroke"
+            [colors]="usageChartOptions.colors"
+            [grid]="usageChartOptions.grid"
+            [markers]="usageChartOptions.markers">
+          </apx-chart>
+        }
+      </div>
+
+      <!-- Formation Demand -->
+      <div class="stat-card">
+        <h2 class="card-title">📊 Most Requested Formations</h2>
+        @if (demands.length === 0) {
+          <p class="text-muted small">No formation demands yet.</p>
+        } @else {
+          <apx-chart
+            [series]="demandChartOptions.series"
+            [chart]="demandChartOptions.chart"
+            [xaxis]="demandChartOptions.xaxis"
+            [colors]="demandChartOptions.colors"
+            [plotOptions]="demandChartOptions.plotOptions"
+            [dataLabels]="demandChartOptions.dataLabels"
+            [grid]="demandChartOptions.grid">
+          </apx-chart>
+        }
+      </div>
+
+      <!-- Feedback -->
+      <div class="stat-card">
+        <h2 class="card-title">💬 AI Feedback</h2>
+        <div class="feedback-counts mb-3">
+          <span class="feedback-pill up">👍 {{ feedback?.up ?? 0 }} helpful</span>
+          <span class="feedback-pill down">👎 {{ feedback?.down ?? 0 }} not helpful</span>
+        </div>
+        @if ((feedback?.up ?? 0) + (feedback?.down ?? 0) === 0) {
+          <p class="text-muted small">No feedback submitted yet.</p>
+        } @else {
+          <apx-chart
+            [series]="feedbackChartOptions.series"
+            [chart]="feedbackChartOptions.chart"
+            [labels]="feedbackChartOptions.labels"
+            [colors]="feedbackChartOptions.colors"
+            [legend]="feedbackChartOptions.legend"
+            [dataLabels]="feedbackChartOptions.dataLabels"
+            [plotOptions]="feedbackChartOptions.plotOptions"
+            [stroke]="feedbackChartOptions.stroke">
+          </apx-chart>
+        }
+      </div>
+
+      <!-- Top Streak Users -->
+      <div class="stat-card full-width">
+        <h2 class="card-title">🔥 Top Learners by Streak</h2>
+        @if (topStreaks.length === 0) {
+          <p class="text-muted small">No streak data yet.</p>
+        } @else {
+          <div class="table-responsive">
+            <table class="table table-hover streak-table mb-0">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>User ID</th>
+                  <th>Current Streak</th>
+                  <th>Progress</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (user of topStreaks; track user.userId; let i = $index) {
+                  <tr>
+                    <td class="rank">{{ i + 1 }}</td>
+                    <td>
+                      <a [routerLink]="['/admin/mentor-users', user.userId]" class="user-link">
+                        {{ user.userName || 'User #' + user.userId }}
+                      </a>
+                    </td>
+                    <td>
+                      <span class="streak-badge">🔥 {{ user.streak }} days</span>
+                    </td>
+                    <td>
+                      <div class="progress" style="height:6px; width:140px">
+                        <div class="progress-bar bg-warning"
+                             [style.width]="(user.streak / (topStreaks[0].streak || 1) * 100) + '%'"></div>
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </div>
+
+    </div>
+  }
+</div>

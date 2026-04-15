@@ -1,0 +1,171 @@
+<div class="mentor-history container py-4">
+  <!-- Breadcrumb Navigation -->
+  <nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb mb-0">
+      <li class="breadcrumb-item">
+        <a routerLink="/me/mentor" class="text-decoration-none">
+          <i class="bi bi-robot me-1"></i>AI Mentor
+        </a>
+      </li>
+      <li class="breadcrumb-item active" aria-current="page">History</li>
+    </ol>
+  </nav>
+
+  <!-- Hero Section -->
+  <div class="history-hero card-base p-4 mb-4">
+    <div class="d-flex flex-column flex-lg-row justify-content-between gap-4 align-items-start">
+      <div class="hero-content">
+        <div class="d-flex align-items-center gap-3 mb-3">
+          <div class="hero-icon">
+            <i class="bi bi-clock-history text-primary"></i>
+          </div>
+          <div>
+            <h1 class="h2 mb-1 text-gray-900">Mentor Session History</h1>
+            <p class="text-muted mb-0">Track your learning journey and revisit valuable insights from your AI mentor conversations.</p>
+          </div>
+        </div>
+        <div class="stats-row d-flex gap-4">
+          <div class="stat-item">
+            <div class="stat-number text-2xl font-bold text-primary">{{ totalElements || 0 }}</div>
+            <div class="stat-label text-sm text-muted">Total Sessions</div>
+          </div>
+          <div class="stat-item" *ngIf="totalPages > 1">
+            <div class="stat-number text-2xl font-bold text-info">{{ totalPages }}</div>
+            <div class="stat-label text-sm text-muted">Pages</div>
+          </div>
+        </div>
+      </div>
+      <div class="hero-actions">
+        <a routerLink="/me/mentor" class="btn-base btn-outline btn-sm">
+          <i class="bi bi-arrow-left me-2"></i>Back to Mentor
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  @if (loading) {
+    <div class="loading-state text-center py-5">
+      <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;"></div>
+      <h5 class="text-muted mb-2">Loading your mentor history...</h5>
+      <p class="text-muted small">Please wait while we fetch your conversation history.</p>
+    </div>
+  }
+
+  <!-- Empty State -->
+  @else if (rows.length === 0) {
+    <div class="empty-state card-base text-center p-5 border-dashed">
+      <div class="empty-icon mb-4">
+        <i class="bi bi-chat-dots display-1 text-muted"></i>
+      </div>
+      <h4 class="text-gray-800 mb-3">No Mentor Sessions Yet</h4>
+      <p class="text-muted mb-4 max-w-md mx-auto">
+        Your conversation history with the AI mentor will appear here once you start asking questions or seeking guidance.
+      </p>
+      <a routerLink="/me/mentor" class="btn-base btn-primary">
+        <i class="bi bi-chat-quote me-2"></i>Start a Conversation
+      </a>
+    </div>
+  }
+
+  <!-- History Grid -->
+  @else {
+    <div class="history-grid">
+      @for (r of rows; track r.sessionId) {
+        <article class="history-card card-base card-interactive" (click)="openDetails(r)">
+          <div class="card-header d-flex flex-column flex-sm-row justify-content-between gap-3 align-items-start">
+            <div class="card-meta d-flex flex-wrap align-items-center gap-2">
+              <span class="badge-base {{ channelBadgeClass(r.channel) }}">
+                <i class="bi {{ channelIcon(r.channel) }} me-1"></i>{{ channelLabel(r.channel) }}
+              </span>
+              @if (r.formationId) {
+                <span class="badge-base badge-gray">
+                  <i class="bi bi-book me-1"></i>Formation #{{ r.formationId }}
+                </span>
+              }
+            </div>
+            <div class="card-date text-muted small">
+              <i class="bi bi-calendar-event me-1"></i>{{ r.createdAt | date : 'mediumDate' }}
+              <br class="d-sm-none">
+              <span class="d-none d-sm-inline">•</span>
+              <i class="bi bi-clock me-1"></i>{{ r.createdAt | date : 'shortTime' }}
+            </div>
+          </div>
+          <div class="card-body">
+            <p class="history-summary text-gray-700 mb-0">{{ r.summary }}</p>
+          </div>
+          <div class="card-footer d-flex justify-content-between align-items-center pt-3 border-top border-gray-100">
+            <div class="session-info text-sm text-muted">
+              <i class="bi bi-hash me-1"></i>Session {{ r.sessionId }}
+            </div>
+            <div class="d-flex gap-2 align-items-center">
+              <button class="btn-base btn-ghost btn-sm btn-bookmark"
+                      [class.bookmarked]="r.bookmarked"
+                      [disabled]="bookmarking.has(r.sessionId)"
+                      (click)="toggleBookmark(r, $event)"
+                      [title]="r.bookmarked ? 'Remove bookmark' : 'Bookmark this advice'"
+                      type="button">
+                <i class="bi" [class.bi-bookmark-fill]="r.bookmarked" [class.bi-bookmark]="!r.bookmarked"></i>
+              </button>
+              <button class="btn-base btn-ghost btn-sm" title="View Details" type="button" (click)="$event.stopPropagation(); openDetails(r)">
+                <i class="bi bi-eye me-1"></i>View
+              </button>
+            </div>
+          </div>
+        </article>
+      }
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination-wrapper card-base p-4 mt-4">
+      <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+        <div class="pagination-info text-muted small">
+          <i class="bi bi-info-circle me-1"></i>
+          Showing {{ (page * size) + 1 }} to {{ getPaginationEnd() }} of {{ totalElements }} sessions
+          <span class="d-none d-md-inline">• Page {{ page + 1 }} of {{ totalPages }}</span>
+        </div>
+        <div class="pagination-controls d-flex gap-2">
+          <button type="button" class="btn-base btn-outline btn-sm"
+                  (click)="prev()" [disabled]="page <= 0">
+            <i class="bi bi-chevron-left me-1"></i>Previous
+          </button>
+          <button type="button" class="btn-base btn-outline btn-sm"
+                  (click)="next()" [disabled]="page >= totalPages - 1">
+            Next<i class="bi bi-chevron-right ms-1"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="history-modal-backdrop" *ngIf="selectedHistory" (click)="closeDetails()">
+      <section class="history-modal card-base" role="dialog" aria-modal="true" aria-labelledby="historyModalTitle" (click)="$event.stopPropagation()">
+        <header class="modal-top d-flex justify-content-between align-items-start gap-3 mb-3">
+          <div>
+            <h2 id="historyModalTitle" class="h4 mb-1">Session {{ selectedHistory.sessionId }} details</h2>
+            <div class="text-muted small">
+              <span class="badge-base {{ channelBadgeClass(selectedHistory.channel || '') }}">
+                <i class="bi {{ channelIcon(selectedHistory.channel || '') }} me-1"></i>{{ channelLabel(selectedHistory.channel || '') }}
+              </span>
+              <span class="ms-2">{{ selectedHistory.createdAt | date : 'medium' }}</span>
+            </div>
+          </div>
+          <button type="button" class="modal-close btn-ghost btn-sm" aria-label="Close details" (click)="closeDetails()">
+            <i class="bi bi-x-lg"></i>
+          </button>
+        </header>
+
+        <div class="modal-body">
+          <div class="detail-section">
+            <h3 class="h6 text-gray-800 mb-2">Session summary</h3>
+            <ng-container *ngIf="selectedHistoryJson; else plainSummary">
+              <pre class="summary-json">{{ selectedHistoryJson | json }}</pre>
+            </ng-container>
+            <ng-template #plainSummary>
+              <p class="text-gray-700">{{ selectedHistory.summary || 'No details available.' }}</p>
+            </ng-template>
+          </div>
+        </div>
+      </section>
+    </div>
+  }
+</div>

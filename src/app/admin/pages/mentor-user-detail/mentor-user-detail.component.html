@@ -1,0 +1,202 @@
+<div class="user-detail-container" *ngIf="userSummary">
+  <!-- Header -->
+  <div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <div>
+        <h4 class="mb-1"><i class="bi bi-person-circle me-2"></i>User #{{ userSummary.userId }}</h4>
+        <small class="text-light">Last active: {{ formatDate(userSummary.lastActiveAt) }}</small>
+      </div>
+      <button class="btn btn-light" (click)="goBack()">
+        <i class="bi bi-arrow-left me-1"></i>Back to Users
+      </button>
+    </div>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="error" class="alert alert-danger">
+    <i class="bi bi-exclamation-triangle me-2"></i>{{ error }}
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="text-center py-4">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+
+  <!-- Stats Row -->
+  <div class="row mb-4" *ngIf="!loading && !error">
+    <div class="col-md-3">
+      <div class="stats-card">
+        <div class="stats-icon"><i class="bi bi-chat-dots"></i></div>
+        <div class="stats-content">
+          <h3>{{ userSummary.sessions.total }}</h3>
+          <p>Total Sessions</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="stats-card">
+        <div class="stats-icon text-success"><i class="bi bi-hand-thumbs-up"></i></div>
+        <div class="stats-content">
+          <h3>{{ userSummary.feedback.upCount }}</h3>
+          <p>Up Feedback</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="stats-card">
+        <div class="stats-icon text-warning"><i class="bi bi-graph-up"></i></div>
+        <div class="stats-content">
+          <h3>{{ userSummary.feedback.satisfactionRate.toFixed(1) }}%</h3>
+          <p>Satisfaction Rate</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="stats-card">
+        <div class="stats-icon text-info"><i class="bi bi-chat-quote"></i></div>
+        <div class="stats-content">
+          <h3>{{ userSummary.threads.activeCount }}</h3>
+          <p>Active Threads</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row" *ngIf="!loading && !error">
+    <!-- Profile Card -->
+    <div class="col-md-6 mb-4">
+      <div class="card h-100">
+        <div class="card-header">
+          <h5 class="mb-0"><i class="bi bi-person-badge me-2"></i>Profile</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-sm-6">
+              <strong>Current Role:</strong><br>
+              {{ userSummary.portfolio.currentRole || '-' }}
+            </div>
+            <div class="col-sm-6">
+              <strong>Target Role:</strong><br>
+              {{ userSummary.portfolio.targetRole || '-' }}
+            </div>
+          </div>
+          <hr>
+          <div class="row">
+            <div class="col-sm-6">
+              <strong>Experience:</strong><br>
+              <span class="badge" [ngClass]="getExperienceBadgeClass(userSummary.portfolio.experienceLevel)">
+                {{ userSummary.portfolio.experienceLevel }}
+              </span>
+            </div>
+            <div class="col-sm-6">
+              <strong>Learning Style:</strong><br>
+              <span class="badge bg-light text-dark">{{ userSummary.portfolio.learningStyle }}</span>
+            </div>
+          </div>
+          <hr>
+          <div>
+            <strong>Weekly Study Hours:</strong><br>
+            {{ userSummary.portfolio.weeklyStudyHours || '-' }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Skills Card -->
+    <div class="col-md-6 mb-4">
+      <div class="card h-100">
+        <div class="card-header">
+          <h5 class="mb-0"><i class="bi bi-star me-2"></i>Skills ({{ userSummary.portfolio.skills.length }})</h5>
+        </div>
+        <div class="card-body">
+          <div *ngIf="userSummary.portfolio.skills.length === 0" class="text-muted">
+            No skills recorded
+          </div>
+          <div class="d-flex flex-wrap gap-2" *ngIf="userSummary.portfolio.skills.length > 0">
+            <span *ngFor="let skill of userSummary.portfolio.skills"
+                  class="badge" [ngClass]="getSkillBadgeClass(skill.level)">
+              {{ skill.skillName }} ({{ skill.level }})
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row" *ngIf="!loading && !error">
+    <!-- Sessions Card -->
+    <div class="col-md-6 mb-4">
+      <div class="card h-100">
+        <div class="card-header">
+          <h5 class="mb-0"><i class="bi bi-chat-dots me-2"></i>Sessions by Channel</h5>
+        </div>
+        <div class="card-body">
+          <div *ngIf="getChannelEntries().length === 0" class="text-muted">
+            No sessions recorded
+          </div>
+          <div *ngFor="let channel of getChannelKeys()" class="d-flex justify-content-between align-items-center mb-2">
+            <span>{{ channel }}</span>
+            <span class="badge bg-primary">{{ getChannelValue(channel) }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Feedback Card -->
+    <div class="col-md-6 mb-4">
+      <div class="card h-100">
+        <div class="card-header">
+          <h5 class="mb-0"><i class="bi bi-chat-quote me-2"></i>Recent Feedback</h5>
+        </div>
+        <div class="card-body">
+          <div class="row text-center">
+            <div class="col-4">
+              <div class="feedback-stat">
+                <h4 class="text-success">{{ userSummary.feedback.upCount }}</h4>
+                <small class="text-muted">Up</small>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="feedback-stat">
+                <h4 class="text-danger">{{ userSummary.feedback.downCount }}</h4>
+                <small class="text-muted">Down</small>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="feedback-stat">
+                <h4>{{ userSummary.feedback.satisfactionRate.toFixed(1) }}%</h4>
+                <small class="text-muted">Rate</small>
+              </div>
+            </div>
+          </div>
+          <hr>
+          <div>
+            <strong>Last Feedback:</strong><br>
+            {{ formatDate(userSummary.feedback.lastFeedbackAt) }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Study Plans Card -->
+  <div class="card mb-4" *ngIf="!loading && !error">
+    <div class="card-header">
+      <h5 class="mb-0"><i class="bi bi-book me-2"></i>Study Plans</h5>
+    </div>
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-6">
+          <strong>Total Plans:</strong> {{ userSummary.studyPlans.total }}
+        </div>
+        <div class="col-md-6">
+          <strong>Latest Plan:</strong><br>
+          {{ userSummary.studyPlans.lastPlanTitle || '-' }}<br>
+          <small class="text-muted">{{ formatDate(userSummary.studyPlans.lastPlanCreatedAt) }}</small>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

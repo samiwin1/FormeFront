@@ -8,6 +8,7 @@ import {
   Certification,
   CreateAssignmentRequest,
   CreateCertificationRequest,
+  EligibleLearner,
   CreateOralSessionRequest,
   MeetingProvider,
   OralSession,
@@ -71,6 +72,9 @@ export class CertificationAdminComponent implements OnInit {
   processingRescheduleId: number | null = null;
   rescheduleCommentById: Record<number, string> = {};
   replacementSessionByRequestId: Record<number, number | null> = {};
+  eligibleLearnerIds = new Set<number>();
+  eligibilityLoading = false;
+  eligibilityError: string | null = null;
   private assignPrefillApplied = false;
 
   meetingProviders: MeetingProvider[] = ['MEET', 'TEAMS'];
@@ -132,10 +136,44 @@ export class CertificationAdminComponent implements OnInit {
     });
 
     this.route.queryParamMap.subscribe(() => this.tryPrefillAssignFromQuery());
+
+    this.assignmentForm.controls.formationId.valueChanges.subscribe((formationId) => {
+      const normalized = Number(formationId);
+      if (!Number.isFinite(normalized) || normalized <= 0) {
+        this.eligibleLearnerIds = new Set<number>();
+        this.eligibilityError = null;
+        return;
+      }
+      this.loadEligibleLearnersForFormation(normalized);
+    });
   }
 
   get learnerOptions(): UserDirectoryEntry[] {
-    return this.directoryEntries.filter((entry) => this.isLearnerProfession(entry.profession));
+    const learners = this.directoryEntries.filter((entry) => this.isLearnerProfession(entry.profession));
+    const formationId = Number(this.assignmentForm.controls.formationId.value);
+    if (!Number.isFinite(formationId) || formationId <= 0) {
+      return learners;
+    }
+    const byId = new Map<number, UserDirectoryEntry>();
+    learners
+      .filter((entry) => this.eligibleLearnerIds.has(entry.userId))
+      .forEach((entry) => byId.set(entry.userId, entry));
+
+    this.eligibleLearnerIds.forEach((learnerId) => {
+      if (byId.has(learnerId)) {
+        return;
+      }
+      const name = this.userNames[learnerId] || `Learner #${learnerId}`;
+      byId.set(learnerId, {
+        userId: learnerId,
+        firstName: name,
+        lastName: '',
+        profession: 'LEARNER',
+        displayName: name,
+      });
+    });
+
+    return Array.from(byId.values()).sort((a, b) => a.displayName.localeCompare(b.displayName));
   }
 
   get evaluatorOptions(): UserDirectoryEntry[] {
@@ -569,6 +607,11 @@ export class CertificationAdminComponent implements OnInit {
       this.error = `Invalid learner selection. User(s) ${evaluatorIds.join(', ')} are evaluators, not learners.`;
       return;
     }
+    const ineligibleIds = uniqueLearnerIds.filter((learnerId) => !this.eligibleLearnerIds.has(learnerId));
+    if (ineligibleIds.length > 0) {
+      this.error = `Invalid learner selection. User(s) ${ineligibleIds.join(', ')} are not eligible for oral assignment in the selected formation.`;
+      return;
+    }
 
     this.assignmentSaving = true;
     const oralSessionId = this.assignmentForm.value.oralSessionId!;
@@ -781,6 +824,34 @@ export class CertificationAdminComponent implements OnInit {
 
   private isEvaluatorProfession(profession?: string | null): boolean {
     return (profession ?? '').toUpperCase() === 'EVALUATOR';
+  }
+
+  private loadEligibleLearnersForFormation(formationId: number): void {
+    this.eligibilityLoading = true;
+    this.eligibilityError = null;
+    this.dashboardService.getEligibleLearnersForOral(formationId).subscribe({
+      next: (rows: EligibleLearner[]) => {
+        const ids = rows
+          .filter((row) => row.passed !== false && Number.isFinite(row.learnerId) && row.learnerId > 0)
+          .map((row) => row.learnerId);
+        this.eligibleLearnerIds = new Set(ids);
+        if (ids.length > 0) {
+          this.resolveUserNames(ids);
+        }
+        this.learnersArray.controls.forEach((row) => {
+          const selected = Number(row.controls.learnerId.value);
+          if (Number.isFinite(selected) && selected > 0 && !this.eligibleLearnerIds.has(selected)) {
+            row.patchValue({ learnerId: null });
+          }
+        });
+        this.eligibilityLoading = false;
+      },
+      error: (err: unknown) => {
+        this.eligibilityLoading = false;
+        this.eligibleLearnerIds = new Set<number>();
+        this.eligibilityError = this.errorMessage(err, 'Failed to load eligible learners for selected formation.');
+      },
+    });
   }
 
   private tryPrefillAssignFromQuery(): void {

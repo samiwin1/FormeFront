@@ -1,0 +1,189 @@
+<div class="mentor-bookmarks container py-4">
+
+  <!-- Breadcrumb -->
+  <nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb mb-0">
+      <li class="breadcrumb-item">
+        <a routerLink="/me/mentor" class="text-decoration-none">
+          <i class="bi bi-robot me-1"></i>AI Mentor
+        </a>
+      </li>
+      <li class="breadcrumb-item active" aria-current="page">Saved Advice</li>
+    </ol>
+  </nav>
+
+  <!-- Hero -->
+  <div class="bookmarks-hero card-base p-4 mb-4">
+    <div class="d-flex flex-column flex-lg-row justify-content-between gap-4 align-items-start">
+      <div class="hero-content">
+        <div class="d-flex align-items-center gap-3 mb-3">
+          <div class="hero-icon">
+            <i class="bi bi-bookmark-star text-warning"></i>
+          </div>
+          <div>
+            <h1 class="h2 mb-1 text-gray-900">Saved Advice</h1>
+            <p class="text-muted mb-0">Advice you bookmarked for quick access.</p>
+          </div>
+        </div>
+        <div class="stats-row d-flex gap-4">
+          <div class="stat-item">
+            <div class="stat-number text-2xl font-bold text-warning">{{ totalElements || 0 }}</div>
+            <div class="stat-label text-sm text-muted">Bookmarks</div>
+          </div>
+        </div>
+      </div>
+      <div class="hero-actions">
+        <a routerLink="/me/mentor/history" class="btn-base btn-outline btn-sm">
+          <i class="bi bi-clock-history me-2"></i>View Full History
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  @if (loading) {
+    <div class="loading-state text-center py-5">
+      <div class="spinner-border text-warning mb-3" role="status" style="width: 3rem; height: 3rem;"></div>
+      <h5 class="text-muted mb-2">Loading your saved advice...</h5>
+    </div>
+  }
+
+  <!-- Empty -->
+  @else if (rows.length === 0) {
+    <div class="empty-state card-base text-center p-5 border-dashed">
+      <div class="empty-icon mb-4">
+        <i class="bi bi-bookmark display-1 text-muted"></i>
+      </div>
+      <h4 class="text-gray-800 mb-3">No Saved Advice Yet</h4>
+      <p class="text-muted mb-4 max-w-md mx-auto">
+        Click the bookmark icon on any advice card in your history to save it here.
+      </p>
+      <a routerLink="/me/mentor/history" class="btn-base btn-primary">
+        <i class="bi bi-clock-history me-2"></i>Go to History
+      </a>
+    </div>
+  }
+
+  <!-- Grid -->
+  @else {
+    <div class="bookmarks-grid">
+      @for (r of rows; track r.bookmarkId) {
+        <article class="bookmark-card card-base card-interactive" (click)="openDetails(r)">
+          <div class="card-header d-flex flex-column flex-sm-row justify-content-between gap-3 align-items-start">
+            <div class="card-meta d-flex flex-wrap align-items-center gap-2">
+              <span class="badge-base {{ channelBadgeClass(r.channel) }}">
+                <i class="bi {{ channelIcon(r.channel) }} me-1"></i>{{ channelLabel(r.channel) }}
+              </span>
+              @if (r.formationId) {
+                <span class="badge-base badge-gray">
+                  <i class="bi bi-book me-1"></i>Formation #{{ r.formationId }}
+                </span>
+              }
+            </div>
+            <div class="card-date text-muted small">
+              <i class="bi bi-calendar-event me-1"></i>{{ r.sessionCreatedAt | date : 'mediumDate' }}
+            </div>
+          </div>
+
+          <div class="card-body">
+            <p class="bookmark-summary text-gray-700 mb-0">{{ r.summary || r.structuredJsonPreview || 'No summary available.' }}</p>
+            @if (r.note) {
+              <div class="bookmark-note mt-2">
+                <i class="bi bi-pencil-square me-1 text-muted"></i>
+                <span class="text-muted small fst-italic">{{ r.note }}</span>
+              </div>
+            }
+          </div>
+
+          <div class="card-footer d-flex justify-content-between align-items-center pt-3 border-top border-gray-100">
+            <div class="bookmark-meta text-sm text-muted">
+              <i class="bi bi-bookmark-fill text-warning me-1"></i>
+              Saved {{ r.bookmarkedAt | date : 'mediumDate' }}
+            </div>
+            <div class="d-flex gap-2">
+              <button class="btn-base btn-ghost btn-sm" title="View Details" type="button"
+                      (click)="$event.stopPropagation(); openDetails(r)">
+                <i class="bi bi-eye me-1"></i>View
+              </button>
+              <button class="btn-base btn-ghost btn-sm btn-remove"
+                      [disabled]="removing.has(r.sessionId)"
+                      (click)="removeBookmark(r, $event)"
+                      title="Remove bookmark" type="button">
+                <i class="bi bi-bookmark-x"></i>
+              </button>
+            </div>
+          </div>
+        </article>
+      }
+    </div>
+
+    <!-- Pagination -->
+    @if (totalPages > 1) {
+      <div class="pagination-wrapper card-base p-4 mt-4">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+          <div class="pagination-info text-muted small">
+            Showing {{ (page * size) + 1 }} to {{ getPaginationEnd() }} of {{ totalElements }} bookmarks
+          </div>
+          <div class="pagination-controls d-flex gap-2">
+            <button type="button" class="btn-base btn-outline btn-sm" (click)="prev()" [disabled]="page <= 0">
+              <i class="bi bi-chevron-left me-1"></i>Previous
+            </button>
+            <button type="button" class="btn-base btn-outline btn-sm" (click)="next()" [disabled]="page >= totalPages - 1">
+              Next<i class="bi bi-chevron-right ms-1"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Detail modal -->
+    <div class="bookmarks-modal-backdrop" *ngIf="selectedItem" (click)="closeDetails()">
+      <section class="bookmarks-modal card-base" role="dialog" aria-modal="true"
+               (click)="$event.stopPropagation()">
+        <header class="modal-top d-flex justify-content-between align-items-start gap-3 mb-3">
+          <div>
+            <h2 class="h4 mb-1">Session {{ selectedItem.sessionId }}</h2>
+            <div class="text-muted small d-flex flex-wrap gap-2 align-items-center">
+              <span class="badge-base {{ channelBadgeClass(selectedItem.channel) }}">
+                <i class="bi {{ channelIcon(selectedItem.channel) }} me-1"></i>{{ channelLabel(selectedItem.channel) }}
+              </span>
+              <span>{{ selectedItem.sessionCreatedAt | date : 'medium' }}</span>
+            </div>
+          </div>
+          <button type="button" class="modal-close btn-ghost btn-sm" (click)="closeDetails()">
+            <i class="bi bi-x-lg"></i>
+          </button>
+        </header>
+
+        <div class="modal-body">
+          @if (selectedItem.note) {
+            <div class="detail-section mb-3">
+              <h3 class="h6 text-gray-800 mb-1">Your note</h3>
+              <p class="text-muted fst-italic">{{ selectedItem.note }}</p>
+            </div>
+          }
+          <div class="detail-section">
+            <h3 class="h6 text-gray-800 mb-2">Session summary</h3>
+            <ng-container *ngIf="selectedJson; else plainSummary">
+              <pre class="summary-json">{{ selectedJson | json }}</pre>
+            </ng-container>
+            <ng-template #plainSummary>
+              <p class="text-gray-700">{{ selectedItem.summary || 'No details available.' }}</p>
+            </ng-template>
+          </div>
+        </div>
+
+        <footer class="modal-footer pt-3 border-top d-flex justify-content-end gap-2">
+          <button type="button" class="btn-base btn-danger btn-sm"
+                  [disabled]="removing.has(selectedItem.sessionId)"
+                  (click)="removeBookmark(selectedItem, $event); closeDetails()">
+            <i class="bi bi-bookmark-x me-1"></i>Remove Bookmark
+          </button>
+          <button type="button" class="btn-base btn-outline btn-sm" (click)="closeDetails()">
+            Close
+          </button>
+        </footer>
+      </section>
+    </div>
+  }
+</div>

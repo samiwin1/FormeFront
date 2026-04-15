@@ -43,6 +43,10 @@ export class HeaderComponent {
     return this.auth.isUser();
   }
 
+  certificationHomeLink(): string {
+    return this.auth.isEvaluator() ? '/evaluator/oral-assignments' : '/me/certification-space';
+  }
+
   toggleMenu() {
     this.menuOpen = !this.menuOpen;
   }

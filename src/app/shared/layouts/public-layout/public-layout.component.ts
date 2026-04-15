@@ -31,7 +31,8 @@ export class PublicLayoutComponent implements OnInit {
     return (
       this.router.url.startsWith('/me/certification-list') ||
       this.router.url.startsWith('/me/certification-space') ||
-      this.router.url.startsWith('/evaluator/oral-assignments')
+      this.router.url.startsWith('/evaluator/oral-assignments') ||
+      this.router.url.startsWith('/me/mentor')
     );
   }
 }

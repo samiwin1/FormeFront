@@ -1,0 +1,51 @@
+<div class="mentor-feedback d-flex align-items-start gap-2 flex-wrap">
+
+  @if (submitted) {
+    <span class="text-muted small"><i class="bi bi-check2 me-1"></i>Thanks for your feedback!</span>
+  } @else {
+    <span class="text-muted small me-1">Was this helpful?</span>
+
+    <button
+      type="button"
+      class="btn btn-sm feedback-btn"
+      [class.active-up]="selected === 'UP'"
+      [disabled]="submitting"
+      (click)="rate('UP')"
+      title="Helpful"
+    >
+      <i class="bi bi-hand-thumbs-up"></i>
+    </button>
+
+    <button
+      type="button"
+      class="btn btn-sm feedback-btn"
+      [class.active-down]="selected === 'DOWN'"
+      [disabled]="submitting"
+      (click)="rate('DOWN')"
+      title="Not helpful"
+    >
+      <i class="bi bi-hand-thumbs-down"></i>
+    </button>
+
+    @if (showComment) {
+      <div class="d-flex align-items-center gap-2 w-100 mt-1">
+        <input
+          class="form-control form-control-sm"
+          [(ngModel)]="comment"
+          name="feedback-comment"
+          placeholder="What could be better? (optional)"
+          maxlength="1000"
+          [disabled]="submitting"
+          (keydown.enter)="submit()"
+        />
+        <button
+          type="button"
+          class="btn btn-sm btn-outline-secondary flex-shrink-0"
+          (click)="submit()"
+          [disabled]="submitting"
+        >{{ submitting ? '…' : 'Send' }}</button>
+      </div>
+    }
+  }
+
+</div>

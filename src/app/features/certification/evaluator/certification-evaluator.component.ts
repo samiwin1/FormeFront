@@ -103,8 +103,8 @@ export class CertificationEvaluatorComponent implements OnInit {
 
   submitGrade(): void {
     const score = this.gradeScore();
-    if (score === null || score < 0 || score > 20) {
-      this.gradeError.set('Score must be between 0 and 20');
+    if (score === null || score < 0 || score > 100) {
+      this.gradeError.set('Score must be between 0 and 100');
       return;
     }
 
