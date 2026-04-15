@@ -1,0 +1,91 @@
+<div class="container py-4">
+  <nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb mb-0">
+      <li class="breadcrumb-item"><a routerLink="/me/mentor">AI Mentor</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Pre-exam tips</li>
+    </ol>
+  </nav>
+
+  <div class="d-flex align-items-center justify-content-between mb-1">
+    <h1 class="h3 mb-0">Pre-exam tips</h1>
+    <div class="mtr-controls-bar d-flex align-items-center gap-2 p-2 rounded">
+      <input class="form-control form-control-sm locale-input" [(ngModel)]="locale" name="locale" placeholder="en, fr" [disabled]="loading" />
+      <button type="button" class="btn btn-sm btn-outline-primary" (click)="load()" [disabled]="loading || !formationId">
+        <i class="bi bi-arrow-clockwise me-1"></i>{{ loading ? 'Loading…' : 'Reload' }}
+      </button>
+    </div>
+  </div>
+  <p class="text-muted small mb-4">Formation ID: <strong>{{ formationId }}</strong></p>
+
+  @if (loading) {
+    <div class="text-center py-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Generating tips…</span>
+      </div>
+      <p class="text-muted mt-3 small">The AI is preparing your exam tips — this may take a few seconds.</p>
+    </div>
+  }
+
+  @if (error && !loading) {
+    <div class="alert alert-danger">{{ error }}</div>
+  }
+
+  @if (result && !loading) {
+    <div class="mtr-card mb-3">
+      <div class="card-body">
+
+        @if (structured?.summary || result.summary) {
+          <p class="mb-3">{{ structured?.summary || result.summary }}</p>
+        }
+
+        @if (structured?.bullets?.length) {
+          <h2 class="h6 fw-semibold mb-2 border-start border-2 ps-2" style="border-color: var(--mtr-accent) !important;">Key tips</h2>
+          <ul class="mb-3">
+            @for (b of structured!.bullets; track $index) {
+              <li>{{ b }}</li>
+            }
+          </ul>
+        }
+
+        @if (structured?.weakTopics?.length) {
+          <div class="mb-3">
+            <span class="text-muted small fw-semibold me-2">Focus areas:</span>
+            @for (t of structured!.weakTopics; track $index) {
+              <span class="mtr-badge-weak me-1">{{ t }}</span>
+            }
+          </div>
+        }
+
+        @if (structured?.suggestedActions?.length) {
+          <h2 class="h6 fw-semibold mb-2 border-start border-2 ps-2" style="border-color: var(--mtr-accent) !important;">Recommended actions</h2>
+          <ol class="mb-3">
+            @for (a of structured!.suggestedActions; track $index) {
+              <li>{{ a }}</li>
+            }
+          </ol>
+        }
+
+        @if (structured?.studyPlan?.items?.length) {
+          <h2 class="h6 fw-semibold mb-2 border-start border-2 ps-2" style="border-color: var(--mtr-accent) !important;">{{ structured!.studyPlan!.title || 'Study plan' }}</h2>
+          <ul class="list-group list-group-flush mb-3">
+            @for (it of structured!.studyPlan!.items!; track $index) {
+              <li class="list-group-item px-0">
+                <span class="badge" style="background: color-mix(in srgb, var(--mtr-accent), transparent 85%); color: var(--mtr-accent);">{{ it.type }}</span>{{ it.title }}
+                @if (it.durationMinutes) {
+                  <span class="text-muted small ms-2">({{ it.durationMinutes }} min)</span>
+                }
+              </li>
+            }
+          </ul>
+        }
+
+        <div class="border-top pt-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+          <span class="text-muted small">Session #{{ result.sessionId }}</span>
+          <app-mentor-feedback [sessionId]="result.sessionId" />
+        </div>
+      </div>
+    </div>
+
+    <a routerLink="/me/mentor" class="btn btn-link btn-sm px-0">Back to hub</a>
+  }
+</div>

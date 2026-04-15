@@ -38,7 +38,8 @@ export class PublicLayoutComponent {
       this.router.url.startsWith('/me/certification-space') ||
       this.router.url.startsWith('/evaluator/oral-assignments') ||
       this.router.url.startsWith('/formations') ||
-      this.router.url.startsWith('/events')
+      this.router.url.startsWith('/events') ||
+      this.router.url.startsWith('/me/mentor')
     );
   }
 }

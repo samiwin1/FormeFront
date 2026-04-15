@@ -1,0 +1,127 @@
+<div class="mentor-remediation container py-4">
+  <nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb mb-0">
+      <li class="breadcrumb-item"><a routerLink="/me/mentor">AI Mentor</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Remediation plan</li>
+    </ol>
+  </nav>
+
+  <div class="remediation-hero mtr-card p-4 mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between gap-3 align-items-start">
+      <div>
+        <h1 class="h3 mb-2">Remediation plan</h1>
+        <p class="text-muted mb-2">AI-generated targeted study plan for formation #{{ formationId }}.</p>
+        <p class="text-muted small mb-0">Personalized recommendations to address your weak areas and improve performance.</p>
+      </div>
+
+      <div class="mtr-controls-bar d-flex flex-column flex-sm-row align-items-start align-items-sm-center gap-2 p-3 rounded">
+        <button type="button" class="btn btn-sm btn-outline-primary" (click)="load()" [disabled]="loading">
+          <i class="bi bi-arrow-clockwise me-1"></i>{{ loading ? 'Regenerating…' : 'Regenerate' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  @if (loading) {
+    <div class="text-center py-5">
+      <div class="spinner-border text-warning" role="status">
+        <span class="visually-hidden">Generating remediation plan…</span>
+      </div>
+      <p class="text-muted mt-3 small">Analyzing your attempts and building a personalized plan…</p>
+    </div>
+  }
+
+  @if (error && !loading) {
+    <div class="alert alert-danger rounded-4 mb-3">{{ error }}</div>
+  }
+
+  @if (result && !loading) {
+    <div class="remediation-card mtr-card mb-3">
+      <div class="card-body">
+        <div class="d-flex flex-column flex-md-row justify-content-between gap-3 mb-3 align-items-start">
+          <div>
+            @if (result.summary) {
+              <div class="remediation-summary mb-4">
+                <h2 class="h6 text-uppercase text-muted mb-2">Plan Overview</h2>
+                <p class="mb-0">{{ result.summary }}</p>
+              </div>
+            }
+          </div>
+          <div class="text-muted small text-end">
+            <span class="badge bg-light text-dark border">Formation #{{ formationId }}</span>
+          </div>
+        </div>
+
+        <div class="remediation-sections row gx-3 gy-3">
+          @if (structured?.bullets?.length) {
+            <div class="col-12">
+              <div class="section-card p-3 h-100">
+                <h3 class="h6 section-title">Key Insights</h3>
+                <ul class="section-list mb-0">
+                  @for (b of structured!.bullets; track $index) {
+                    <li class="d-flex align-items-start gap-2">
+                      <i class="bi bi-check-circle-fill text-success mt-1 flex-shrink-0"></i>
+                      <span>{{ b }}</span>
+                    </li>
+                  }
+                </ul>
+              </div>
+            </div>
+          }
+
+          @if (structured?.suggestedActions?.length) {
+            <div class="col-12 col-lg-6">
+              <div class="section-card p-3 h-100">
+                <h3 class="h6 section-title">Recommended Actions</h3>
+                <ol class="section-list mb-0">
+                  @for (a of structured!.suggestedActions; track $index) {
+                    <li class="d-flex align-items-start gap-2">
+                      <span class="action-counter">{{ $index + 1 }}</span>
+                      <span>{{ a }}</span>
+                    </li>
+                  }
+                </ol>
+              </div>
+            </div>
+          }
+
+          @if (structured?.studyPlan?.items?.length) {
+            <div class="col-12 col-lg-6">
+              <div class="section-card p-3 h-100">
+                <h3 class="h6 section-title">{{ structured!.studyPlan!.title || 'Study Plan' }}</h3>
+                <ul class="study-plan-list mb-0">
+                  @for (it of structured!.studyPlan!.items!; track $index) {
+                    <li>
+                      <div class="plan-item-row">
+                        <span class="badge plan-item-type">{{ it.type }}</span>
+                        <span class="plan-item-title">{{ it.title }}</span>
+                      </div>
+                      @if (it.durationMinutes) {
+                        <div class="text-muted small mt-1">{{ it.durationMinutes }} min</div>
+                      }
+                    </li>
+                  }
+                </ul>
+              </div>
+            </div>
+          }
+        </div>
+
+        <div class="border-top pt-3 mt-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
+          <span class="text-muted small">Session #{{ result.sessionId }}</span>
+          <app-mentor-feedback [sessionId]="result.sessionId" />
+        </div>
+      </div>
+    </div>
+
+    <a routerLink="/me/mentor" class="btn btn-link btn-sm px-0">Back to hub</a>
+  }
+
+  @if (!loading && !result && !error) {
+    <div class="empty-state rounded-4 p-4 text-center border border-dashed border-secondary-subtle">
+      <i class="bi bi-lightbulb fs-1 text-muted mb-3"></i>
+      <p class="mb-1 fw-semibold">No remediation plan available.</p>
+      <p class="text-muted">Click Regenerate to create your personalized study plan.</p>
+    </div>
+  }
+</div>

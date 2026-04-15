@@ -9,6 +9,7 @@ import { superAdminGuard } from './core/guards/super-admin.guard';
 import { UserManagementComponent } from './admin/pages/user-management/user-management.component';
 import { formationRoutes, adminFormationRoutes } from './features/formation/formation.routes';
 import { adminEventsRoutes } from './features/events/events.routes';
+import { mentorRoutes } from './features/mentor/mentor.routes';
 
 export const routes: Routes = [
   {
@@ -51,7 +52,10 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/events/pages/event-detail/event-detail.component').then(m => m.EventDetailComponent),
       },
-      { path: 'formations', children: formationRoutes },
+      { path: 'learner/onboarding', redirectTo: 'me/mentor/portfolio', pathMatch: 'full' },
+      { path: 'learner/recommendations', redirectTo: 'me/mentor', pathMatch: 'full' },
+      { path: 'me/recommendations', redirectTo: 'me/mentor', pathMatch: 'prefix' },
+      { path: 'me/mentor', children: mentorRoutes },
       { path: 'me/certification-list', redirectTo: 'me/certification-space', pathMatch: 'full' },
       {
         path: 'evaluator/oral-assignments',
@@ -99,6 +103,9 @@ export const routes: Routes = [
       { path: 'deals', loadComponent: () => import('./admin/pages/deals/deals.component').then(m => m.DealsComponent) },
       { path: 'packs', loadComponent: () => import('./admin/pages/packs/packs.component').then(m => m.PacksComponent) },
       { path: 'access-codes', loadComponent: () => import('./admin/pages/access-codes/access-codes.component').then(m => m.AccessCodesComponent) },
+      { path: 'mentor-users/:userId', loadComponent: () => import('./admin/pages/mentor-user-detail/mentor-user-detail.component').then(m => m.MentorUserDetailComponent) },
+      { path: 'formation-demands', loadComponent: () => import('./admin/pages/formation-demands/formation-demands.component').then(m => m.FormationDemandsComponent) },
+      { path: 'mentor-analytics', loadComponent: () => import('./admin/pages/mentor-analytics/mentor-analytics.component').then(m => m.MentorAnalyticsComponent) },
     ],
   },
   {

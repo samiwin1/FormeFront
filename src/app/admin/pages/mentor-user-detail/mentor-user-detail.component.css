@@ -1,0 +1,67 @@
+.user-detail-container {
+  padding: 20px;
+}
+
+.card {
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.card-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 12px 12px 0 0 !important;
+}
+
+.card-header h5 {
+  color: white;
+}
+
+.stats-card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  border: 1px solid #e9ecef;
+}
+
+.stats-icon {
+  font-size: 2rem;
+  color: #667eea;
+  margin-bottom: 10px;
+}
+
+.stats-content h3 {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: bold;
+  color: #495057;
+}
+
+.stats-content p {
+  margin: 5px 0 0 0;
+  color: #6c757d;
+  font-size: 0.9rem;
+}
+
+.feedback-stat h4 {
+  margin: 0;
+  font-weight: bold;
+}
+
+.badge {
+  font-size: 0.8em;
+}
+
+.btn-light {
+  background-color: rgba(255,255,255,0.2);
+  border-color: rgba(255,255,255,0.3);
+  color: white;
+}
+
+.btn-light:hover {
+  background-color: rgba(255,255,255,0.3);
+  color: white;
+}

@@ -190,7 +190,7 @@
                       <div class="grade-display">
                         <div class="grade-score-badge">
                           <i class="bi bi-star-fill"></i>
-                          <span>{{ a.oralScore }}/20</span>
+                          <span>{{ a.oralScore }}/100</span>
                         </div>
                         @if (a.oralComment) {
                           <div class="grade-comment">
@@ -262,17 +262,17 @@
       <div class="form-group">
         <label>
           <i class="bi bi-star"></i>
-          Score (0-20)
+          Score (0-100)
         </label>
         <input
           type="number"
           min="0"
-          max="20"
+          max="100"
           step="0.5"
           [value]="gradeScore() ?? ''"
           (input)="gradeScore.set(+$any($event.target).value)"
           class="form-input"
-          placeholder="Enter score (e.g., 14.5)"
+          placeholder="Enter score (e.g., 74.5)"
         />
       </div>
 

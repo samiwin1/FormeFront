@@ -245,6 +245,12 @@ export interface PendingFeedbackDto {
   sessionId: number | null;
 }
 
+export interface FeedbackContextDto {
+  issuedCertificationId: number;
+  sessionId: number | null;
+  alreadySubmitted: boolean;
+}
+
 export interface SessionFeedbackSummaryDto {
   sessionId: number;
   sessionTitle: string;
