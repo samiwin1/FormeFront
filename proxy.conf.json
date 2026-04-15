@@ -62,6 +62,10 @@
   },
   "/api/admin/reschedule": {
     "target": "http://localhost:8090",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  },
   "/formation-api": {
     "target": "http://localhost:8082",
     "secure": false,

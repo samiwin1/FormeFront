@@ -83,8 +83,6 @@ export const routes: Routes = [
       { path: 'dashboard', loadComponent: () => import('./admin/pages/dashboard/dashboard.component').then(m => m.DashboardComponent) },
       { path: 'formations', children: adminFormationRoutes },
       { path: 'users', loadComponent: () => import('./admin/pages/user-management/user-management.component').then(m => m.UserManagementComponent) },
-      { path: 'users', component: UserManagementComponent },
-      { path: 'formations', children: adminFormationRoutes },
       { path: 'events', children: adminEventsRoutes },
       { path: 'certifications', loadComponent: () => import('./features/certification/admin/certification-admin.component').then(m => m.CertificationAdminComponent), data: { mode: 'certification' } },
       { path: 'oral-sessions', loadComponent: () => import('./features/certification/admin/certification-admin.component').then(m => m.CertificationAdminComponent), data: { mode: 'oral' } },

@@ -126,4 +126,14 @@ export class MentorApiService {
     const params = new HttpParams().set('page', String(page)).set('size', String(size));
     return this.http.get<PageBookmarks>(`${this.baseUrl}/advice/bookmarks`, { params });
   }
+
+  // ── Weekly brief ───────────────────────────────────────────────────────────
+
+  weeklyBrief(locale?: string): Observable<MentorAdviceResponseDto> {
+    let params = new HttpParams();
+    if (locale?.trim()) {
+      params = params.set('locale', locale.trim());
+    }
+    return this.http.get<MentorAdviceResponseDto>(`${this.baseUrl}/weekly-brief`, { params });
+  }
 }
