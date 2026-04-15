@@ -59,14 +59,35 @@ export class AuthService {
     this.loggedInSubject.next(false);
   }
 
+  /**
+   * Drops expired JWT from storage and aligns {@link isLoggedIn$}.
+   * Call from guards/interceptors so expiry is handled in one place — {@link getToken} no longer mutates storage.
+   */
+  syncSessionState(): void {
+    const token = localStorage.getItem(this.TOKEN_KEY);
+    if (!token) {
+      if (this.loggedInSubject.value) {
+        this.loggedInSubject.next(false);
+      }
+      return;
+    }
+    if (this.isTokenExpired(token)) {
+      localStorage.removeItem(this.TOKEN_KEY);
+      this.loggedInSubject.next(false);
+      return;
+    }
+    if (!this.loggedInSubject.value) {
+      this.loggedInSubject.next(true);
+    }
+  }
+
+  /** Valid, non-expired JWT or null. Does not remove storage (use {@link syncSessionState} to purge expired). */
   getToken(): string | null {
     const token = localStorage.getItem(this.TOKEN_KEY);
     if (!token) {
       return null;
     }
     if (this.isTokenExpired(token)) {
-      localStorage.removeItem(this.TOKEN_KEY);
-      this.loggedInSubject.next(false);
       return null;
     }
     return token;

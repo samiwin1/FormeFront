@@ -36,6 +36,8 @@ yarn-error.log
 /libpeerconnection.log
 testem.log
 /typings
+/graphify-out/
+/src/graphify-out/
 
 # System files
 .DS_Store

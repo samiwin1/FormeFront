@@ -261,7 +261,12 @@ export class FormationCreateComponent {
         if (err?.status === 404) {
           this.aiGenerateError = 'Endpoint not found. Restart formation-service and api-gateway, then try again.';
         } else {
-          this.aiGenerateError = err?.error?.message || err?.error || 'AI generation failed. Check API key and try again.';
+          const msg = (typeof err?.error === 'object' && err?.error?.message) ? String(err.error.message) : (err?.error ? String(err.error) : '');
+          if (msg.toLowerCase().includes('api key') && (msg.toLowerCase().includes('expired') || msg.toLowerCase().includes('renew') || msg.toLowerCase().includes('invalid'))) {
+            this.aiGenerateError = 'API key expired or invalid. Renew it at https://aistudio.google.com/app/apikey then set gemini.api.key in formation-service (application.properties or env GEMINI_API_KEY) and restart the service.';
+          } else {
+            this.aiGenerateError = msg || 'AI generation failed. Check API key and try again.';
+          }
         }
       }
     });

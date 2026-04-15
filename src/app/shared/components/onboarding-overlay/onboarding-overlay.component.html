@@ -1,0 +1,45 @@
+<div class="ob-overlay" *ngIf="onboarding.active()">
+  <div
+    class="ob-spotlight"
+    *ngIf="focusRect() as rect"
+    [style.left.px]="rect.left - 8"
+    [style.top.px]="rect.top - 8"
+    [style.width.px]="rect.width + 16"
+    [style.height.px]="rect.height + 16"
+  ></div>
+
+  <div class="ob-card" [ngStyle]="cardStyle()" [class.ob-card--enter]="cardPulse()" role="dialog" aria-modal="true" aria-label="Guided onboarding">
+    <ng-container *ngIf="onboarding.currentStep() as step">
+    <div class="ob-head">
+      <span class="ob-chip">Guided tour {{ onboarding.progressLabel() }}</span>
+      <button type="button" class="ob-close" (click)="onboarding.skip()" aria-label="Close tour">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+
+    <h3 class="ob-title">{{ step.title }}</h3>
+    <p class="ob-text">{{ step.description }}</p>
+
+    <div class="ob-actions">
+      <button type="button" class="btn btn-outline-secondary btn-sm" (click)="onboarding.previous()" [disabled]="onboarding.stepIndex() === 0">
+        Previous
+      </button>
+
+      <button
+        type="button"
+        class="btn btn-primary btn-sm"
+        (click)="onboarding.next()"
+        *ngIf="onboarding.stepIndex() < onboarding.steps().length - 1; else finishButton"
+      >
+        Next
+      </button>
+
+      <ng-template #finishButton>
+        <button type="button" class="btn btn-success btn-sm" (click)="onboarding.complete()">
+          Finish
+        </button>
+      </ng-template>
+    </div>
+    </ng-container>
+  </div>
+</div>

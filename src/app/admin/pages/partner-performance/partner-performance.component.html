@@ -1,0 +1,173 @@
+<div class="page-header">
+  <div class="page-header-left d-flex align-items-center">
+    <div class="page-header-title">
+      <h5 class="m-b-10">Partner Performance</h5>
+    </div>
+    <ul class="breadcrumb">
+      <li class="breadcrumb-item"><a routerLink="/admin/dashboard">Home</a></li>
+      <li class="breadcrumb-item">Business</li>
+      <li class="breadcrumb-item">Performance</li>
+    </ul>
+  </div>
+  <div class="page-header-right ms-auto d-flex gap-2">
+    <button class="btn btn-light" (click)="refreshAll(true)"><i class="feather-refresh-cw me-1"></i>Refresh</button>
+  </div>
+</div>
+
+<div class="main-content performance-page">
+  <div class="card stretch stretch-full mb-4">
+    <div class="card-body control-grid">
+      <div class="control-field">
+        <label class="form-label">Partner ID</label>
+        <input class="form-control" type="number" min="1" [(ngModel)]="partnerId" />
+      </div>
+      <div class="control-field">
+        <label class="form-label">Period</label>
+        <select class="form-select" [(ngModel)]="period" (ngModelChange)="loadLeaderboard(true)">
+          <option value="7d">Last 7 days</option>
+          <option value="30d">Last 30 days</option>
+          <option value="90d">Last 90 days</option>
+        </select>
+      </div>
+      <div class="control-field">
+        <label class="form-label">Metric</label>
+        <select class="form-select" [(ngModel)]="metric" (ngModelChange)="loadLeaderboard(true)">
+          <option value="redemptionRate">Redemption Rate</option>
+          <option value="redeemed">Redeemed</option>
+          <option value="issued">Issued</option>
+          <option value="revenue">Revenue</option>
+        </select>
+      </div>
+      <div class="control-field">
+        <label class="form-label">Leaderboard size</label>
+        <input class="form-control" type="number" min="1" max="50" [(ngModel)]="limit" (change)="loadLeaderboard(true)" />
+      </div>
+      <div class="action-group">
+        <button class="btn btn-primary" (click)="loadKpi(true)">Load KPI</button>
+        <button class="btn btn-outline-primary" (click)="loadLeaderboard(true)">Load Leaderboard</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="kpi-grid mb-4">
+    <div class="kpi-card card-hero card-redemption position-relative">
+      <button class="btn btn-link text-white position-absolute top-0 end-0 p-2 text-decoration-none" (click)="loadKpi(true)" title="Refresh KPI">↻</button>
+      <div class="kpi-label">Redemption Rate</div>
+      <div class="kpi-value" *ngIf="!loadingKpi">{{ asPercent(kpi?.redemptionRate) }}</div>
+      <div class="kpi-value" *ngIf="loadingKpi">...</div>
+    </div>
+    <div class="kpi-card card-hero card-issued">
+      <div class="kpi-label">Issued Codes</div>
+      <div class="kpi-value" *ngIf="!loadingKpi">{{ kpi?.issued ?? 0 }}</div>
+      <div class="kpi-value" *ngIf="loadingKpi">...</div>
+    </div>
+    <div class="kpi-card card-hero card-redeemed">
+      <div class="kpi-label">Redeemed Codes</div>
+      <div class="kpi-value" *ngIf="!loadingKpi">{{ kpi?.redeemed ?? 0 }}</div>
+      <div class="kpi-value" *ngIf="loadingKpi">...</div>
+    </div>
+    <div class="kpi-card card-hero card-alerts">
+      <div class="kpi-label">Open Alerts</div>
+      <div class="kpi-value" *ngIf="!loadingAlerts">{{ alerts.length }}</div>
+      <div class="kpi-value" *ngIf="loadingAlerts">...</div>
+    </div>
+  </div>
+
+  <div class="split-grid">
+    <div>
+      <div class="card stretch stretch-full">
+        <div class="card-header d-flex align-items-center justify-content-between">
+          <h5 class="card-title mb-0">Leaderboard</h5>
+          <span class="badge bg-light text-dark">{{ period }} · {{ metric }}</span>
+        </div>
+        <div class="card-body p-0">
+          <div *ngIf="leaderboardError" class="alert alert-warning m-3">{{ leaderboardError }}</div>
+          <div *ngIf="loadingLeaderboard" class="text-center py-5"><div class="spinner-border text-primary"></div></div>
+
+          <div class="table-responsive" *ngIf="!loadingLeaderboard">
+            <table class="table table-hover mb-0">
+              <thead>
+                <tr>
+                  <th>Rank</th>
+                  <th>Partner</th>
+                  <th class="text-end">Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let row of leaderboard">
+                  <td><span class="badge bg-primary-subtle text-primary-emphasis">#{{ row.rank }}</span></td>
+                  <td>
+                    <div class="fw-semibold">{{ row.partnerName || ('Partner #' + row.partnerId) }}</div>
+                    <small class="text-muted">ID: {{ row.partnerId }}</small>
+                  </td>
+                  <td class="text-end fw-semibold">{{ row.value }}</td>
+                </tr>
+                <tr *ngIf="leaderboard.length === 0">
+                  <td colspan="3" class="text-center text-muted py-4">No leaderboard data yet.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card stretch stretch-full">
+        <div class="card-header d-flex align-items-center justify-content-between">
+          <h5 class="card-title mb-0">Open Alerts</h5>
+          <button class="btn btn-sm btn-light" (click)="loadAlerts(true)"><i class="feather-refresh-cw me-1"></i>Reload</button>
+        </div>
+        <div class="card-body">
+          <div *ngIf="alertsError" class="alert alert-warning">{{ alertsError }}</div>
+          <div *ngIf="loadingAlerts" class="text-center py-5"><div class="spinner-border text-primary"></div></div>
+
+          <div class="d-flex flex-wrap align-items-center gap-2 mb-3" *ngIf="!loadingAlerts">
+            <div class="input-group input-group-sm" style="max-width: 300px;">
+              <span class="input-group-text"><i class="feather-search"></i></span>
+              <input class="form-control" placeholder="Search alerts..." [(ngModel)]="alertSearch" (ngModelChange)="onAlertFiltersChanged()">
+            </div>
+            <select class="form-select form-select-sm" style="max-width: 180px;" [(ngModel)]="alertSeverityFilter" (ngModelChange)="onAlertFiltersChanged()">
+              <option value="ALL">All severities</option>
+              <option value="CRITICAL">Critical</option>
+              <option value="HIGH">High</option>
+              <option value="MEDIUM">Medium</option>
+              <option value="LOW">Low</option>
+            </select>
+          </div>
+
+          <div class="d-flex flex-column gap-2" *ngIf="!loadingAlerts">
+            <div class="alert-card" *ngFor="let alert of paginatedAlerts">
+              <div class="d-flex align-items-start justify-content-between gap-2">
+                <div>
+                  <span class="badge" [ngClass]="severityClass(alert.severity)">{{ alert.severity }}</span>
+                  <h6 class="mt-2 mb-1">{{ alert.type }}</h6>
+                  <p class="mb-1 text-muted">{{ alert.message }}</p>
+                  <small class="text-muted">{{ alert.createdAt | date:'short' }}</small>
+                </div>
+                <button
+                  class="btn btn-sm btn-outline-success"
+                  [disabled]="resolvingAlertId === alert.id"
+                  (click)="resolveAlert(alert.id)">
+                  Resolve
+                </button>
+              </div>
+            </div>
+
+            <div class="text-center text-muted py-4" *ngIf="filteredAlerts.length === 0">No open alerts. System looks healthy.</div>
+            <div class="d-flex align-items-center justify-content-between pt-2" *ngIf="filteredAlerts.length > 0">
+              <small class="text-muted">{{ filteredAlerts.length }} alert(s)</small>
+              <div class="d-flex align-items-center gap-2">
+                <button class="btn btn-sm btn-light" [disabled]="alertPage <= 1" (click)="previousAlertPage()">Prev</button>
+                <span class="small text-muted">Page {{ alertPage }} / {{ alertTotalPages }}</span>
+                <button class="btn btn-sm btn-light" [disabled]="alertPage >= alertTotalPages" (click)="nextAlertPage()">Next</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="kpiError" class="alert alert-warning mt-3">{{ kpiError }}</div>
+</div>

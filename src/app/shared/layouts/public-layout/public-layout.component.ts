@@ -1,7 +1,6 @@
+import { Component, inject } from '@angular/core';
 import { NgIf } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
-import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
-import { filter } from 'rxjs/operators';
+import { Router, RouterOutlet } from '@angular/router';
 import { HeaderComponent } from '../../header/header.component';
 import { FooterComponent } from '../../footer/footer.component';
 
@@ -11,27 +10,16 @@ import { FooterComponent } from '../../footer/footer.component';
   imports: [RouterOutlet, NgIf, HeaderComponent, FooterComponent],
   templateUrl: './public-layout.component.html',
 })
-export class PublicLayoutComponent implements OnInit {
-  isFormationRoute = false;
-
-  constructor(private router: Router) {}
-
-  ngOnInit(): void {
-    this.updateFormationRoute();
-    this.router.events
-      .pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd))
-      .subscribe(() => this.updateFormationRoute());
-  }
-
-  private updateFormationRoute(): void {
-    this.isFormationRoute = this.router.url.startsWith('/formations');
-  }
+export class PublicLayoutComponent {
+  private readonly router = inject(Router);
 
   hideFooterForCurrentRoute(): boolean {
     return (
       this.router.url.startsWith('/me/certification-list') ||
       this.router.url.startsWith('/me/certification-space') ||
       this.router.url.startsWith('/evaluator/oral-assignments') ||
+      this.router.url.startsWith('/formations') ||
+      this.router.url.startsWith('/events') ||
       this.router.url.startsWith('/me/mentor')
     );
   }

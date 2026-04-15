@@ -264,7 +264,8 @@ export class CertificationAdminComponent implements OnInit {
       },
       error: (err: unknown) => {
         this.loading = false;
-        this.error = this.errorMessage(err, 'Failed to load certifications');
+        const msg = this.errorMessage(err, 'Failed to load certifications');
+        this.error = msg + (this.isCertificationApiUnreachable(err) ? ' Start certification-service (port 8090) and, if using port 8080, ensure /api proxies to it.' : '');
       },
     });
   }
@@ -275,15 +276,25 @@ export class CertificationAdminComponent implements OnInit {
       return;
     }
 
+    const raw = this.certificationForm.value;
+    const parseNum = (v: unknown, fallback: number): number => {
+      if (v == null) return fallback;
+      if (typeof v === 'number' && !Number.isNaN(v)) return v;
+      const s = String(v).trim().replace(',', '.');
+      const n = Number(s);
+      return Number.isFinite(n) ? n : fallback;
+    };
+    const weightWritten = Math.round(parseNum(raw.weightWritten, 0.5) * 100) / 100;
+    const weightOral = Math.round(parseNum(raw.weightOral, 0.5) * 100) / 100;
     const payload: CreateCertificationRequest = {
-      title: this.certificationForm.value.title!,
-      domain: this.certificationForm.value.domain || undefined,
-      provider: this.certificationForm.value.provider || undefined,
-      level: this.certificationForm.value.level || undefined,
-      validityMonths: this.certificationForm.value.validityMonths!,
-      thresholdFinal: this.certificationForm.value.thresholdFinal!,
-      weightWritten: this.certificationForm.value.weightWritten!,
-      weightOral: this.certificationForm.value.weightOral!,
+      title: String(raw.title ?? '').trim(),
+      domain: raw.domain ? String(raw.domain).trim() || undefined : undefined,
+      provider: raw.provider ? String(raw.provider).trim() || undefined : undefined,
+      level: raw.level ? String(raw.level).trim() || undefined : undefined,
+      validityMonths: parseNum(raw.validityMonths, 12),
+      thresholdFinal: parseNum(raw.thresholdFinal, 50),
+      weightWritten,
+      weightOral,
     };
 
     const action = this.editingCertificationId
@@ -304,7 +315,8 @@ export class CertificationAdminComponent implements OnInit {
         this.refresh();
       },
       error: (err: unknown) => {
-        this.error = this.errorMessage(err, 'Failed to save certification');
+        const msg = this.errorMessage(err, 'Failed to save certification');
+        this.error = msg + (this.isCertificationApiUnreachable(err) ? ' Ensure certification-service (port 8090) is running.' : '');
       },
     });
   }
@@ -751,6 +763,14 @@ export class CertificationAdminComponent implements OnInit {
     });
   }
 
+  private isCertificationApiUnreachable(err: unknown): boolean {
+    if (err instanceof HttpErrorResponse) {
+      const s = err.status;
+      return s === 0 || s === 502 || s === 503 || s === 504;
+    }
+    return false;
+  }
+
   private errorMessage(err: unknown, fallback: string): string {
     if (err instanceof HttpErrorResponse) {
       if (typeof err.error === 'string' && err.error.trim().length > 0) {
@@ -773,6 +793,12 @@ export class CertificationAdminComponent implements OnInit {
       }
       if (err.status === 400) {
         return 'Assignment rejected by backend. Check learner eligibility, formationId, and selected oral session.';
+      }
+      if (err.status === 403) {
+        const msg = err.error && typeof err.error === 'object' && typeof (err.error as { message?: string }).message === 'string'
+          ? (err.error as { message: string }).message
+          : null;
+        return msg || 'Access denied. Log in with an account that has the Admin role to add or manage certifications. If you are an admin, ensure certification-service uses the same JWT secret as user-service.';
       }
       return err.message || fallback;
     }

@@ -10,3 +10,17 @@
   max-width: 100%;
   object-fit: contain;
 }
+
+.agent-thinking-container--compact {
+  min-height: 1.25rem;
+}
+
+.agent-thinking-container--compact .agent-thinking-frame {
+  max-height: 48px;
+}
+
+.agent-thinking-container--compact .spinner-border {
+  width: 1rem;
+  height: 1rem;
+  border-width: 0.15em;
+}

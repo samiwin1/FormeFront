@@ -1,12 +1,13 @@
 :host {
   display: block;
+  --admin-sidebar-width: 260px;
 }
 
 .nxl-navigation {
   position: fixed;
   top: 0;
   left: 0;
-  width: 260px;
+  width: var(--admin-sidebar-width);
   height: 100vh;
   background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
   border-right: 1px solid #e5e7eb;
@@ -139,4 +140,26 @@
   align-items: center;
   justify-content: center;
   box-shadow: 0 2px 6px rgba(239,68,68,0.4);
+}
+
+@media (max-width: 992px) {
+  :host {
+    --admin-sidebar-width: 100%;
+  }
+
+  .nxl-navigation {
+    position: relative;
+    width: 100%;
+    height: auto;
+    max-height: 44vh;
+    z-index: 10;
+    box-shadow: none;
+    border-right: 0;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .navbar-content {
+    max-height: calc(44vh - 72px);
+    overflow-y: auto;
+  }
 }

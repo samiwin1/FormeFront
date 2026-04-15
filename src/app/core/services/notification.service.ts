@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Subscription, interval, forkJoin, combineLatest, of } from 'rxjs';
 import { switchMap, catchError } from 'rxjs/operators';
 import { environment } from '../../../enviroments/environment';
+import { AuthService } from './auth.service';
 import { MentorNotificationService, MentorNotification } from './mentor-notification.service';
 
 export interface AppNotification {
@@ -19,7 +20,7 @@ export interface AppNotification {
 
 @Injectable({ providedIn: 'root' })
 export class NotificationService {
-  private readonly api = `${environment.certificationApiUrl}/me/notifications`;
+  private readonly api = `${environment.certificationApiUrl ?? ''}/me/notifications`;
   private pollSub?: Subscription;
   private isAdmin = false;
 
@@ -28,11 +29,15 @@ export class NotificationService {
   readonly notifications = signal<AppNotification[]>([]);
   readonly unreadCount   = signal<number>(0);
 
-  constructor(private readonly http: HttpClient) {}
+  constructor(
+    private readonly http: HttpClient,
+    private readonly auth: AuthService,
+  ) {}
 
   startPolling(isAdmin = false): void {
     this.isAdmin = isAdmin;
     this.stopPolling();
+    if (!this.auth.getToken()) return;
     this.loadAll();
 
     const certCountUrl   = `${this.api}/unread-count`;

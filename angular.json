@@ -39,6 +39,7 @@
               "src/assets/duralux/css/theme.min.css"
             ],
             "scripts": [
+              "src/assets/duralux/vendors/js/jquery.min.js",
               "src/assets/mentor/vendor/bootstrap/js/bootstrap.bundle.min.js",
               "src/assets/mentor/vendor/aos/aos.js",
               "src/assets/mentor/vendor/purecounter/purecounter_vanilla.js",
@@ -76,6 +77,7 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
+            "port": 4200,
             "proxyConfig": "proxy.conf.json"
           },
           "configurations": {

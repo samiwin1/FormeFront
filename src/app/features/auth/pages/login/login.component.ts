@@ -2,8 +2,10 @@
 import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../../core/services/auth.service';
+import { CartService } from '../../../../features/shop/services/cart.service';
+import { OnboardingService } from '../../../../core/services/onboarding.service';
 
 @Component({
   standalone: true,
@@ -14,7 +16,10 @@ import { AuthService } from '../../../../core/services/auth.service';
 export class LoginComponent {
   private fb = inject(FormBuilder);
   private auth = inject(AuthService);
+  private cartService = inject(CartService);
+  private onboarding = inject(OnboardingService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
   loading = false;
   error: string | null = null;
@@ -42,6 +47,14 @@ export class LoginComponent {
     this.auth.login(payload).subscribe({
       next: () => {
         this.loading = false;
+        this.onboarding.registerLoginAndScheduleAutoStart();
+        const userId = this.auth.getUserId();
+        if (userId != null) this.cartService.refreshCartCount(userId);
+        const ret = this.route.snapshot.queryParamMap.get('returnUrl');
+        if (ret && ret.startsWith('/') && !ret.startsWith('//')) {
+          this.router.navigateByUrl(ret);
+          return;
+        }
         const roles = this.auth.getRoles();
         console.log('Login successful. Roles:', roles);
 
