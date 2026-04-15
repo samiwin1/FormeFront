@@ -1,0 +1,167 @@
+<section class="evw">
+  <div class="evw-shell">
+    <nav class="evw-nav" aria-label="Breadcrumb">
+      <a routerLink="/events" class="evw-link">Events</a>
+      <span class="evw-sep" aria-hidden="true">/</span>
+      <a [routerLink]="['/events', eventId]" class="evw-link">{{ loading ? '…' : (full?.title || teaser?.title || 'Event') }}</a>
+      <span class="evw-sep" aria-hidden="true">/</span>
+      <span class="evw-here">Workspace</span>
+    </nav>
+
+    <button type="button" class="evw-back" (click)="router.navigate(['/events', eventId, 'participate'])">
+      ← Back
+    </button>
+
+    @if (loading) {
+      <div class="evw-state">
+        <span class="evw-spinner"></span>
+        <p>Loading workspace…</p>
+      </div>
+    } @else if (error) {
+      <div class="evw-error">
+        <p>{{ error }}</p>
+        <a routerLink="/events" class="evw-link">Events hub</a>
+      </div>
+    } @else if (teaser) {
+      <p class="evw-muted">Redirecting…</p>
+    } @else if (full) {
+      <div class="evw-grid">
+        <aside class="evw-details">
+          <p class="evw-kicker">Event details</p>
+          <h1 class="evw-title">{{ full.title }}</h1>
+          <div class="evw-tags">
+            <span class="evw-tag">Starts {{ formatDate(full.startDate) }}</span>
+            <span class="evw-tag">Deadline {{ formatDate(full.deadline) }}</span>
+            @if (submissionOpen(full)) {
+              <span class="evw-tag evw-tag--ok">Submissions open</span>
+            } @else {
+              <span class="evw-tag evw-tag--muted">Submissions closed</span>
+            }
+          </div>
+
+          @if (full.description?.trim()) {
+            <div class="evw-block">
+              <strong>Description</strong>
+              <p class="evw-preline">{{ full.description }}</p>
+            </div>
+          }
+          @if (full.requirements?.trim()) {
+            <div class="evw-block">
+              <strong>Requirements</strong>
+              @if (bulletListFrom(full.requirements); as items) {
+                <ul class="evw-list">
+                  @for (item of items; track $index) {
+                    <li>{{ item }}</li>
+                  }
+                </ul>
+              } @else {
+                <p class="evw-preline">{{ full.requirements }}</p>
+              }
+            </div>
+          }
+          @if (full.successMetrics?.trim()) {
+            <div class="evw-block">
+              <strong>Success metrics</strong>
+              @if (bulletListFrom(full.successMetrics); as mItems) {
+                <ul class="evw-list">
+                  @for (item of mItems; track $index) {
+                    <li>{{ item }}</li>
+                  }
+                </ul>
+              } @else {
+                <p class="evw-preline">{{ full.successMetrics }}</p>
+              }
+            </div>
+          }
+        </aside>
+
+        <div class="evw-main">
+          @if (myDepositLoading) {
+            <div class="evw-dropzone evw-dropzone--plain">
+              <p class="evw-muted">Checking your submission…</p>
+            </div>
+          } @else if (existingDeposit) {
+            <div class="evw-submitted">
+              <h2 class="evw-h2">Submission received</h2>
+              <p class="evw-muted">You have already uploaded your project for this event. Contact an admin if you need to change it.</p>
+              <ul class="evw-submitted-list">
+                <li><span class="evw-submitted-k">ZIP</span> {{ existingDeposit.zipOriginalFilename }}</li>
+                <li><span class="evw-submitted-k">README</span> {{ existingDeposit.readmeOriginalFilename }}</li>
+                @if (existingDeposit.submittedAt) {
+                  <li><span class="evw-submitted-k">Submitted</span> {{ formatDate(existingDeposit.submittedAt) }}</li>
+                }
+              </ul>
+            </div>
+          } @else {
+            <div
+              class="evw-dropzone"
+              [class.evw-dropzone--active]="dropActive"
+              (dragover)="onDragOver($event)"
+              (dragleave)="onDragLeave()"
+              (drop)="onDrop($event)"
+            >
+              <h2 class="evw-h2">Submit your work</h2>
+              <p class="evw-muted">{{ readmeHint }} Drop files here or browse.</p>
+              @if (!submissionOpen(full)) {
+                <div class="evw-notice">The submission window is closed.</div>
+              } @else {
+                <div class="evw-files">
+                  <div>
+                    <span class="evw-label">Project .zip</span>
+                    @if (zipFile) {
+                      <span class="evw-file-name">{{ zipFile.name }}</span>
+                    }
+                    <input type="file" class="evw-file" accept=".zip,application/zip" (change)="onZipPick($event)" />
+                  </div>
+                  <div>
+                    <span class="evw-label">README.md / README.txt</span>
+                    @if (readmeFile) {
+                      <span class="evw-file-name">{{ readmeFile.name }}</span>
+                    }
+                    <input type="file" class="evw-file" accept=".md,.txt,text/plain,text/markdown" (change)="onReadmePick($event)" />
+                  </div>
+                </div>
+                <button type="button" class="evw-btn evw-btn-primary" (click)="submitDeposit()" [disabled]="depositBusy">
+                  @if (depositBusy) {
+                    <span class="evw-btn-spin"></span>
+                  }
+                  Upload submission
+                </button>
+              }
+              @if (depositMsg) {
+                <p class="evw-msg evw-msg--err">{{ depositMsg }}</p>
+              }
+            </div>
+          }
+
+          <div class="evw-chat">
+            <h2 class="evw-h2">Project assistant</h2>
+            <div class="evw-chat-row">
+              <app-agent-thinking-animation [active]="chatBusy" [compact]="true" class="evw-thinking" />
+              <div class="evw-chat-fields">
+                <textarea
+                  class="evw-textarea"
+                  rows="3"
+                  [(ngModel)]="chatMessage"
+                  placeholder="Ask a short question about this brief…"
+                ></textarea>
+                <button type="button" class="evw-btn evw-btn-outline" (click)="sendChat()" [disabled]="chatBusy || !chatMessage.trim()">
+                  Ask
+                </button>
+              </div>
+            </div>
+            @if (chatError) {
+              <p class="evw-msg evw-msg--err">{{ chatError }}</p>
+            }
+            @if (chatReply) {
+              <div class="evw-reply">
+                <span class="evw-reply-label">Assistant</span>
+                <p class="evw-preline">{{ chatReply }}</p>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+</section>

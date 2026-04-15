@@ -9,10 +9,18 @@
         <div class="main-content">
           <router-outlet></router-outlet>
         </div>
+
+    <main class="nxl-container">
+      <div class="nxl-content">
+        <!-- [ Main Content ] start -->
+        <div class="main-content">
+          <router-outlet></router-outlet>
+        </div>
+        <!-- [ Main Content ] end -->
       </div>
     </main>
 
-    @if (!isFormationRoute()) {
+    @if (!hideFooterForAdminContent()) {
       <app-footer></app-footer>
     }
   </div>

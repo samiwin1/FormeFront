@@ -4,9 +4,7 @@
     "secure": false,
     "changeOrigin": true,
     "logLevel": "debug",
-    "pathRewrite": {
-      "^/user-api": "/api"
-    }
+    "pathRewrite": { "^/user-api": "/api" }
   },
   "/api/formations": {
     "target": "http://localhost:8084",
@@ -64,9 +62,12 @@
   },
   "/api/admin/reschedule": {
     "target": "http://localhost:8090",
+  "/formation-api": {
+    "target": "http://localhost:8082",
     "secure": false,
     "changeOrigin": true,
-    "logLevel": "debug"
+    "logLevel": "debug",
+    "pathRewrite": { "^/formation-api": "/api" }
   },
   "/api/admin/oral": {
     "target": "http://localhost:8090",
@@ -130,5 +131,19 @@
     "pathRewrite": {
       "^/article-api": "/api"
     }
+  "/events-api": {
+    "target": "http://localhost:8082",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug",
+    "timeout": 180000,
+    "proxyTimeout": 180000,
+    "pathRewrite": { "^/events-api": "/api" }
+  },
+  "/api": {
+    "target": "http://localhost:8090",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
   }
 }

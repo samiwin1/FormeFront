@@ -1,5 +1,5 @@
 @if (active) {
-  <div class="agent-thinking-container">
+  <div class="agent-thinking-container" [class.agent-thinking-container--compact]="compact">
     @if (useSpinner) {
       <span class="spinner-border" role="status" aria-label="Generating">
         <span class="visually-hidden">Generating formation...</span>

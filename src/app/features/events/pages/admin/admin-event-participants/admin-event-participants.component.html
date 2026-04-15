@@ -1,0 +1,165 @@
+<div class="admin-participants py-4">
+  <div class="participants-header">
+    <div class="participants-header-main">
+      <a routerLink="/admin/events" class="back-link">
+        <i class="bi bi-arrow-left" aria-hidden="true"></i>
+        Events
+      </a>
+      <h1 class="participants-title">Participants</h1>
+      @if (eventTitle) {
+        <p class="participants-subtitle text-muted">{{ eventTitle }}</p>
+      }
+    </div>
+    <button type="button" class="btn-refresh" (click)="load()" [disabled]="loading">Refresh</button>
+  </div>
+
+  @if (loading) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading participants…</p>
+    </div>
+  } @else if (error) {
+    <div class="list-error" role="alert">
+      <span>{{ error }}</span>
+      <button type="button" class="btn-retry" (click)="load()">Retry</button>
+    </div>
+  } @else {
+    <div class="participants-layout">
+      <div class="participants-list-panel">
+        @if (rows.length === 0) {
+          <p class="text-muted">No one has joined this event yet.</p>
+        } @else {
+          <ul class="participant-rows">
+            @for (r of rows; track r.participantId) {
+              <li>
+                <button
+                  type="button"
+                  class="participant-row"
+                  [class.active]="selected?.participantId === r.participantId"
+                  (click)="select(r)"
+                >
+                  <span class="row-name-block">
+                    <span class="row-user">{{ displayName(r.userId) }}</span>
+                    @if (displayEmail(r.userId)) {
+                      <span class="row-email">{{ displayEmail(r.userId) }}</span>
+                    }
+                  </span>
+                  <span class="row-meta">
+                    @if (r.depositId != null) {
+                      <span class="tag tag-ok">Submitted</span>
+                    } @else {
+                      <span class="tag tag-wait">No submission</span>
+                    }
+                    @if (r.score != null) {
+                      <span class="tag tag-score">{{ r.score }}/100</span>
+                    }
+                  </span>
+                  <span class="row-date">{{ formatWhen(r.joinedAt) }}</span>
+                </button>
+              </li>
+            }
+          </ul>
+        }
+      </div>
+
+      <div class="participants-detail-panel">
+        @if (selected == null) {
+          <div class="detail-empty text-muted">Select a participant to view their submission and README Q&amp;A.</div>
+        } @else {
+          <div class="detail-identity">
+            <div class="detail-name-mark-row">
+              <h2 class="detail-heading">{{ displayName(selected.userId) }}</h2>
+              <div class="mark-inline" aria-label="Participant mark">
+                <span class="mark-inline-label">Mark</span>
+                <input
+                  id="admin-mark-input"
+                  type="number"
+                  class="mark-input-tight"
+                  min="0"
+                  max="100"
+                  step="1"
+                  [(ngModel)]="markDraft"
+                  [disabled]="markSaving"
+                />
+                <span class="mark-suffix-tight">/100</span>
+                <button
+                  type="button"
+                  class="btn-save-mark-tight"
+                  (click)="saveMark()"
+                  [disabled]="markSaving"
+                >
+                  {{ markSaving ? '…' : 'Save' }}
+                </button>
+              </div>
+            </div>
+            @if (markError) {
+              <div class="mark-error-inline" role="alert">{{ markError }}</div>
+            }
+            @if (displayEmail(selected.userId)) {
+              <p class="detail-email text-muted">{{ displayEmail(selected.userId) }}</p>
+            }
+            <p class="detail-line">
+              <span class="label">Joined</span> {{ formatWhen(selected.joinedAt) }}
+            </p>
+          </div>
+
+          @if (selected.depositId == null) {
+            <div class="detail-card muted">
+              <p class="mb-0">This user has not submitted a ZIP + README yet.</p>
+            </div>
+          } @else {
+            <div class="detail-card">
+              <h3 class="detail-h3">Submission</h3>
+              <ul class="detail-specs">
+                <li><span class="label">ZIP</span> {{ selected.zipOriginalFilename || '—' }}</li>
+                <li><span class="label">README</span> {{ selected.readmeOriginalFilename || '—' }}</li>
+                <li><span class="label">Submitted</span> {{ formatWhen(selected.submittedAt || undefined) }}</li>
+              </ul>
+              @if (selected.readmeHint) {
+                <p class="small text-muted mb-3">{{ selected.readmeHint }}</p>
+              }
+              <button type="button" class="btn-download" (click)="downloadZip()">
+                <i class="bi bi-download" aria-hidden="true"></i>
+                Download ZIP
+              </button>
+            </div>
+
+            <div class="detail-card chat-card">
+              <h3 class="detail-h3">README assistant</h3>
+              <p class="small text-muted mb-2">
+                Ask questions about this participant’s README. Answers use only the uploaded README text (same API as
+                evaluator tools).
+              </p>
+              @if (chatError) {
+                <div class="chat-error" role="alert">{{ chatError }}</div>
+              }
+              <div class="chat-thread">
+                @for (m of chatMessages; track $index) {
+                  <div class="chat-bubble" [class.from-user]="m.role === 'user'" [class.from-ai]="m.role === 'assistant'">
+                    {{ m.text }}
+                  </div>
+                }
+                @if (chatBusy) {
+                  <div class="chat-bubble from-ai chat-thinking">…</div>
+                }
+              </div>
+              <div class="chat-compose">
+                <input
+                  type="text"
+                  class="form-control chat-input"
+                  [(ngModel)]="chatInput"
+                  placeholder="Ask about the README…"
+                  (keydown.enter)="sendChat(); $event.preventDefault()"
+                  [disabled]="chatBusy"
+                />
+                <button type="button" class="btn-send" (click)="sendChat()" [disabled]="chatBusy || !chatInput.trim()">
+                  Send
+                </button>
+              </div>
+            </div>
+          }
+        }
+      </div>
+    </div>
+  }
+</div>

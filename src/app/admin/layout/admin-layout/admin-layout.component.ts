@@ -49,6 +49,14 @@ export class AdminLayoutComponent implements AfterViewInit {
     return this.router.url.includes('/admin/formations');
   }
 
+  isEventsRoute(): boolean {
+    return this.router.url.includes('/admin/events');
+  }
+
+  hideFooterForAdminContent(): boolean {
+    return this.isFormationRoute() || this.isEventsRoute();
+  }
+
   logout() {
     this.auth.logout();
     this.router.navigate(['/login']);

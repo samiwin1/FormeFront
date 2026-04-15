@@ -13,4 +13,9 @@ export const environment = {
   articleApiUrl: useNgProxy ? '/article-api' : 'http://localhost:8082/api',
   // Stripe Publishable key (frontend only). Secret key (sk_...) must stay in backend config.
   stripePublishableKey: 'pk_test_51QxSSXChmhEZInbmW8zEHsoc7tbqeDnZs8sZMx2SgHUKOdhFhBxOBBWnaN4iLoZyBDmao6objazdCSqEQ2tgO7Ay00qOYahLwC',
+  formationApiUrl: useNgProxy ? '/formation-api' : 'http://localhost:8082/api',
+  // Must match proxy: `/events-api` → `/api` on the root gateway (8082). Same pattern as user-api / formation-api.
+  eventsApiUrl: useNgProxy ? '/events-api' : 'http://localhost:8082/api',
+  certificationApiUrl: useNgProxy ? '/api' : 'http://localhost:8090/api',
+  gatewayApiUrl: 'http://localhost:8082/api'
 };

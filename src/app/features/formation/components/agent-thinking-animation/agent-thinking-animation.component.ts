@@ -11,6 +11,8 @@ import { AgentThinkingService } from '../../services/agent-thinking.service';
 })
 export class AgentThinkingAnimationComponent implements OnInit, OnChanges, OnDestroy {
   @Input() active = false;
+  /** Smaller frame for inline use (e.g. next to chat). */
+  @Input() compact = false;
 
   frameCount = 0;
   currentFrameIndex = 0;

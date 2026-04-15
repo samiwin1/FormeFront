@@ -64,6 +64,14 @@
               <i class="bi bi-person"></i>
               My Profile
             </a>
+            <a routerLink="/events" (click)="closeMenu()">
+              <i class="bi bi-calendar-event"></i>
+              Events
+            </a>
+            <a routerLink="/admin/events" (click)="closeMenu()" *ngIf="isAdmin()">
+              <i class="bi bi-calendar-event"></i>
+              Events (admin)
+            </a>
             <a routerLink="/admin/certifications" (click)="closeMenu()" *ngIf="isAdmin()">
               <i class="bi bi-patch-check"></i>
               Certification Admin
@@ -131,6 +139,12 @@
         </a>
         <a routerLink="/profile" (click)="closeAll()" class="fm-btn fm-btn-ghost w-100">
           <i class="bi bi-person"></i> My Profile
+        </a>
+        <a routerLink="/events" (click)="closeAll()" class="fm-btn fm-btn-ghost w-100">
+          <i class="bi bi-calendar-event"></i> Events
+        </a>
+        <a routerLink="/admin/events" (click)="closeAll()" class="fm-btn fm-btn-ghost w-100" *ngIf="isAdmin()">
+          <i class="bi bi-calendar-event"></i> Events (admin)
         </a>
         <a routerLink="/admin/certifications" (click)="closeAll()" class="fm-btn fm-btn-ghost w-100" *ngIf="isAdmin()">
           <i class="bi bi-patch-check"></i> Certification Admin
