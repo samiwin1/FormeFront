@@ -2,7 +2,7 @@
 import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../../core/services/auth.service';
 import { CartService } from '../../../../features/shop/services/cart.service';
 import { OnboardingService } from '../../../../core/services/onboarding.service';
@@ -19,6 +19,7 @@ export class LoginComponent {
   private cartService = inject(CartService);
   private onboarding = inject(OnboardingService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
   loading = false;
   error: string | null = null;
@@ -46,29 +47,30 @@ export class LoginComponent {
     this.auth.login(payload).subscribe({
       next: () => {
         this.loading = false;
+        this.onboarding.registerLoginAndScheduleAutoStart();
         const userId = this.auth.getUserId();
         if (userId != null) this.cartService.refreshCartCount(userId);
-        this.onboarding.registerLoginAndScheduleAutoStart();
+        const ret = this.route.snapshot.queryParamMap.get('returnUrl');
+        if (ret && ret.startsWith('/') && !ret.startsWith('//')) {
+          this.router.navigateByUrl(ret);
+          return;
+        }
         const roles = this.auth.getRoles();
         console.log('Login successful. Roles:', roles);
 
-        let target = '/';
         if (this.auth.isAdmin()) {
           console.log('Navigating to admin dashboard');
-          target = '/admin/dashboard';
+          this.router.navigate(['/admin/dashboard']);
         } else if (this.auth.isEvaluator()) {
           console.log('Navigating to evaluator oral assignments');
-          target = '/evaluator/oral-assignments';
+          this.router.navigate(['/evaluator/oral-assignments']);
         } else if (this.auth.isUser()) {
           console.log('Navigating to learner certification space');
-          target = '/me/certification-space';
+          this.router.navigate(['/me/certification-space']);
         } else {
           console.log('Navigating to home');
+          this.router.navigate(['/']);
         }
-
-        this.router.navigateByUrl(target).then(() => {
-          this.onboarding.startIfPendingAfterLogin();
-        });
       },
       error: (err) => {
         this.loading = false;

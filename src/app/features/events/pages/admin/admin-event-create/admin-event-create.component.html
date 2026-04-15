@@ -1,0 +1,77 @@
+<div class="event-admin-form">
+  <nav class="edit-breadcrumb">
+    <a routerLink="/admin/events">← Events</a>
+  </nav>
+  <h1 class="edit-title">Create Event</h1>
+
+  @if (error) {
+    <div class="edit-error">{{ error }}</div>
+  }
+
+  <div class="edit-card">
+    <div class="form-group">
+      <label for="evtCreateTitle">Title</label>
+      <input id="evtCreateTitle" type="text" class="form-control" [(ngModel)]="title" name="title" placeholder="Event title" />
+    </div>
+    <div class="form-group">
+      <label for="evtCreateDesc">Description</label>
+      <textarea id="evtCreateDesc" class="form-control" rows="4" [(ngModel)]="description" name="description" placeholder="Describe the event"></textarea>
+    </div>
+    <div class="form-group">
+      <label for="evtCreateReq">Requirements</label>
+      <textarea id="evtCreateReq" class="form-control" rows="4" [(ngModel)]="requirements" name="requirements" placeholder="Participant requirements"></textarea>
+    </div>
+    <div class="form-group">
+      <label for="evtCreateMetrics">Success metrics</label>
+      <textarea id="evtCreateMetrics" class="form-control" rows="3" [(ngModel)]="successMetrics" name="successMetrics" placeholder="How submissions are judged"></textarea>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label for="evtCreateStart">Start</label>
+        <input id="evtCreateStart" type="datetime-local" class="form-control" [(ngModel)]="startLocal" name="startLocal" />
+      </div>
+      <div class="form-group">
+        <label for="evtCreateDeadline">Deadline</label>
+        <input id="evtCreateDeadline" type="datetime-local" class="form-control" [(ngModel)]="deadlineLocal" name="deadlineLocal" />
+      </div>
+    </div>
+    <div class="form-row form-row-tiers">
+      <div class="form-group">
+        <label for="evtCreateVip">Max VIP</label>
+        <input id="evtCreateVip" type="number" min="0" class="form-control" [(ngModel)]="maxVip" name="maxVip" />
+      </div>
+      <div class="form-group">
+        <label for="evtCreateGold">Max Gold</label>
+        <input id="evtCreateGold" type="number" min="0" class="form-control" [(ngModel)]="maxGold" name="maxGold" />
+      </div>
+      <div class="form-group">
+        <label for="evtCreateSilver">Max Silver</label>
+        <input id="evtCreateSilver" type="number" min="0" class="form-control" [(ngModel)]="maxSilver" name="maxSilver" />
+      </div>
+    </div>
+    <p class="form-hint">Sponsor tier prices (TND, 0 = tier not sold).</p>
+    <div class="form-row form-row-tiers">
+      <div class="form-group">
+        <label for="evtCreateVipPrice">VIP price</label>
+        <input id="evtCreateVipPrice" type="number" min="0" class="form-control" [(ngModel)]="vipPrice" name="vipPrice" />
+      </div>
+      <div class="form-group">
+        <label for="evtCreateGoldPrice">Gold price</label>
+        <input id="evtCreateGoldPrice" type="number" min="0" class="form-control" [(ngModel)]="goldPrice" name="goldPrice" />
+      </div>
+      <div class="form-group">
+        <label for="evtCreateSilverPrice">Silver price</label>
+        <input id="evtCreateSilverPrice" type="number" min="0" class="form-control" [(ngModel)]="silverPrice" name="silverPrice" />
+      </div>
+    </div>
+    <div class="edit-actions">
+      <a routerLink="/admin/events" class="btn-secondary">Cancel</a>
+      <button type="button" class="btn-primary" (click)="submit()" [disabled]="loading">
+        @if (loading) {
+          <span class="spinner-sm"></span>
+        }
+        Save
+      </button>
+    </div>
+  </div>
+</div>

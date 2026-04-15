@@ -1,0 +1,268 @@
+<div class="mlp-wrapper">
+
+  <!-- ── Hero ─────────────────────────────────────────────────────── -->
+  <div class="mlp-hero">
+    <div class="mlp-hero-inner container-xl px-4">
+      <nav aria-label="breadcrumb" class="mlp-breadcrumb mb-3">
+        <ol class="breadcrumb mb-0">
+          <li class="breadcrumb-item"><a routerLink="/me/mentor">AI Mentor</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Learning Path</li>
+        </ol>
+      </nav>
+
+      <div class="d-flex flex-column flex-lg-row justify-content-between align-items-start gap-4">
+        <div>
+          <div class="mlp-eyebrow mb-2">
+            <i class="bi bi-robot me-2"></i>AI-Powered Personalization
+          </div>
+          <h1 class="mlp-hero-title mb-2">My Learning Path</h1>
+          <p class="mlp-hero-sub mb-0">
+            Personalized roadmap based on your profile, goals, and current progress.
+          </p>
+        </div>
+
+        <div class="d-flex gap-2 flex-shrink-0 align-items-center">
+          @if (result) {
+            <div class="mlp-session-badge">
+              <i class="bi bi-hash"></i>{{ result.sessionId }}
+            </div>
+          }
+          <button
+            type="button"
+            class="mlp-btn-refresh"
+            (click)="load(true)"
+            [disabled]="loading"
+          >
+            <i class="bi bi-arrow-clockwise" [class.spin]="loading"></i>
+            {{ loading ? 'Generating…' : 'Regenerate' }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Stats row -->
+      @if (structured && !loading) {
+        <div class="mlp-stats-row mt-4">
+          <div class="mlp-stat">
+            <span class="mlp-stat-value">{{ structured.formations?.length ?? 0 }}</span>
+            <span class="mlp-stat-label">Formations</span>
+          </div>
+          <div class="mlp-stat-divider"></div>
+          <div class="mlp-stat">
+            <span class="mlp-stat-value">{{ structured.totalEstimatedWeeks ?? '–' }}</span>
+            <span class="mlp-stat-label">Est. weeks</span>
+          </div>
+          <div class="mlp-stat-divider"></div>
+          <div class="mlp-stat">
+            <span class="mlp-stat-value">{{ structured.certificationReadiness?.length ?? 0 }}</span>
+            <span class="mlp-stat-label">Certifications</span>
+          </div>
+          <div class="mlp-stat-divider"></div>
+          <div class="mlp-stat">
+            <span class="mlp-stat-value">{{ structured.skillGaps?.length ?? 0 }}</span>
+            <span class="mlp-stat-label">Skill gaps</span>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- ── Body ─────────────────────────────────────────────────────── -->
+  <div class="container-xl px-4 py-5 mlp-body">
+
+    <!-- Loading -->
+    @if (loading) {
+      <div class="mlp-loading">
+        <div class="mlp-loading-ring"></div>
+        <p class="mlp-loading-text">Generating your personalized learning path…</p>
+        <p class="text-muted small">This may take a few seconds</p>
+      </div>
+    }
+
+    <!-- No portfolio -->
+    @if (noPortfolio && !loading) {
+      <div class="mlp-empty-state">
+        <div class="mlp-empty-icon"><i class="bi bi-person-badge"></i></div>
+        <h3 class="mlp-empty-title">Learning profile missing</h3>
+        <p class="mlp-empty-sub">Set up your mentor portfolio so the AI can build a path tailored to your goals and experience.</p>
+        <a routerLink="/me/mentor/portfolio" class="mlp-btn-primary">
+          <i class="bi bi-pencil-square me-2"></i>Set up my profile
+        </a>
+      </div>
+    }
+
+    <!-- Error -->
+    @if (error && !loading) {
+      <div class="mlp-alert-error">
+        <i class="bi bi-exclamation-circle-fill me-2"></i>{{ error }}
+      </div>
+    }
+
+    @if (result && !loading) {
+
+      <!-- ── Summary ────────────────────────────────────────────── -->
+      @if (structured?.summary) {
+        <section class="mlp-section">
+          <div class="mlp-section-label">
+            <span class="mlp-section-icon bg-blue"><i class="bi bi-lightbulb-fill"></i></span>
+            <span>Overview</span>
+          </div>
+          <div class="mlp-summary-card">
+            <div class="mlp-summary-quote"></div>
+            <p class="mlp-summary-text">{{ structured!.summary }}</p>
+          </div>
+        </section>
+      }
+
+      <!-- ── Next Action ────────────────────────────────────────── -->
+      @if (structured?.nextAction) {
+        <section class="mlp-section">
+          <div class="mlp-next-action-banner">
+            <div class="mlp-na-icon"><i class="bi bi-arrow-right-circle-fill"></i></div>
+            <div class="mlp-na-content">
+              <div class="mlp-na-eyebrow">Recommended next step</div>
+              <p class="mlp-na-text">{{ structured!.nextAction }}</p>
+            </div>
+            <div class="mlp-na-deco"></div>
+          </div>
+        </section>
+      }
+
+      <!-- ── Formations ─────────────────────────────────────────── -->
+      @if (structured?.formations?.length) {
+        <section class="mlp-section">
+          <div class="mlp-section-label">
+            <span class="mlp-section-icon bg-green"><i class="bi bi-map-fill"></i></span>
+            <span>Recommended Formations</span>
+            @if (structured!.totalEstimatedWeeks) {
+              <span class="mlp-pill">~{{ structured!.totalEstimatedWeeks }} weeks</span>
+            }
+          </div>
+
+          <div class="mlp-timeline">
+            @for (f of structured!.formations; track f.formationId; let last = $last) {
+              <div class="mlp-timeline-item" [class.mlp-missing-prereq]="!f.prerequisiteMet">
+
+                <!-- Connector line -->
+                @if (!last) {
+                  <div class="mlp-timeline-line"></div>
+                }
+
+                <!-- Step number -->
+                <div class="mlp-timeline-dot" [ngClass]="timelineDotClass(f.status)">
+                  @if (f.status === 'COMPLETED') {
+                    <i class="bi bi-check-lg"></i>
+                  } @else {
+                    {{ f.priority }}
+                  }
+                </div>
+
+                <!-- Card -->
+                <div class="mlp-timeline-card">
+                  <div class="mlp-tc-header">
+                    <div class="mlp-tc-title-row">
+                      <h3 class="mlp-tc-title">{{ f.title }}</h3>
+                      <span class="mlp-status-chip {{ statusChipClass(f.status) }}">
+                        <span class="mlp-status-dot"></span>
+                        {{ statusLabel(f.status) }}
+                      </span>
+                    </div>
+                    @if (!f.prerequisiteMet) {
+                      <div class="mlp-prereq-warning">
+                        <i class="bi bi-exclamation-triangle-fill me-1"></i>Prerequisites not yet completed
+                      </div>
+                    }
+                  </div>
+                  <p class="mlp-tc-reason">{{ f.reason }}</p>
+                  <div class="mlp-tc-footer">
+                    <span class="mlp-tc-meta"><i class="bi bi-clock me-1"></i>~{{ f.estimatedWeeks }} week{{ f.estimatedWeeks !== 1 ? 's' : '' }}</span>
+                    @if (f.status !== 'COMPLETED') {
+                      <a [routerLink]="['/me/formations', f.formationId]" class="mlp-btn-action {{ f.status === 'IN_PROGRESS' ? 'mlp-btn-continue' : 'mlp-btn-start' }}">
+                        <i class="bi {{ f.status === 'IN_PROGRESS' ? 'bi-play-fill' : 'bi-rocket-takeoff' }} me-1"></i>
+                        {{ actionLabel(f.status) }}
+                      </a>
+                    } @else {
+                      <span class="mlp-done-label"><i class="bi bi-check-circle-fill me-1"></i>Completed</span>
+                    }
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        </section>
+      }
+
+      <!-- ── Certification Readiness ────────────────────────────── -->
+      @if (structured?.certificationReadiness?.length) {
+        <section class="mlp-section">
+          <div class="mlp-section-label">
+            <span class="mlp-section-icon bg-gold"><i class="bi bi-award-fill"></i></span>
+            <span>Certification Readiness</span>
+          </div>
+
+          <div class="mlp-cert-grid">
+            @for (c of structured!.certificationReadiness; track c.certificationName) {
+              <div class="mlp-cert-card">
+                <div class="mlp-cert-top">
+                  <div class="mlp-cert-track-badge" [class.on-track]="c.onTrack" [class.off-track]="!c.onTrack">
+                    <i class="bi {{ c.onTrack ? 'bi-check2-circle' : 'bi-x-circle' }} me-1"></i>
+                    {{ c.onTrack ? 'On track' : 'Off track' }}
+                  </div>
+                  <span class="mlp-risk-chip {{ riskChipClass(c.riskLevel) }}">{{ c.riskLevel }} risk</span>
+                </div>
+                <h3 class="mlp-cert-name">{{ c.certificationName }}</h3>
+                <div class="mlp-cert-meta">
+                  <span><i class="bi bi-calendar3 me-1"></i>Target: {{ c.targetDate }}</span>
+                  <span><i class="bi bi-journal-bookmark me-1"></i>{{ c.remainingFormations }} left</span>
+                </div>
+                <div class="mlp-cert-progress">
+                  <div class="mlp-cert-progress-bar" [style.width]="certProgress(c) + '%'" [class.on-track]="c.onTrack"></div>
+                </div>
+                <p class="mlp-cert-reco">{{ c.recommendation }}</p>
+              </div>
+            }
+          </div>
+        </section>
+      }
+
+      <!-- ── Skill Gaps ─────────────────────────────────────────── -->
+      @if (structured?.skillGaps?.length) {
+        <section class="mlp-section">
+          <div class="mlp-section-label">
+            <span class="mlp-section-icon bg-purple"><i class="bi bi-graph-up-arrow"></i></span>
+            <span>Skill Gaps</span>
+          </div>
+
+          <div class="mlp-skills-grid">
+            @for (g of structured!.skillGaps; track g.skillName) {
+              <div class="mlp-skill-card">
+                <div class="mlp-skill-header">
+                  <strong class="mlp-skill-name">{{ g.skillName }}</strong>
+                  <div class="mlp-skill-levels">
+                    <span class="mlp-level-current">{{ g.currentLevel }}</span>
+                    <i class="bi bi-arrow-right mx-1 text-muted"></i>
+                    <span class="mlp-level-target">{{ g.targetLevel }}</span>
+                  </div>
+                </div>
+                <div class="mlp-skill-track">
+                  <div class="mlp-skill-bar" [style.width]="skillProgress(g.currentLevel) + '%'"></div>
+                  <div class="mlp-skill-target-marker" [style.left]="skillProgress(g.targetLevel) + '%'"></div>
+                </div>
+                <p class="mlp-skill-suggestion">{{ g.suggestion }}</p>
+              </div>
+            }
+          </div>
+        </section>
+      }
+
+      <!-- ── Footer ─────────────────────────────────────────────── -->
+      <div class="mlp-footer">
+        <span class="mlp-footer-info"><i class="bi bi-robot me-1"></i>Generated by AI · session #{{ result.sessionId }}</span>
+        <div class="mlp-footer-actions">
+          <button type="button" class="mlp-footer-link" (click)="load(true)">Regenerate</button>
+          <span class="mlp-footer-sep">·</span>
+          <a routerLink="/me/mentor" class="mlp-footer-link">Back to mentor</a>
+        </div>
+      </div>
+    }
+  </div>
+</div>

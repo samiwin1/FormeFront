@@ -1,0 +1,139 @@
+<div class="mentor-weekly-brief container py-4">
+  <nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb mb-0">
+      <li class="breadcrumb-item"><a routerLink="/me/mentor">AI Mentor</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Weekly brief</li>
+    </ol>
+  </nav>
+
+  <div class="weekly-brief-hero mtr-card p-4 mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between gap-3 align-items-start">
+      <div>
+        <h1 class="h3 mb-2">Weekly brief</h1>
+        <p class="text-muted mb-2">A weekly AI review of your learning progress, weak topics, suggested actions, and study plan.</p>
+        <p class="text-muted small mb-1">Cached for the current calendar week. Reload fetches the current brief again, but the content may remain unchanged while the same week is active.</p>
+        <p class="text-muted small mb-0">Use a different locale or wait until next week for a new summary.</p>
+      </div>
+
+      <div class="mtr-controls-bar d-flex flex-column flex-sm-row align-items-start align-items-sm-center gap-2 p-3 rounded">
+        <label class="visually-hidden" for="weekly-locale">Locale</label>
+        <input id="weekly-locale" class="form-control form-control-sm locale-input" [(ngModel)]="locale" name="locale" placeholder="en, fr" [disabled]="loading" />
+        <button type="button" class="btn btn-sm btn-outline-primary" (click)="load()" [disabled]="loading">
+          <i class="bi bi-arrow-clockwise me-1"></i>{{ loading ? 'Loading…' : 'Reload' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  @if (loading) {
+    <div class="text-center py-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Generating weekly brief…</span>
+      </div>
+      <p class="text-muted mt-3 small">The AI is reviewing your week — this may take a few seconds.</p>
+    </div>
+  }
+
+  @if (error && !loading) {
+    <div class="alert alert-danger rounded-4 mb-3">{{ error }}</div>
+  }
+
+  @if (result && !loading) {
+    <div class="weekly-brief-card mtr-card mb-3">
+      <div class="card-body">
+        <div class="d-flex flex-column flex-md-row justify-content-between gap-3 mb-3 align-items-start">
+          <div>
+            @if (structured?.summary || result.summary) {
+              <div class="brief-summary mb-4">
+                <h2 class="h6 text-uppercase text-muted mb-2">Summary</h2>
+                <p class="mb-0">{{ structured?.summary || result.summary }}</p>
+              </div>
+            }
+          </div>
+          @if (lastFetchedAt) {
+            <div class="text-muted small text-end">
+              Fetched <strong>{{ lastFetchedAt | date:'short' }}</strong>
+            </div>
+          }
+        </div>
+
+        <div class="brief-sections row gx-3 gy-3">
+          @if (structured?.bullets?.length) {
+            <div class="col-12 col-lg-6">
+              <div class="section-card p-3 h-100">
+                <h3 class="h6 section-title">Key points</h3>
+                <ul class="section-list mb-0">
+                  @for (b of structured!.bullets; track $index) {
+                    <li>{{ b }}</li>
+                  }
+                </ul>
+              </div>
+            </div>
+          }
+
+          @if (structured?.weakTopics?.length) {
+            <div class="col-12 col-lg-6">
+              <div class="section-card p-3 h-100">
+                <h3 class="h6 section-title">Weak areas</h3>
+                <div class="weak-list mt-2">
+                  @for (t of structured!.weakTopics; track $index) {
+                    <span class="weak-pill">{{ t }}</span>
+                  }
+                </div>
+              </div>
+            </div>
+          }
+
+          @if (structured?.suggestedActions?.length) {
+            <div class="col-12 col-lg-6">
+              <div class="section-card p-3 h-100">
+                <h3 class="h6 section-title">This week's actions</h3>
+                <ol class="section-list mb-0">
+                  @for (a of structured!.suggestedActions; track $index) {
+                    <li>{{ a }}</li>
+                  }
+                </ol>
+              </div>
+            </div>
+          }
+
+          @if (structured?.studyPlan?.items?.length) {
+            <div class="col-12 col-lg-6">
+              <div class="section-card p-3 h-100">
+                <h3 class="h6 section-title">{{ structured!.studyPlan!.title || 'Study plan' }}</h3>
+                <ul class="study-plan-list mb-0">
+                  @for (it of structured!.studyPlan!.items!; track $index) {
+                    <li>
+                      <div class="plan-item-row">
+                        <span class="badge plan-item-type">{{ it.type }}</span>
+                        <span class="plan-item-title">{{ it.title }}</span>
+                      </div>
+                      @if (it.durationMinutes) {
+                        <div class="text-muted small mt-1">{{ it.durationMinutes }} min</div>
+                      }
+                    </li>
+                  }
+                </ul>
+              </div>
+            </div>
+          }
+        </div>
+
+        <div class="border-top pt-3 mt-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
+          <span class="text-muted small">Session #{{ result.sessionId }}</span>
+          <app-mentor-feedback [sessionId]="result.sessionId" />
+        </div>
+      </div>
+    </div>
+
+    <a routerLink="/me/mentor" class="btn btn-link btn-sm px-0">Back to hub</a>
+  }
+
+  @if (!loading && !result && !error) {
+    <div class="empty-state rounded-4 p-4 text-center border border-dashed border-secondary-subtle">
+      <i class="bi bi-calendar-week fs-1 text-muted mb-3"></i>
+      <p class="mb-1 fw-semibold">No brief available yet.</p>
+      <p class="text-muted">Click Reload to generate your first weekly summary.</p>
+    </div>
+  }
+</div>

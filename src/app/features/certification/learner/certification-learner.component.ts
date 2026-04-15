@@ -8,6 +8,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { catchError } from 'rxjs/operators';
 import { Certification, IssuedCertification, OralAssignment, OralSession, PendingFeedbackDto, RescheduleResponse } from '../../../core/models/certification.models';
 import { AssignmentService } from '../../../core/services/assignment.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { CertificateEventsService } from '../../../core/services/certificate-events.service';
 import { CertificationService } from '../../../core/services/certification.service';
 import { DashboardService } from '../../../core/services/dashboard.service';
@@ -27,6 +28,7 @@ import { LinkedInPostCardComponent } from '../../../shared/components/linkedin-p
 })
 export class CertificationLearnerComponent implements OnInit, OnDestroy {
   private readonly assignmentService = inject(AssignmentService);
+  private readonly authService = inject(AuthService);
   private readonly certificationService = inject(CertificationService);
   private readonly oralSessionService = inject(OralSessionService);
   private readonly dashboardService = inject(DashboardService);
@@ -47,6 +49,7 @@ export class CertificationLearnerComponent implements OnInit, OnDestroy {
   submittingReschedule = false;
   success: string | null = null;
   error: string | null = null;
+  apiDiagnostics: string[] = [];
 
   // LinkedIn Modal
   showLinkedInModal = false;
@@ -103,42 +106,43 @@ export class CertificationLearnerComponent implements OnInit, OnDestroy {
   refresh(): void {
     this.loading = true;
     this.error = null;
+    this.apiDiagnostics = [];
 
     // Load all data in parallel using forkJoin
     forkJoin({
       certifications: this.certificationService.list().pipe(
         catchError((err) => {
-          console.error('Failed to load certifications:', err);
+          this.trackApiError('certifications', err);
           return of([]);
         })
       ),
       assignments: this.assignmentService.myAssignments().pipe(
         catchError((err) => {
-          console.error('Failed to load assignments:', err);
+          this.trackApiError('my assignments', err);
           return of([]);
         })
       ),
       sessions: this.oralSessionService.list().pipe(
         catchError((err) => {
-          console.error('Failed to load sessions:', err);
+          this.trackApiError('oral sessions', err);
           return of([]);
         })
       ),
       issued: this.assignmentService.myIssuedCertifications().pipe(
         catchError((err) => {
-          console.error('Failed to load issued certifications:', err);
+          this.trackApiError('issued certifications', err);
           return of([]);
         })
       ),
       reschedules: this.dashboardService.getMyRescheduleRequests().pipe(
         catchError((err) => {
-          console.error('Failed to load reschedule requests:', err);
+          this.trackApiError('my reschedule requests', err);
           return of([]);
         })
       ),
       examStatus: this.dashboardService.getMyExamStatus().pipe(
         catchError((err) => {
-          console.error('Failed to load exam status:', err);
+          this.trackApiError('my exam status', err);
           return of(null);
         })
       )
@@ -154,6 +158,11 @@ export class CertificationLearnerComponent implements OnInit, OnDestroy {
         this.certifications = issued;
         this.myRescheduleRequests = reschedules;
         this.writtenScore = examStatus?.writtenScore ?? null;
+        if (this.apiDiagnostics.length > 0) {
+          const details = this.apiDiagnostics.slice(0, 2).join(' | ');
+          const user = this.authService.getEmail() ?? `uid:${this.authService.getUserId() ?? '-'}`;
+          this.error = `API connected but some calls failed for ${user}: ${details}`;
+        }
         this.loading = false;
       },
       error: (err: unknown) => {
@@ -271,15 +280,32 @@ export class CertificationLearnerComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const resolvedSessionId = this.resolveSessionIdForCertificate(cert.certificationId);
-    if (resolvedSessionId == null) {
-      this.error = 'No oral session found for this certificate.';
-      return;
-    }
+    const openModal = (sessionId: number | null): void => {
+      if (sessionId == null) {
+        this.error = 'No oral session found for this certificate.';
+        return;
+      }
+      this.manualFeedbackIssuedCertId.set(issuedCertificationId);
+      this.manualFeedbackSessionId.set(sessionId);
+      this.showFeedbackModal.set(true);
+    };
 
-    this.manualFeedbackIssuedCertId.set(issuedCertificationId);
-    this.manualFeedbackSessionId.set(resolvedSessionId);
-    this.showFeedbackModal.set(true);
+    this.feedbackService.getFeedbackContext(issuedCertificationId)
+      .pipe(catchError(() => of(null)))
+      .subscribe((context) => {
+        if (context?.alreadySubmitted) {
+          this.error = 'Feedback already submitted for this certificate.';
+          return;
+        }
+
+        if (context?.sessionId != null) {
+          openModal(context.sessionId);
+          return;
+        }
+
+        // Fallback to client-side mapping only if context endpoint fails or has no session.
+        openModal(this.resolveSessionIdForCertificate(cert.certificationId));
+      });
   }
 
   feedbackModalIssuedCertificationId(): number | null {
@@ -326,6 +352,16 @@ export class CertificationLearnerComponent implements OnInit, OnDestroy {
       return (err.error?.message as string) || err.message || fallback;
     }
     return fallback;
+  }
+
+  private trackApiError(source: string, err: unknown): void {
+    if (err instanceof HttpErrorResponse) {
+      const status = err.status || 0;
+      const msg = (typeof err.error === 'string' ? err.error : err.error?.message) || err.message || 'Request failed';
+      this.apiDiagnostics.push(`${source}: [${status}] ${msg}`);
+      return;
+    }
+    this.apiDiagnostics.push(`${source}: request failed`);
   }
 
   ngOnDestroy(): void {

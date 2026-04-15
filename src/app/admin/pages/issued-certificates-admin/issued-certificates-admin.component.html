@@ -83,8 +83,8 @@
               <span class="detail-label">
                 <i class="bi bi-graph-up"></i> Final Score
               </span>
-              <span class="detail-value score-value" [ngClass]="item.status === 'REVOKED' ? 'score-neutral' : (item.finalScore >= 10 ? 'score-pass' : 'score-warn')">
-                {{ item.finalScore }}/20
+              <span class="detail-value score-value" [ngClass]="item.status === 'REVOKED' ? 'score-neutral' : (item.finalScore >= 50 ? 'score-pass' : 'score-warn')">
+                {{ item.finalScore }}/100
               </span>
             </div>
           </div>

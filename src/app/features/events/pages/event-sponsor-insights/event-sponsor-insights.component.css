@@ -1,0 +1,10 @@
+@import '../admin/admin-event-participants/admin-event-participants.component.css';
+
+.sponsor-note {
+  max-width: 52rem;
+  line-height: 1.45;
+}
+
+.sponsor-insights .detail-heading {
+  margin-bottom: 0.35rem;
+}

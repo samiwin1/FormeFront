@@ -1,0 +1,521 @@
+<div class="portfolio-page">
+
+  <!-- Page header -->
+  <div class="portfolio-header">
+    <div class="container">
+      <nav aria-label="breadcrumb" class="mb-2">
+        <ol class="breadcrumb mb-0">
+          <li class="breadcrumb-item"><a routerLink="/me/mentor" class="mtr-link">AI Mentor</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Learning profile</li>
+        </ol>
+      </nav>
+      <div class="d-flex align-items-center gap-3">
+        <div class="header-icon-circle">
+          <i class="bi bi-person-lines-fill"></i>
+        </div>
+        <div>
+          <h1 class="h3 mb-0" style="color: var(--mtr-heading)">Learning profile</h1>
+          <p class="text-muted small mb-0">Help the AI mentor tailor every recommendation to you.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container portfolio-body">
+
+    @if (loading) {
+      <div class="text-center py-5">
+        <div class="mtr-spinner" role="status"></div>
+        <p class="text-muted mt-3 small">Loading your profile…</p>
+      </div>
+    } @else {
+      <form #portfolioForm="ngForm" novalidate (ngSubmit)="save(portfolioForm)">
+
+        <!-- ── Section 1: About you (required) ──────────────── -->
+        <div class="form-section">
+          <div class="form-section-header">
+            <i class="bi bi-person-circle"></i>
+            <span>About you</span>
+            <span class="section-required-badge">Required</span>
+          </div>
+          <div class="form-section-body">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="field-label">Current role <span class="required-star">*</span></label>
+                <input
+                  class="form-control field-input"
+                  name="currentRole"
+                  [(ngModel)]="currentRole"
+                  #currentRoleRef="ngModel"
+                  required
+                  [class.is-invalid]="currentRoleRef.invalid && (currentRoleRef.touched || portfolioForm.submitted)"
+                  placeholder="e.g. Student, Junior Developer"
+                />
+                @if (currentRoleRef.invalid && (currentRoleRef.touched || portfolioForm.submitted)) {
+                  <div class="invalid-feedback">Current role is required.</div>
+                }
+              </div>
+              <div class="col-md-6">
+                <label class="field-label">Target role <span class="required-star">*</span></label>
+                <input
+                  class="form-control field-input"
+                  name="targetRole"
+                  [(ngModel)]="targetRole"
+                  #targetRoleRef="ngModel"
+                  required
+                  [class.is-invalid]="targetRoleRef.invalid && (targetRoleRef.touched || portfolioForm.submitted)"
+                  placeholder="e.g. Full Stack Developer"
+                />
+                @if (targetRoleRef.invalid && (targetRoleRef.touched || portfolioForm.submitted)) {
+                  <div class="invalid-feedback">Target role is required.</div>
+                }
+              </div>
+              <div class="col-12">
+                <label class="field-label">Bio</label>
+                <textarea
+                  class="form-control field-input"
+                  name="bio"
+                  [(ngModel)]="bio"
+                  rows="3"
+                  placeholder="A short description about yourself, your background, and what you're hoping to achieve."
+                ></textarea>
+                <p class="field-hint">Optional — but helps the mentor personalise advice.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Section 2: Learning preferences (required) ───── -->
+        <div class="form-section">
+          <div class="form-section-header">
+            <i class="bi bi-lightbulb"></i>
+            <span>Learning preferences</span>
+            <span class="section-required-badge">Required</span>
+          </div>
+          <div class="form-section-body">
+            <div class="row g-3">
+              <div class="col-md-4">
+                <label class="field-label">Experience level <span class="required-star">*</span></label>
+                <select
+                  class="form-select field-input"
+                  name="experienceLevel"
+                  [(ngModel)]="experienceLevel"
+                  #experienceLevelRef="ngModel"
+                  required
+                  [class.is-invalid]="experienceLevelRef.invalid && (experienceLevelRef.touched || portfolioForm.submitted)"
+                >
+                  @for (e of experienceLevels; track e) {
+                    <option [ngValue]="e">{{ e }}</option>
+                  }
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="field-label">Learning style <span class="required-star">*</span></label>
+                <select
+                  class="form-select field-input"
+                  name="learningStyle"
+                  [(ngModel)]="learningStyle"
+                  #learningStyleRef="ngModel"
+                  required
+                  [class.is-invalid]="learningStyleRef.invalid && (learningStyleRef.touched || portfolioForm.submitted)"
+                >
+                  @for (l of learningStyles; track l) {
+                    <option [ngValue]="l">{{ l }}</option>
+                  }
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="field-label">Weekly study hours <span class="required-star">*</span></label>
+                <div class="input-group">
+                  <input
+                    type="number"
+                    class="form-control field-input"
+                    name="weeklyStudyHours"
+                    [(ngModel)]="weeklyStudyHours"
+                    #weeklyStudyHoursRef="ngModel"
+                    required
+                    min="1"
+                    [class.is-invalid]="weeklyStudyHoursRef.invalid && (weeklyStudyHoursRef.touched || portfolioForm.submitted)"
+                    placeholder="e.g. 10"
+                  />
+                  <span class="input-group-text">h / week</span>
+                </div>
+                @if (weeklyStudyHoursRef.invalid && (weeklyStudyHoursRef.touched || portfolioForm.submitted)) {
+                  <div class="invalid-feedback d-block">Must be at least 1 hour.</div>
+                }
+              </div>
+              <div class="col-md-6">
+                <label class="field-label">Preferred language <span class="required-star">*</span></label>
+                <input
+                  class="form-control field-input"
+                  name="preferredLanguage"
+                  [(ngModel)]="preferredLanguage"
+                  #preferredLanguageRef="ngModel"
+                  required
+                  [class.is-invalid]="preferredLanguageRef.invalid && (preferredLanguageRef.touched || portfolioForm.submitted)"
+                  placeholder="en, fr, ar…"
+                />
+                @if (preferredLanguageRef.invalid && (preferredLanguageRef.touched || portfolioForm.submitted)) {
+                  <div class="invalid-feedback">Required.</div>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ Optional sections header ══════════════════════ -->
+        <div class="optional-header">
+          <i class="bi bi-plus-circle me-2"></i>
+          Optional — add more detail for better AI advice
+        </div>
+
+        <!-- ── Section 3: Certifications & exams (optional) ── -->
+        <div class="form-section optional-section">
+          <button
+            type="button"
+            class="form-section-toggle"
+            (click)="showCerts = !showCerts"
+            [attr.aria-expanded]="showCerts"
+          >
+            <div class="d-flex align-items-center gap-2">
+              <i class="bi bi-award"></i>
+              <span>Certifications &amp; exams</span>
+              @if (hasCertData()) {
+                <span class="filled-badge">Filled</span>
+              }
+            </div>
+            <i class="bi toggle-icon" [class.bi-chevron-down]="!showCerts" [class.bi-chevron-up]="showCerts"></i>
+          </button>
+
+          @if (showCerts) {
+            <div class="form-section-body">
+              <div class="row g-3">
+
+                <!-- Target certifications -->
+                <div class="col-12">
+                  <div class="subsection-header d-flex justify-content-between align-items-center mb-2">
+                    <label class="field-label mb-0">Target certifications</label>
+                    <button type="button" class="add-row-btn" (click)="addTargetCert()">
+                      <i class="bi bi-plus me-1"></i>Add
+                    </button>
+                  </div>
+                  @if ((ext.targetCertifications ?? []).length === 0) {
+                    <p class="empty-hint">No target certifications yet. Click Add to get started.</p>
+                  }
+                  @for (row of ext.targetCertifications ?? []; track trackTarget($index, row); let i = $index) {
+                    <div class="row g-2 align-items-end mb-2">
+                      <div class="col-md-4">
+                        <input class="form-control field-input field-input-sm" [(ngModel)]="row.name" [name]="'tcn' + i" placeholder="Certification name" />
+                      </div>
+                      <div class="col-md-3">
+                        <input class="form-control field-input field-input-sm" [(ngModel)]="row.provider" [name]="'tcp' + i" placeholder="Provider (optional)" />
+                      </div>
+                      <div class="col-md-3">
+                        <input class="form-control field-input field-input-sm" [(ngModel)]="row.targetExamDate" [name]="'tcd' + i" placeholder="YYYY-MM-DD" />
+                      </div>
+                      <div class="col-md-2">
+                        <button type="button" class="remove-row-btn w-100" (click)="removeTargetCert(i)">
+                          <i class="bi bi-trash3"></i>
+                        </button>
+                      </div>
+                    </div>
+                  }
+                </div>
+
+                <!-- Held certifications -->
+                <div class="col-12">
+                  <div class="subsection-header d-flex justify-content-between align-items-center mb-2">
+                    <label class="field-label mb-0">Certifications already held</label>
+                    <button type="button" class="add-row-btn" (click)="addHeldCert()">
+                      <i class="bi bi-plus me-1"></i>Add
+                    </button>
+                  </div>
+                  @if ((ext.heldCertifications ?? []).length === 0) {
+                    <p class="empty-hint">No held certifications yet.</p>
+                  }
+                  @for (row of ext.heldCertifications ?? []; track trackHeld($index, row); let i = $index) {
+                    <div class="row g-2 align-items-end mb-2">
+                      <div class="col-md-7">
+                        <input class="form-control field-input field-input-sm" [(ngModel)]="row.name" [name]="'hcn' + i" placeholder="Certification name" />
+                      </div>
+                      <div class="col-md-3">
+                        <input type="number" class="form-control field-input field-input-sm" [(ngModel)]="row.year" [name]="'hcy' + i" placeholder="Year" min="1970" max="2100" />
+                      </div>
+                      <div class="col-md-2">
+                        <button type="button" class="remove-row-btn w-100" (click)="removeHeldCert(i)">
+                          <i class="bi bi-trash3"></i>
+                        </button>
+                      </div>
+                    </div>
+                  }
+                </div>
+
+                <!-- Exam preferences -->
+                <div class="col-md-6">
+                  <label class="field-label">Exam format preference</label>
+                  <select class="form-select field-input" name="examFormatPreference" [(ngModel)]="ext.examFormatPreference">
+                    <option [ngValue]="null">Not set</option>
+                    @for (x of examFormats; track x) { <option [ngValue]="x">{{ x }}</option> }
+                  </select>
+                </div>
+                <div class="col-md-6">
+                  <label class="field-label">Exam attempt context</label>
+                  <select class="form-select field-input" name="examAttemptContext" [(ngModel)]="ext.examAttemptContext">
+                    <option [ngValue]="null">Not set</option>
+                    @for (x of examAttempts; track x) { <option [ngValue]="x">{{ x }}</option> }
+                  </select>
+                </div>
+                <div class="col-md-6">
+                  <label class="field-label">Study mode for exams</label>
+                  <select class="form-select field-input" name="studyModeForExams" [(ngModel)]="ext.studyModeForExams">
+                    <option [ngValue]="null">Not set</option>
+                    @for (x of studyModes; track x) { <option [ngValue]="x">{{ x }}</option> }
+                  </select>
+                </div>
+                <div class="col-md-6">
+                  <label class="field-label">Mock exam frequency</label>
+                  <select class="form-select field-input" name="mockExamFrequency" [(ngModel)]="ext.mockExamFrequency">
+                    <option [ngValue]="null">Not set</option>
+                    @for (x of mockFreqs; track x) { <option [ngValue]="x">{{ x }}</option> }
+                  </select>
+                </div>
+
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- ── Section 4: Schedule & access (optional) ───────── -->
+        <div class="form-section optional-section">
+          <button
+            type="button"
+            class="form-section-toggle"
+            (click)="showSchedule = !showSchedule"
+            [attr.aria-expanded]="showSchedule"
+          >
+            <div class="d-flex align-items-center gap-2">
+              <i class="bi bi-calendar-check"></i>
+              <span>Schedule &amp; access</span>
+              @if (hasScheduleData()) {
+                <span class="filled-badge">Filled</span>
+              }
+            </div>
+            <i class="bi toggle-icon" [class.bi-chevron-down]="!showSchedule" [class.bi-chevron-up]="showSchedule"></i>
+          </button>
+
+          @if (showSchedule) {
+            <div class="form-section-body">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="field-label">Timezone (IANA)</label>
+                  <input class="form-control field-input" name="timezone" [(ngModel)]="ext.timezone" placeholder="e.g. Africa/Tunis" />
+                </div>
+                <div class="col-md-6">
+                  <label class="field-label">Max session length (minutes)</label>
+                  <div class="input-group">
+                    <input type="number" class="form-control field-input" name="maxSessionMinutes" [(ngModel)]="ext.maxSessionMinutes" min="5" max="480" placeholder="30" />
+                    <span class="input-group-text">min</span>
+                  </div>
+                </div>
+                <div class="col-12">
+                  <label class="field-label d-block mb-2">Typical study windows</label>
+                  <div class="d-flex flex-wrap gap-2">
+                    @for (w of studyWindowsAll; track w) {
+                      <label class="window-chip" [class.window-chip-active]="hasStudyWindow(w)">
+                        <input type="checkbox" class="visually-hidden" [id]="'sw-' + w" [checked]="hasStudyWindow(w)" (change)="toggleStudyWindow(w)" />
+                        <i class="bi me-1"
+                           [class.bi-sunrise]="w === 'MORNING'"
+                           [class.bi-sun]="w === 'AFTERNOON'"
+                           [class.bi-sunset]="w === 'EVENING'"
+                           [class.bi-moon-stars]="w === 'NIGHT'"></i>
+                        {{ w | titlecase }}
+                      </label>
+                    }
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <label class="field-label">Primary device</label>
+                  <select class="form-select field-input" name="devicePrimary" [(ngModel)]="ext.devicePrimary">
+                    <option [ngValue]="null">Not set</option>
+                    @for (d of devices; track d) { <option [ngValue]="d">{{ d }}</option> }
+                  </select>
+                </div>
+                <div class="col-12">
+                  <label class="field-label">Accessibility notes</label>
+                  <textarea class="form-control field-input" name="accessibilityNotes" [(ngModel)]="ext.accessibilityNotes" rows="2" placeholder="Subtitles, font size, focus needs…"></textarea>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- ── Section 5: Motivation (optional) ─────────────── -->
+        <div class="form-section optional-section">
+          <button
+            type="button"
+            class="form-section-toggle"
+            (click)="showMotivation = !showMotivation"
+            [attr.aria-expanded]="showMotivation"
+          >
+            <div class="d-flex align-items-center gap-2">
+              <i class="bi bi-trophy"></i>
+              <span>Motivation</span>
+              @if (hasMotivationData()) {
+                <span class="filled-badge">Filled</span>
+              }
+            </div>
+            <i class="bi toggle-icon" [class.bi-chevron-down]="!showMotivation" [class.bi-chevron-up]="showMotivation"></i>
+          </button>
+
+          @if (showMotivation) {
+            <div class="form-section-body">
+              <div class="row g-3">
+                <div class="col-md-4">
+                  <label class="field-label">Primary goal</label>
+                  <select class="form-select field-input" name="primaryGoal" [(ngModel)]="ext.primaryGoal">
+                    <option [ngValue]="null">Not set</option>
+                    @for (g of primaryGoals; track g) { <option [ngValue]="g">{{ g }}</option> }
+                  </select>
+                </div>
+                <div class="col-md-4">
+                  <label class="field-label">Reminder style</label>
+                  <select class="form-select field-input" name="reminderStyle" [(ngModel)]="ext.reminderStyle">
+                    <option [ngValue]="null">Not set</option>
+                    @for (r of reminderStyles; track r) { <option [ngValue]="r">{{ r }}</option> }
+                  </select>
+                </div>
+                <div class="col-md-4">
+                  <label class="field-label">Streak sensitivity</label>
+                  <select class="form-select field-input" name="streakSensitivity" [(ngModel)]="ext.streakSensitivity">
+                    <option [ngValue]="null">Not set</option>
+                    @for (s of streakSensitivities; track s) { <option [ngValue]="s">{{ s }}</option> }
+                  </select>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- ── Section 6: How you learn (optional) ───────────── -->
+        <div class="form-section optional-section">
+          <button
+            type="button"
+            class="form-section-toggle"
+            (click)="showHowLearn = !showHowLearn"
+            [attr.aria-expanded]="showHowLearn"
+          >
+            <div class="d-flex align-items-center gap-2">
+              <i class="bi bi-book"></i>
+              <span>How you learn</span>
+              @if (hasHowLearnData()) {
+                <span class="filled-badge">Filled</span>
+              }
+            </div>
+            <i class="bi toggle-icon" [class.bi-chevron-down]="!showHowLearn" [class.bi-chevron-up]="showHowLearn"></i>
+          </button>
+
+          @if (showHowLearn) {
+            <div class="form-section-body">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="field-label">Depth vs breadth</label>
+                  <select class="form-select field-input" name="depthVsBreadth" [(ngModel)]="ext.depthVsBreadth">
+                    <option [ngValue]="null">Not set</option>
+                    @for (d of depthBreadth; track d) { <option [ngValue]="d">{{ d }}</option> }
+                  </select>
+                </div>
+                <div class="col-md-6">
+                  <label class="field-label">Explanation style</label>
+                  <select class="form-select field-input" name="explanationStyle" [(ngModel)]="ext.explanationStyle">
+                    <option [ngValue]="null">Not set</option>
+                    @for (e of explanationStyles; track e) { <option [ngValue]="e">{{ e }}</option> }
+                  </select>
+                </div>
+                <div class="col-md-6">
+                  <label class="field-label">Preferred resource locales</label>
+                  <input class="form-control field-input" name="preferredResourceLocalesInput" [(ngModel)]="preferredResourceLocalesInput" placeholder="en, fr" />
+                  <p class="field-hint">Comma-separated locale codes.</p>
+                </div>
+                <div class="col-md-6">
+                  <label class="field-label">Linked formation IDs</label>
+                  <input class="form-control field-input" name="linkedFormationIdsInput" [(ngModel)]="linkedFormationIdsInput" placeholder="e.g. 12, 34" />
+                  <p class="field-hint">Comma-separated formation IDs to focus on.</p>
+                </div>
+                <div class="col-12">
+                  <label class="field-label">Resource language tolerance</label>
+                  <textarea class="form-control field-input" name="resourceLanguageTolerance" [(ngModel)]="ext.resourceLanguageTolerance" rows="2" placeholder="e.g. OK with English resources if explanations are in French"></textarea>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- ── Section 7: Skills (optional) ──────────────────── -->
+        <div class="form-section optional-section">
+          <button
+            type="button"
+            class="form-section-toggle"
+            (click)="showSkills = !showSkills"
+            [attr.aria-expanded]="showSkills"
+          >
+            <div class="d-flex align-items-center gap-2">
+              <i class="bi bi-tools"></i>
+              <span>Skills</span>
+              @if (skills.length > 0) {
+                <span class="filled-badge">{{ skills.length }} added</span>
+              }
+            </div>
+            <i class="bi toggle-icon" [class.bi-chevron-down]="!showSkills" [class.bi-chevron-up]="showSkills"></i>
+          </button>
+
+          @if (showSkills) {
+            <div class="form-section-body">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <p class="text-muted small mb-0">Self-assessed skill levels help the mentor gauge your starting point.</p>
+                <button type="button" class="add-row-btn" (click)="addSkill()">
+                  <i class="bi bi-plus me-1"></i>Add skill
+                </button>
+              </div>
+
+              @if (skills.length === 0) {
+                <p class="empty-hint">No skills added yet.</p>
+              }
+
+              <div class="skills-grid">
+                @for (s of skills; track $index; let i = $index) {
+                  <div class="skill-row">
+                    <input
+                      class="form-control field-input field-input-sm"
+                      [(ngModel)]="s.skillName"
+                      [name]="'sk' + i"
+                      placeholder="Skill name (e.g. React)"
+                    />
+                    <select class="form-select field-input field-input-sm skill-level-select" [(ngModel)]="s.level" [name]="'sl' + i">
+                      @for (lvl of skillLevels; track lvl) {
+                        <option [ngValue]="lvl">{{ lvl }}</option>
+                      }
+                    </select>
+                    <button type="button" class="remove-row-btn" (click)="removeSkill(i)" title="Remove">
+                      <i class="bi bi-trash3"></i>
+                    </button>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- ── Save bar ────────────────────────────────────────── -->
+        <div class="save-bar">
+          <a routerLink="/me/mentor" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Back
+          </a>
+          <button type="submit" class="btn save-btn" [disabled]="saving">
+            <i class="bi bi-check-circle me-2"></i>{{ saving ? 'Saving…' : 'Save profile' }}
+          </button>
+        </div>
+
+      </form>
+    }
+  </div>
+</div>

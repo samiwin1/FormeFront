@@ -1,0 +1,221 @@
+<div class="container-fluid py-3 mentor-ask">
+
+  <!-- Breadcrumb (always visible) -->
+  <nav aria-label="breadcrumb" class="mb-3 px-2">
+    <ol class="breadcrumb mb-0">
+      <li class="breadcrumb-item"><a routerLink="/me/mentor">AI Mentor</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Ask</li>
+    </ol>
+  </nav>
+
+  <div class="ask-layout">
+
+    <!-- ── Left panel: thread list ───────────────────────────────────────── -->
+    <aside class="thread-panel" [class.mobile-hidden]="showChat">
+      <div class="thread-panel-header d-flex align-items-center justify-content-between mb-3">
+        <div>
+          <div class="page-label">Mentor chat</div>
+          <h2 class="h5 mb-0">Conversations</h2>
+        </div>
+        <button type="button" class="btn btn-new-thread btn-sm" (click)="newConversation()">
+          <i class="bi bi-plus-lg me-1"></i>New
+        </button>
+      </div>
+
+      <div class="thread-search mb-3">
+        <input
+          class="form-control form-control-sm"
+          [(ngModel)]="threadSearch"
+          placeholder="Search conversations…"
+          [disabled]="loadingThreads"
+        />
+      </div>
+
+      @if (loadingThreads && threads.length === 0) {
+        <div class="empty-panel-state text-center py-4">
+          <div class="spinner-border spinner-border-sm text-secondary mb-2" role="status"></div>
+          <p class="text-muted small mb-0">Loading conversations…</p>
+        </div>
+      }
+
+      @if (threads.length === 0 && !loadingThreads) {
+        <div class="empty-panel-state text-center py-4 px-3">
+          <i class="bi bi-chat-left-text fs-1 mb-3 text-muted"></i>
+          <p class="text-muted small mb-0">No conversations yet.</p>
+          <p class="text-muted small">Start one with the <strong>New</strong> button.</p>
+        </div>
+      }
+
+      <ul class="thread-list list-unstyled mb-0">
+        @for (t of filteredThreads; track t.id) {
+          <li
+            class="thread-item"
+            [class.active]="activeThread?.id === t.id"
+            (click)="selectThread(t)"
+          >
+            <div class="thread-item-body">
+              <div class="d-flex justify-content-between align-items-start mb-1">
+                <span class="thread-title">{{ t.title }}</span>
+                <span class="thread-date text-muted small">{{ timeAgo(t.updatedAt) }}</span>
+              </div>
+              @if (t.lastMessage) {
+                <p class="thread-preview mb-0">{{ t.lastMessage }}</p>
+              }
+            </div>
+            <button
+              type="button"
+              class="btn btn-sm archive-btn"
+              title="Archive"
+              (click)="archiveThread(t, $event)"
+            ><i class="bi bi-trash3"></i></button>
+          </li>
+        }
+      </ul>
+    </aside>
+
+    <!-- ── Right panel: chat ─────────────────────────────────────────────── -->
+    <main class="chat-panel" [class.mobile-hidden]="!showChat && !activeThread">
+
+      <!-- Mobile: back button -->
+      <button type="button" class="btn btn-link btn-sm d-md-none ps-0 mb-3" (click)="backToList()">
+        <i class="bi bi-arrow-left me-1"></i>Conversations
+      </button>
+
+      @if (!activeThread && !loadingThread) {
+        <div class="chat-empty-state card rounded-4 p-4 text-center mx-auto">
+          <i class="bi bi-chat-dots fs-1 mb-3 text-secondary"></i>
+          <h3 class="h6 mb-2">Select a conversation</h3>
+          <p class="text-muted small mb-0">Choose a thread or create a new one to start chatting with your mentor.</p>
+        </div>
+      }
+
+      @if (loadingThread) {
+        <div class="text-center py-5">
+          <div class="spinner-border spinner-border-sm text-secondary" role="status"></div>
+        </div>
+      }
+
+      @if (activeThread) {
+        <div class="chat-shell shadow-sm rounded-4 bg-white">
+          <div class="chat-header d-flex align-items-center justify-content-between px-3 py-3 border-bottom">
+            <div>
+              <h3 class="h6 mb-1 text-dark">{{ activeThread.title }}</h3>
+              <p class="text-muted small mb-0">Updated {{ timeAgo(threadUpdatedAt(activeThread)) }}</p>
+            </div>
+            <button type="button" class="btn btn-sm btn-outline-secondary" title="Archive thread" (click)="archiveThread(activeThread, $event)">
+              <i class="bi bi-archive me-1"></i>Archive
+            </button>
+          </div>
+
+          <!-- Messages -->
+          <div class="chat-messages p-3">
+            @if (activeThread.messages.length === 0 && !sending) {
+              <div class="message-empty text-center py-5 px-3 text-muted small">
+                Ask anything about your learning path, next formations, or certifications.
+              </div>
+            }
+
+            @for (m of activeThread.messages; track m.id) {
+              <div class="chat-row" [class.user-row]="m.role === 'USER'" [class.assistant-row]="m.role === 'ASSISTANT'">
+                <div class="bubble" [class.bubble-user]="m.role === 'USER'" [class.bubble-assistant]="m.role === 'ASSISTANT'">
+                  <div class="bubble-label">{{ m.role === 'USER' ? 'You' : 'Mentor' }}</div>
+                  <p class="mb-2 bubble-text">{{ m.content }}</p>
+
+                  @if (m.role === 'ASSISTANT') {
+                    @if (getStructured(m); as s) {
+                      @if (s.bullets?.length) {
+                        <ul class="small mb-2 ps-3">
+                          @for (b of s.bullets; track $index) { <li>{{ b }}</li> }
+                        </ul>
+                      }
+                      @if (s.suggestedActions?.length) {
+                        <div class="small fw-semibold mb-1">Next steps</div>
+                        <ul class="small mb-2 ps-3">
+                          @for (a of s.suggestedActions; track $index) { <li>{{ a }}</li> }
+                        </ul>
+                      }
+                      @if (s.type === 'FORMATION_RECOMMENDATION' && s.recommendedFormationIds?.length) {
+                        <div class="rec-block mt-2 pt-2 border-top">
+                          <div class="fw-semibold small mb-2">
+                            <i class="bi bi-mortarboard-fill me-1 text-primary"></i>Recommended Formations
+                          </div>
+                          @for (fid of s.recommendedFormationIds; track fid) {
+                            <div class="formation-rec-card d-flex align-items-center justify-content-between p-2 mb-1 rounded border">
+                              <div class="small">
+                                <span class="text-muted me-1">Formation #{{ fid }}</span>
+                                @if (s.recommendationNotes) {
+                                  <span class="text-muted fst-italic">— {{ s.recommendationNotes }}</span>
+                                }
+                              </div>
+                              <a [routerLink]="formationLink(fid)" class="btn btn-primary btn-sm ms-2 text-nowrap">
+                                Apply Now
+                              </a>
+                            </div>
+                          }
+                        </div>
+                      }
+                      @if (s.type === 'FORMATION_MISSING') {
+                        <div class="formation-missing-card alert alert-info d-flex gap-2 align-items-start mt-2 mb-0 py-2 px-3 small">
+                          <i class="bi bi-clock-history fs-5 mt-1 flex-shrink-0"></i>
+                          <div>
+                            <div class="fw-semibold">Coming Soon</div>
+                            <div>A formation on <em>{{ s.detectedTargetRole ?? 'this topic' }}</em> is not yet available.</div>
+                            @if (s.detectedSkillsGap) {
+                              <div class="text-muted mt-1">Skills to prepare: {{ s.detectedSkillsGap }}</div>
+                            }
+                            <div class="mt-1">We've noted your interest — stay tuned!</div>
+                          </div>
+                        </div>
+                      }
+                    }
+                    @if (m.sessionId) {
+                      <div class="mt-2 pt-2 border-top d-flex justify-content-end">
+                        <app-mentor-feedback [sessionId]="m.sessionId" />
+                      </div>
+                    }
+                  }
+                </div>
+              </div>
+            }
+
+            @if (sending) {
+              <div class="chat-row assistant-row">
+                <div class="bubble bubble-assistant text-muted small typing-indicator">
+                  <span></span><span></span><span></span>
+                </div>
+              </div>
+            }
+            <div #scrollAnchor></div>
+          </div>
+
+          <!-- Input -->
+          <div class="chat-input border-top bg-white p-3 rounded-bottom">
+            <div class="input-group">
+              <textarea
+                class="form-control"
+                rows="2"
+                [(ngModel)]="draft"
+                name="draft"
+                placeholder="Type your message…"
+                [disabled]="sending"
+                (keydown.control.enter)="send()"
+                (keydown.meta.enter)="send()"
+              ></textarea>
+              <button type="button" class="btn btn-primary px-4" (click)="send()" [disabled]="sending || !draft.trim()">
+                Send
+              </button>
+            </div>
+            <div class="d-flex align-items-center gap-3 mt-2">
+              <p class="text-muted small mb-0">Ctrl+Enter to send. Conversation is saved automatically.</p>
+              <div class="d-flex align-items-center gap-1 ms-auto">
+                <label class="text-muted small mb-0">Locale</label>
+                <input class="form-control form-control-sm locale-input" [(ngModel)]="locale" placeholder="en, fr" [disabled]="sending" />
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+    </main>
+
+  </div><!-- /ask-layout -->
+</div>

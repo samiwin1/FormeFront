@@ -1,0 +1,32 @@
+:host {
+  --mtr-accent: #5fcf80;
+  --mtr-heading: #37423b;
+  --mtr-border: #e2e8f0;
+  --mtr-radius-md: 12px;
+  --mtr-shadow-hover: 0 10px 24px rgba(0,0,0,0.10);
+}
+
+.feedback-btn {
+  padding: 0.15rem 0.4rem;
+  color: #6c757d;
+  background: transparent;
+  border: 1px solid #dee2e6;
+  line-height: 1;
+}
+
+.feedback-btn:hover:not(:disabled) {
+  background: #f8f9fa;
+  color: #343a40;
+}
+
+.feedback-btn.active-up {
+  color: var(--mtr-accent);
+  border-color: var(--mtr-accent);
+  background: color-mix(in srgb, var(--mtr-accent), transparent 85%);
+}
+
+.feedback-btn.active-down {
+  color: var(--bs-danger);
+  border-color: var(--bs-danger);
+  background: #f8d7da;
+}
