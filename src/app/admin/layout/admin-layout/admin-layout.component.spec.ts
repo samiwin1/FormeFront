@@ -3,15 +3,24 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideRouter } from '@angular/router';
 
 import { AdminLayoutComponent } from './admin-layout.component';
+import { ThemeLoaderService } from '../../../core/services/theme-loader.service';
 
 describe('AdminLayoutComponent', () => {
   let component: AdminLayoutComponent;
   let fixture: ComponentFixture<AdminLayoutComponent>;
+  const themeLoaderStub = {
+    loadStyle: () => {},
+    loadScript: () => Promise.resolve()
+  };
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [AdminLayoutComponent],
-      providers: [provideHttpClient(), provideRouter([])]
+      providers: [
+        provideHttpClient(),
+        provideRouter([]),
+        { provide: ThemeLoaderService, useValue: themeLoaderStub }
+      ]
     })
     .compileComponents();
 
