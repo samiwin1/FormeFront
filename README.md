@@ -1,59 +1,82 @@
-# FormeFrontend
+# FormeFront DevOps
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.2.19.
+## Overview
 
-## Development server
+This repository contains the Angular frontend for ForME.
 
-To start a local development server, run:
+- Application source: `src/`
+- Docker image: `samiwin/forme-frontend:latest`
+- Jenkins CI pipeline: `Jenkinsfile-frontend`
+- Kubernetes CD is centralized in the `Formedevops` repository
 
-```bash
-ng serve
-```
+## Local Development
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
-
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+Install dependencies:
 
 ```bash
-ng generate component component-name
+npm install
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+Start the frontend locally:
 
 ```bash
-ng generate --help
+npm start
 ```
 
-## Building
+The Angular development server runs on:
 
-To build the project run:
+```text
+http://localhost:4200
+```
+
+## Tests And Coverage
+
+Run unit tests with coverage:
 
 ```bash
-ng build
+npm test -- --watch=false --code-coverage
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+Coverage output:
 
-## Running unit tests
+```text
+coverage/forme-frontend/
+```
 
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
+## Production Build
+
+Run the production build:
 
 ```bash
-ng test
+npm run build -- --configuration production
 ```
 
-## Running end-to-end tests
+Build output:
 
-For end-to-end (e2e) testing, run:
+```text
+dist/forme-frontend/
+```
+
+## Docker
+
+Build the frontend image:
 
 ```bash
-ng e2e
+docker build -t samiwin/forme-frontend:latest .
 ```
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+## Jenkins CI
 
-## Additional Resources
+`Jenkinsfile-frontend` performs:
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+- checkout
+- dependency install with `npm ci` when available
+- Angular tests with coverage
+- production build
+- optional SonarQube analysis
+- Docker build and push
+
+## CD Note
+
+Kubernetes deployment, monitoring, and centralized CD remain in the `Formedevops` repository.
+

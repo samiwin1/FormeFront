@@ -1,4 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ActivatedRoute, provideRouter } from '@angular/router';
+import { of } from 'rxjs';
 
 import { NavbarComponent } from './navbar.component';
 
@@ -8,7 +10,19 @@ describe('NavbarComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [NavbarComponent]
+      imports: [NavbarComponent],
+      providers: [
+        provideRouter([]),
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            snapshot: { paramMap: new Map(), queryParamMap: new Map() },
+            params: of({}),
+            queryParams: of({}),
+            data: of({})
+          }
+        }
+      ]
     })
     .compileComponents();
 

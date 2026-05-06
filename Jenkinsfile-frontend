@@ -1,0 +1,78 @@
+pipeline {
+    agent any
+
+    environment {
+        DOCKER_IMAGE = 'samiwin/forme-frontend:latest'
+        CHROME_BIN = '/usr/bin/google-chrome-stable'
+        CI = 'true'
+        NG_CLI_ANALYTICS = 'false'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Install') {
+            steps {
+                script {
+                    if (fileExists('package-lock.json')) {
+                        sh 'npm ci'
+                    } else {
+                        sh 'npm install'
+                    }
+                }
+            }
+        }
+
+        stage('Test') {
+            steps {
+                timeout(time: 10, unit: 'MINUTES') {
+                    sh 'npm test -- --watch=false --code-coverage --browsers=ChromeHeadlessNoSandbox --progress=false'
+                }
+            }
+            post {
+                always {
+                    archiveArtifacts artifacts: 'coverage/**', allowEmptyArchive: true
+                }
+            }
+        }
+
+        stage('Build') {
+            steps {
+                sh 'npm run build -- --configuration production'
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                script {
+                    try {
+                        withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
+                            sh 'sonar-scanner -Dsonar.login=$SONAR_TOKEN'
+                        }
+                    } catch (err) {
+                        echo "SonarQube analysis skipped: ${err}"
+                    }
+                }
+            }
+        }
+
+        stage('Docker Build') {
+            steps {
+                sh 'docker build -t $DOCKER_IMAGE .'
+            }
+        }
+
+        stage('Docker Push') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'docker-hub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
+                    sh 'docker push $DOCKER_IMAGE'
+                }
+            }
+        }
+    }
+}
