@@ -23,12 +23,23 @@ module.exports = function (config) {
         { type: 'text-summary' }
       ]
     },
+    captureTimeout: 180000,
+    browserNoActivityTimeout: 180000,
+    browserDisconnectTimeout: 30000,
+    browserDisconnectTolerance: 2,
     reporters: ['progress', 'kjhtml'],
     browsers: ['ChromeHeadlessNoSandbox'],
     customLaunchers: {
       ChromeHeadlessNoSandbox: {
         base: 'ChromeHeadless',
-        flags: ['--no-sandbox', '--disable-gpu', '--disable-dev-shm-usage']
+        flags: [
+          '--no-sandbox',
+          '--disable-setuid-sandbox',
+          '--disable-gpu',
+          '--disable-dev-shm-usage',
+          '--disable-software-rasterizer',
+          '--remote-debugging-port=9222'
+        ]
       }
     },
     restartOnFileChange: false
