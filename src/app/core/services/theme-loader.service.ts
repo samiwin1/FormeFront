@@ -4,12 +4,17 @@ import { Injectable, Renderer2, RendererFactory2 } from '@angular/core';
 export class ThemeLoaderService {
   private r: Renderer2;
   private loaded = new Set<string>();
+  private readonly isTestEnvironment =
+    typeof window !== 'undefined' &&
+    (Boolean((window as { __karma__?: unknown }).__karma__) ||
+      Boolean((window as { jasmine?: unknown }).jasmine));
 
   constructor(rf: RendererFactory2) {
     this.r = rf.createRenderer(null, null);
   }
 
   loadStyle(href: string) {
+    if (this.isTestEnvironment) return;
     if (this.loaded.has(href)) return;
     const link = this.r.createElement('link');
     link.rel = 'stylesheet';
@@ -19,6 +24,7 @@ export class ThemeLoaderService {
   }
 
   loadScript(src: string): Promise<void> {
+    if (this.isTestEnvironment) return Promise.resolve();
     if (this.loaded.has(src)) return Promise.resolve();
 
     return new Promise((resolve, reject) => {

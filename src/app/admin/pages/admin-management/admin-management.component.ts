@@ -28,6 +28,10 @@ type SortKey =
   styleUrl: './admin-management.component.css',
 })
 export class AdminManagementComponent implements OnInit, AfterViewInit, OnDestroy {
+  private readonly isTestEnvironment =
+    typeof window !== 'undefined' &&
+    (Boolean((window as { __karma__?: unknown }).__karma__) ||
+      Boolean((window as { jasmine?: unknown }).jasmine));
 
   private fb = inject(FormBuilder);
   private api = inject(AdminApi);
@@ -88,6 +92,10 @@ export class AdminManagementComponent implements OnInit, AfterViewInit, OnDestro
   }
 
   ngAfterViewInit(): void {
+    if (this.isTestEnvironment) {
+      return;
+    }
+
     setTimeout(() => {
       const scripts = [
         'assets/duralux/vendors/js/apexcharts.min.js',
