@@ -38,6 +38,14 @@ module.exports = function (config) {
           '--disable-gpu',
           '--disable-dev-shm-usage',
           '--disable-software-rasterizer',
+          '--no-first-run',
+          '--no-default-browser-check',
+          '--disable-background-networking',
+          '--disable-default-apps',
+          '--disable-extensions',
+          '--disable-sync',
+          '--metrics-recording-only',
+          '--mute-audio',
           '--remote-debugging-port=0'
         ]
       }
