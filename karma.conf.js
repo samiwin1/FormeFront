@@ -1,4 +1,9 @@
+const os = require('os');
+const path = require('path');
+
 module.exports = function (config) {
+  const chromeUserDataDir = path.join(os.tmpdir(), `karma-chrome-${process.pid}`);
+
   config.set({
     basePath: '',
     frameworks: ['jasmine', '@angular-devkit/build-angular'],
@@ -46,6 +51,7 @@ module.exports = function (config) {
           '--disable-sync',
           '--metrics-recording-only',
           '--mute-audio',
+          `--user-data-dir=${chromeUserDataDir}`,
           '--remote-debugging-port=0'
         ]
       }
